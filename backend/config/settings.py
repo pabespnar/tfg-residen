@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+
+    'usuarios',
 ]
 
 MIDDLEWARE = [
@@ -157,3 +159,5 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+AUTH_USER_MODEL = 'usuarios.Usuario'
