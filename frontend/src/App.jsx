@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import axios from 'axios'
+import Navbar from './components/Navbar'
+import './App.css'
+import Sidebar from './components/Sidebar'
 
 function App() {
   const [message, setMessage] = useState('')
@@ -27,18 +30,26 @@ function App() {
     }
   }
 
-  return (
+return (
     <div>
-      <h1>Prueba de conexión</h1>
+        <Navbar />
 
-      <button onClick={testConnection}>
-        Conectar con Django
-      </button>
+        <div className="main-container">
+            <Sidebar />
 
-      {message && <p>{message}</p>}
-      {error && <p>{error}</p>}
+            <main>
+                <h1>Prueba de conexión</h1>
+
+                <button onClick={testConnection}>
+                    Conectar con Django
+                </button>
+
+                {message && <p>{message}</p>}
+                {error && <p>{error}</p>}
+            </main>
+        </div>
     </div>
-  )
+)
 }
 
 export default App
