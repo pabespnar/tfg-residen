@@ -37,6 +37,7 @@ class Usuario(AbstractUser):
     email = models.EmailField(unique=True)
     dni = models.CharField(max_length=9, unique=True)
     rol = models.CharField(max_length=30, choices = Rol.choices)
+    imagen_perfil = models.ImageField(upload_to='usuarios/', null=True, blank=True)
 
     objects = UsuarioManager()
 
