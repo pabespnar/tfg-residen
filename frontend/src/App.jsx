@@ -13,7 +13,7 @@ function App() {
       const response = await axios.post(
         'http://127.0.0.1:8000/api/token/',
         {
-          username: 'avexp',
+          email: 'avexpinosa@gmail.com',
           password: 'abcd',
         }
       )
