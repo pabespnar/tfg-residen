@@ -15,3 +15,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'rol',
             'imagen_perfil',
         ]
+        read_only_fields = [
+            'id',
+            'rol',
+        ]
