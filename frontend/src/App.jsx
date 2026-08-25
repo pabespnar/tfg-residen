@@ -22,7 +22,7 @@ function App() {
                 <Navbar />
 
                 <div className="main-container">
-                    <Sidebar />
+                    <Sidebar setAutenticado={setAutenticado} />
 
                     <main>
                         <Routes>
