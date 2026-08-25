@@ -101,7 +101,7 @@ function Perfil() {
                     <div className="perfil-field">
                         <span className="perfil-label">Rol</span>
                         <span className="perfil-value">
-                            {usuario.rol}
+                            Gestor de {usuario.rol}
                         </span>
                     </div>
 
