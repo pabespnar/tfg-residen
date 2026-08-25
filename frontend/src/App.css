@@ -96,3 +96,14 @@ main {
     align-items: center;
     flex-direction: column;
 }
+
+.init {
+    font-size: 18px;
+    font-weight: 100;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.init:hover {
+    transform: scale(1.1);
+}

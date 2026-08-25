@@ -9,19 +9,21 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [conexion, setConexion] = useState(false)
 
   const testConnection = async () => {
     try {
       const response = await axios.post(
         'http://127.0.0.1:8000/api/token/',
         {
-          email: 'avexpinosa@gmail.com',
-          password: 'abcd',
+          email: 'gestor.residentes@tfg.com',
+          password: 'Test1234',
         }
       )
 
       localStorage.setItem('access', response.data.access)
       localStorage.setItem('refresh', response.data.refresh)
+      setConexion(true)
 
       setMessage('¡Conexión con Django funcionando!')
       setError('')
@@ -39,7 +41,7 @@ function App() {
   return (
     <Router>
       <div>
-        <Navbar />
+        <Navbar conexion={conexion}/>
 
         <div className="main-container">
           <Sidebar />

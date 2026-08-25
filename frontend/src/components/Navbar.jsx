@@ -1,15 +1,43 @@
 import { useNavigate } from 'react-router-dom'
 import fotoperfil from '../assets/fotoperfil_placeholder.png'
 import logocentro from '../assets/logo_placeholder.png'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 
 function Navbar() {
+
+    const [usuario, setUsuario] = useState(null)
+
+    useEffect(() => {
+        const token = localStorage.getItem('access')
+
+        axios.get('http://127.0.0.1:8000/api/usuarios/datosperfil/', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then((response) => {
+            setUsuario(response.data)
+        })
+        .catch((error) => {
+            console.error('Error al obtener el perfil:', error)
+        })
+    }, [])
+
+    const nombresRol = {
+        residentes: 'Gestor de residentes',
+        almacen: 'Gestor de almacén',
+        administracion: 'Gestor de administración',
+    }
+
     const navigate = useNavigate()
 
     return (
         <nav className="navbar">
+
             <div
+                className="init"
                 onClick={() => navigate('/')}
-                style={{ cursor: 'pointer' }}
             >
                 Gestión residencial
             </div>
@@ -34,22 +62,28 @@ function Navbar() {
             >
                 <div>
                     <div>
-                        Nombre de Usuario
+                        {usuario
+                            ? `${usuario.nombre} ${usuario.apellido}`
+                            : 'Cargando...'}
                     </div>
 
                     <div>
-                        Rol de Usuario
+                        {usuario
+                            ? nombresRol[usuario.rol]
+                            : 'Cargando...'}
                     </div>
                 </div>
 
                 <div>
                     <img
-                        src={fotoperfil}
+                        src={usuario?.imagen_perfil || fotoperfil}
                         alt="Foto de perfil"
                         className="fotoperfil"
                     />
                 </div>
+
             </div>
+
         </nav>
     )
 }
