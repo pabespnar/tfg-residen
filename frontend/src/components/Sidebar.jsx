@@ -23,16 +23,18 @@ function Sidebar({ setAutenticado }) {
                 Cerrar sesión
             </div>
             {logOut && (
-                <div className="logout-confirmacion">
-                    <p>¿Seguro que desea cerrar sesión?</p>
+                <div className="logout-overlay">
+                    <div className="logout-confirmacion">
+                        <p>¿Seguro que desea cerrar sesión?</p>
 
-                    <button onClick={cerrarSesion}>
-                        Sí, cerrar sesión
-                    </button>
+                        <button onClick={cerrarSesion}>
+                            Sí, cerrar sesión
+                        </button>
 
-                    <button onClick={() => setLogOut(false)}>
-                        Cancelar
-                    </button>
+                        <button onClick={() => setLogOut(false)}>
+                            Cancelar
+                        </button>
+                    </div>
                 </div>
             )}
         </aside>
