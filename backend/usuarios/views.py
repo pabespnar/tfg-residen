@@ -15,7 +15,7 @@ class UsuarioActualView(APIView):
         serializer = UsuarioSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
-    def put(self, request):
+    def patch(self, request):
         serializer = UsuarioSerializer(request.user, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
