@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Perfil.css'
+import { FiEdit2 } from 'react-icons/fi'
+import { useNavigate } from 'react-router-dom'
 
 function Perfil() {
     const [usuario, setUsuario] = useState(null)
+    const navigate = useNavigate()
 
     useEffect(() => {
         const token = localStorage.getItem('access')
@@ -50,6 +53,14 @@ function Perfil() {
                 <div className="perfil-header-info">
                     <h1>
                         {usuario.nombre} {usuario.apellido}
+
+                        <button
+                            className="perfil-editar-icono"
+                            onClick={() => navigate('/editar-perfil')}
+                            title="Editar perfil"
+                        >
+                            <FiEdit2 />
+                        </button>
                     </h1>
 
                     <span className="perfil-rol">

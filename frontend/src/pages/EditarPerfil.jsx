@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './EditarPerfil.css'
+import { useNavigate } from 'react-router-dom'
 
 function EditarPerfil() {
     const [usuario, setUsuario] = useState({
@@ -10,6 +11,7 @@ function EditarPerfil() {
         telefono: '',
         dni: '',
     })
+    const navigate = useNavigate()
 
     const [errores, setErrores] = useState({})
     const [mensaje, setMensaje] = useState('')
@@ -141,6 +143,10 @@ function EditarPerfil() {
 
             setErrores({})
             setMensaje('Datos actualizados correctamente.')
+
+            setTimeout(() => {
+                navigate('/perfil')
+            }, 1500)
         })
         .catch((error) => {
             console.error(
@@ -171,8 +177,6 @@ function EditarPerfil() {
                     'Error al conectar con el servidor.'
                 )
             }
-        })
-        .finally(() => {
             setGuardando(false)
         })
     }
@@ -333,17 +337,14 @@ function EditarPerfil() {
                             {mensaje}
                         </p>
                     )}
-
+                {!guardando && (
                     <button
                         type="submit"
                         className="editar-boton"
-                        disabled={guardando}
                     >
-                        {guardando
-                            ? 'Guardando...'
-                            : 'Confirmar cambios'}
+                        Confirmar cambios
                     </button>
-
+                )}
                 </form>
 
             </div>

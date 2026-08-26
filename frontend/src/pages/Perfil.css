@@ -39,9 +39,9 @@
 }
 
 .perfil-header-info h1 {
-    margin: 0 0 10px 0;
-    color: #1B5E20;
-    font-size: 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .perfil-rol {
@@ -110,3 +110,20 @@
     color: #1B5E20;
 }
 
+.perfil-editar-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
+
+.perfil-editar-icono svg {
+    font-size: 20px;
+}
+
+.perfil-editar-icono:hover {
+    transform: scale(1.15);
+}
