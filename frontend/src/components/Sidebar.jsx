@@ -1,4 +1,14 @@
-function Sidebar() {
+import { useState } from 'react'
+
+function Sidebar({ setAutenticado }) {
+    const [logOut, setLogOut] = useState(false)    
+    const cerrarSesion = () => {
+        localStorage.removeItem('access')
+        localStorage.removeItem('refresh')
+
+        setAutenticado(false)
+    }
+
     return (
         <aside className="sidebar">
             <nav>
@@ -9,9 +19,24 @@ function Sidebar() {
                     <li className="sideItem">Pantalla 3</li>
                 </ul>
             </nav>
-            <div className="logout">
+            <div className="logout" onClick={() => setLogOut(true)}>
                 Cerrar sesión
             </div>
+            {logOut && (
+                <div className="logout-overlay">
+                    <div className="logout-confirmacion">
+                        <p>¿Seguro que desea cerrar sesión?</p>
+
+                        <button onClick={cerrarSesion}>
+                            Sí, cerrar sesión
+                        </button>
+
+                        <button onClick={() => setLogOut(false)}>
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            )}
         </aside>
     )
 }
