@@ -14,3 +14,10 @@ class UsuarioActualView(APIView):
     def get(self, request):
         serializer = UsuarioSerializer(request.user, context={'request': request})
         return Response(serializer.data)
+
+    def put(self, request):
+        serializer = UsuarioSerializer(request.user, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
