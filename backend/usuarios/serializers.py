@@ -48,4 +48,20 @@ class UsuarioSerializer(serializers.ModelSerializer):
         if not value[:-1].isdigit() or len(value) != 9 or not value[-1].isalpha():
             raise serializers.ValidationError("El DNI debe tener 8 dígitos y una letra.")
         return value
-        
+
+    def validate_imagen_perfil(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "La imagen no puede superar los 5 MB."
+            )
+
+        if value.content_type not in [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+        ]:
+            raise serializers.ValidationError(
+                "Solo se permiten imágenes JPG, PNG o WEBP."
+            )
+
+        return value

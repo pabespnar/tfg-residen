@@ -10,6 +10,7 @@ function EditarPerfil() {
         email: '',
         telefono: '',
         dni: '',
+        imagen_perfil: null,
     })
     const navigate = useNavigate()
 
@@ -35,6 +36,7 @@ function EditarPerfil() {
                 email: response.data.email || '',
                 telefono: response.data.telefono || '',
                 dni: response.data.dni || '',
+                imagen_perfil: response.data.imagen_perfil || null,
             })
         })
         .catch((error) => {
@@ -120,12 +122,24 @@ function EditarPerfil() {
         }
 
         const token = localStorage.getItem('access')
+        const datos = new FormData()
+
+        datos.append('nombre', usuario.nombre)
+        datos.append('apellido', usuario.apellido)
+        datos.append('email', usuario.email)
+        datos.append('telefono', usuario.telefono)
+        datos.append('dni', usuario.dni)
+
+        if (usuario.imagen_perfil instanceof File) {
+            datos.append('imagen_perfil', usuario.imagen_perfil)
+        }
+
 
         setGuardando(true)
 
         axios.patch(
             'http://127.0.0.1:8000/api/usuarios/actualizarperfil/',
-            usuario,
+            datos,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -139,6 +153,7 @@ function EditarPerfil() {
                 email: response.data.email || '',
                 telefono: response.data.telefono || '',
                 dni: response.data.dni || '',
+                imagen_perfil: response.data.imagen_perfil || null,
             })
 
             setErrores({})
@@ -165,9 +180,7 @@ function EditarPerfil() {
                     error.response.status
                 )
 
-                setMensaje(
-                    'No se han podido actualizar los datos.'
-                )
+                setErrores(error.response.data)
             } else {
                 console.error(
                     'Error al conectar con el servidor.'
@@ -325,6 +338,39 @@ function EditarPerfil() {
                             {errores.dni && (
                                 <span className="editar-error">
                                     {errores.dni}
+                                </span>
+                            )}
+
+                        </div>
+
+                        <div className="editar-field">
+
+                            <label htmlFor="imagen_perfil">
+                                Foto de perfil
+                            </label>
+
+                            <input
+                                id="imagen_perfil"
+                                name="imagen_perfil"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={(e) => {
+                                    const archivo = e.target.files[0]
+
+                                    if (archivo) {
+                                        setUsuario({
+                                            ...usuario,
+                                            imagen_perfil: archivo,
+                                        })
+                                    }
+                                }}
+                            />
+
+                            {errores.imagen_perfil && (
+                                <span className="editar-error">
+                                    {Array.isArray(errores.imagen_perfil)
+                                        ? errores.imagen_perfil[0]
+                                        : errores.imagen_perfil}
                                 </span>
                             )}
 
