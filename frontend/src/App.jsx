@@ -4,6 +4,7 @@ import './App.css'
 import Sidebar from './components/Sidebar'
 import Perfil from './pages/Perfil'
 import Login from './pages/Login'
+import EditarPerfil from './pages/EditarPerfil'
 import { BrowserRouter as Router, Routes, Route, Navigate  } from 'react-router-dom'
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
                         path="*"
                         element={<Navigate to="/login" />}
                     />
+
                 </Routes>
 
             ) : (
@@ -50,6 +52,11 @@ function App() {
                                 <Route
                                     path="/perfil"
                                     element={<Perfil />}
+                                />
+
+                                <Route
+                                    path="/editar-perfil"
+                                    element={<EditarPerfil />}
                                 />
 
                                 <Route
