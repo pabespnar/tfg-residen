@@ -33,7 +33,7 @@ class Usuario(AbstractUser):
     username = None
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    telefono = models.CharField(max_length=20)
+    telefono = models.CharField(max_length=9)
     email = models.EmailField(unique=True)
     dni = models.CharField(max_length=9, unique=True)
     rol = models.CharField(max_length=30, choices = Rol.choices)
