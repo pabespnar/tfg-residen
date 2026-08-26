@@ -2,12 +2,15 @@ import './Login.css'
 import logoapp from '../assets/logo_app.png'
 import { useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 function Login({ setAutenticado }) {
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')  
+    const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+
+    const navigate = useNavigate()
 
     const iniciarSesion = async (e) => {
         e.preventDefault()
@@ -28,6 +31,7 @@ function Login({ setAutenticado }) {
             localStorage.setItem('refresh', response.data.refresh)
 
             setAutenticado(true)
+            navigate('/')
 
         } catch (error) {
 
@@ -81,10 +85,10 @@ function Login({ setAutenticado }) {
                         />
                     </div>
 
-                    {error && 
-                    <p className="login-error">
-                        {error}
-                    </p>
+                    {error &&
+                        <p className="login-error">
+                            {error}
+                        </p>
                     }
 
                     <button type="submit" disabled={loading}>
