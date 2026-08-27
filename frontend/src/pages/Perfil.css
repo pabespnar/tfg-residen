@@ -127,3 +127,22 @@
 .perfil-editar-icono:hover {
     transform: scale(1.15);
 }
+
+.perfil-seguridad {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.perfil-cambiar-contrasena {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #1976d2;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.perfil-cambiar-contrasena:hover {
+    text-decoration: underline;
+}
