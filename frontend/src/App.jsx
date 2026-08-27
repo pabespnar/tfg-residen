@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import Perfil from './pages/Perfil'
 import Login from './pages/Login'
 import EditarPerfil from './pages/EditarPerfil'
+import CambiarContrasena from './pages/CambiarContrasena'
 import { BrowserRouter as Router, Routes, Route, Navigate  } from 'react-router-dom'
 
 function App() {
@@ -57,6 +58,11 @@ function App() {
                                 <Route
                                     path="/editar-perfil"
                                     element={<EditarPerfil />}
+                                />
+
+                                <Route 
+                                    path="/cambiar-contrasena" 
+                                    element={<CambiarContrasena />} 
                                 />
 
                                 <Route

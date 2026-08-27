@@ -119,6 +119,15 @@ function Perfil() {
                 </div>
             </div>
 
+            <div className="perfil-seguridad">
+                <button
+                    className="perfil-cambiar-contrasena"
+                    onClick={() => navigate('/cambiar-contrasena')}
+                >
+                    Cambiar contraseña
+                </button>
+            </div>
+
         </div>
     )
 }
