@@ -162,6 +162,10 @@ function EditarPerfil() {
             setTimeout(() => {
                 navigate('/perfil')
             }, 1500)
+
+            setTimeout(() => {
+                window.location.reload()
+            }, 1500)
         })
         .catch((error) => {
             console.error(
