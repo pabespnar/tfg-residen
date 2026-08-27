@@ -95,6 +95,14 @@ function Login({ setAutenticado }) {
                         {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                     </button>
 
+                    <button
+                        type="button"
+                        className="login-recuperar"
+                        onClick={() => navigate('/recuperar-contrasena')}
+                    >
+                        ¿Has olvidado tu contraseña?
+                    </button>
+
                 </form>
 
             </div>
