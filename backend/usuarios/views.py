@@ -6,8 +6,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from .serializers import UsuarioSerializer
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 
+from .serializers import UsuarioSerializer
+from .models import Usuario
 
 class UsuarioActualView(APIView):
     permission_classes = [IsAuthenticated]
@@ -63,6 +68,102 @@ class CambiarContrasenaView(APIView):
 
         request.user.set_password(nueva_contrasena)
         request.user.save()
+
+        return Response(
+            {'mensaje': 'Contraseña actualizada correctamente.'}
+        )
+
+class RecuperarContrasenaView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get('email')
+
+        if not email:
+            return Response(
+                {'email': 'El correo electrónico es obligatorio.'},
+                status=400
+            )
+
+        usuario = Usuario.objects.filter(email=email).first()
+
+        if usuario:
+            uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+            token = default_token_generator.make_token(usuario)
+            print('TOKEN GENERADO:', token)
+            enlace = f'http://localhost:5173/restablecer-contrasena/{uid}/{token}'
+
+            send_mail(
+                'Recuperación de contraseña',
+                f'Hola {usuario.nombre},\n\n'
+                f'Has solicitado recuperar tu contraseña.\n\n'
+                f'Accede al siguiente enlace para establecer una nueva contraseña:\n'
+                f'{enlace}\n\n'
+                f'Si no has solicitado este cambio, puedes ignorar este correo.',
+                None,
+                [usuario.email],
+            )
+
+        return Response(
+            {
+                'mensaje': (
+                    'Si el correo está registrado, recibirás un enlace '
+                    'para recuperar la contraseña.'
+                )
+            }
+        )
+
+class RestablecerContrasenaView(APIView):
+    permission_classes = []
+
+    def post(self, request, uid, token):
+        print('UID RECIBIDO:', uid)
+        print('TOKEN RECIBIDO:', token)
+
+        try:
+            usuario_id = force_str(urlsafe_base64_decode(uid))
+            print('ID USUARIO:', usuario_id)
+
+            usuario = Usuario.objects.get(pk=usuario_id)
+            print('USUARIO:', usuario.email)
+
+        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+            print('ERROR AL ENCONTRAR USUARIO')
+            return Response(
+                {'error': 'El enlace de recuperación no es válido.'},
+                status=400
+            )
+
+        print('TOKEN RECIBIDO:', token)
+        print('TOKEN REGENERADO:', default_token_generator.make_token(usuario))
+
+        token_valido = default_token_generator.check_token(usuario, token)
+    
+
+        print('TOKEN VALIDO:', token_valido)
+
+        if not token_valido:
+            return Response(
+                {'error': 'El enlace de recuperación no es válido o ha caducado.'},
+                status=400
+            )
+
+        nueva_contrasena = request.data.get('nueva_contrasena')
+
+        if not nueva_contrasena:
+            return Response(
+                {'nueva_contrasena': 'La nueva contraseña es obligatoria.'},
+                status=400
+            )
+
+        if len(nueva_contrasena) < 8:
+            return Response(
+                {'nueva_contrasena': 'La nueva contraseña debe tener al menos 8 caracteres.'},
+                status=400
+            )
+
+        usuario.set_password(nueva_contrasena)
+        usuario.save()
 
         return Response(
             {'mensaje': 'Contraseña actualizada correctamente.'}

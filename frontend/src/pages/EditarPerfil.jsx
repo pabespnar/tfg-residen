@@ -387,14 +387,24 @@ function EditarPerfil() {
                             {mensaje}
                         </p>
                     )}
-                {!guardando && (
-                    <button
-                        type="submit"
-                        className="editar-boton"
-                    >
-                        Confirmar cambios
-                    </button>
-                )}
+                    {!guardando && (
+                        <div className="editar-botones">
+                            <button
+                                type="button"
+                                className="editar-boton cancelar"
+                                onClick={() => navigate('/perfil')}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="submit"
+                                className="editar-boton"
+                            >
+                                Confirmar cambios
+                            </button>
+                        </div>
+                    )}
                 </form>
 
             </div>

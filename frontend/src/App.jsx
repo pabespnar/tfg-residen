@@ -5,6 +5,8 @@ import Perfil from './pages/Perfil'
 import Login from './pages/Login'
 import EditarPerfil from './pages/EditarPerfil'
 import CambiarContrasena from './pages/CambiarContrasena'
+import RecuperarContrasena from './pages/RecuperarContrasena'
+import RestablecerContrasena from './pages/RestablecerContrasena'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -116,6 +118,16 @@ function App() {
                         element={
                             <Login setAutenticado={setAutenticado} />
                         }
+                    />
+
+                    <Route
+                        path="/recuperar-contrasena"
+                        element={<RecuperarContrasena />}
+                    />
+
+                    <Route
+                        path="/restablecer-contrasena/:uid/:token"
+                        element={<RestablecerContrasena />}
                     />
 
                     <Route
