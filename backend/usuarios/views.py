@@ -90,7 +90,6 @@ class RecuperarContrasenaView(APIView):
         if usuario:
             uid = urlsafe_base64_encode(force_bytes(usuario.pk))
             token = default_token_generator.make_token(usuario)
-            print('TOKEN GENERADO:', token)
             enlace = f'http://localhost:5173/restablecer-contrasena/{uid}/{token}'
 
             send_mail(
@@ -117,30 +116,24 @@ class RestablecerContrasenaView(APIView):
     permission_classes = []
 
     def post(self, request, uid, token):
-        print('UID RECIBIDO:', uid)
-        print('TOKEN RECIBIDO:', token)
+
 
         try:
             usuario_id = force_str(urlsafe_base64_decode(uid))
-            print('ID USUARIO:', usuario_id)
 
             usuario = Usuario.objects.get(pk=usuario_id)
-            print('USUARIO:', usuario.email)
 
         except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
-            print('ERROR AL ENCONTRAR USUARIO')
             return Response(
                 {'error': 'El enlace de recuperación no es válido.'},
                 status=400
             )
 
-        print('TOKEN RECIBIDO:', token)
-        print('TOKEN REGENERADO:', default_token_generator.make_token(usuario))
+
 
         token_valido = default_token_generator.check_token(usuario, token)
     
 
-        print('TOKEN VALIDO:', token_valido)
 
         if not token_valido:
             return Response(
