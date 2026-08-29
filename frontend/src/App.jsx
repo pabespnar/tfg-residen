@@ -7,6 +7,7 @@ import EditarPerfil from './pages/EditarPerfil'
 import CambiarContrasena from './pages/CambiarContrasena'
 import RecuperarContrasena from './pages/RecuperarContrasena'
 import RestablecerContrasena from './pages/RestablecerContrasena'
+import ModulosYHabitaciones from "./pages/ModulosYHabitaciones";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -169,6 +170,11 @@ function App() {
                         <Route
                             path="/cambiar-contrasena"
                             element={<CambiarContrasena />}
+                        />
+
+                        <Route 
+                            path="/modulos-habitaciones" 
+                            element={<ModulosYHabitaciones />} 
                         />
 
                     </Route>
