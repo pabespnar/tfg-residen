@@ -4,57 +4,246 @@
     padding: 40px;
 }
 
-.modulos-card {
+/* Título */
+
+.modulos-titulo {
     max-width: 1000px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin: 0 auto 30px auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.modulos-card h1 {
-    margin-top: 0;
-    margin-bottom: 30px;
+.modulos-titulo h1 {
+    margin: 0;
+
     color: #1b5e20;
     font-size: 28px;
 }
 
-.modulos-lista {
+/* Botón añadir */
+
+.modulos-anadir {
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+
+    background-color: #1b5e20;
+    color: white;
+
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 42px;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.modulos-anadir:hover {
+    background-color: #145218;
+    transform: scale(1.05);
+}
+
+/* Listado */
+
+.modulos-listado {
+    max-width: 1000px;
+    margin: 0 auto;
+
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.modulo-item {
-    border: 1px solid #ddd;
-    border-radius: 8px;
+/* Tarjeta de módulo */
+
+.modulo-card {
     padding: 20px;
-    background-color: #fafafa;
+
+    background-color: white;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.modulo-item h2 {
-    margin: 0 0 10px 0;
+.modulo-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modulo-cabecera h2 {
+    margin: 0;
+
     color: #1b5e20;
     font-size: 20px;
 }
 
-.modulo-item p {
-    margin: 6px 0;
+.modulo-descripcion {
+    margin: 10px 0 6px 0;
+
     color: #555;
+    font-size: 15px;
 }
 
-.modulos-cargando,
-.modulos-error,
-.modulos-vacio {
-    text-align: center;
-    padding: 20px;
+.modulo-habitaciones-max {
+    margin: 0;
+
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
 }
+
+.modulo-contenido {
+    margin-top: 20px;
+    padding-top: 15px;
+
+    border-top: 1px solid #eee;
+}
+
+/* Error */
 
 .modulos-error {
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+
+    padding: 15px;
+
+    text-align: center;
+
     color: #b71c1c;
+    background-color: #ffebee;
+
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
 }
 
-.modulos-vacio {
-    color: #666;
+/* Popup crear módulo */
+
+.crear-modulo-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.crear-modulo-confirmacion {
+    width: 450px;
+
+    padding: 30px;
+
+    background-color: white;
+
+    border-radius: 10px;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.crear-modulo-confirmacion h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+
+    color: #1b5e20;
+    font-size: 22px;
+}
+
+/* Campos */
+
+.crear-modulo-campo {
+    display: flex;
+    flex-direction: column;
+
+    margin-bottom: 20px;
+}
+
+.crear-modulo-campo label {
+    margin-bottom: 7px;
+
+    color: #333;
+    font-weight: 600;
+}
+
+.crear-modulo-campo input,
+.crear-modulo-campo textarea {
+    padding: 10px 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.crear-modulo-campo input:focus,
+.crear-modulo-campo textarea:focus {
+    border-color: #1b5e20;
+}
+
+.crear-modulo-campo textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Error del popup */
+
+.crear-modulo-error {
+    margin: 0 0 15px 0;
+
+    color: #b71c1c;
+    font-size: 14px;
+}
+
+/* Botones */
+
+.crear-modulo-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+.crear-modulo-botones button {
+    padding: 10px 18px;
+
+    border: none;
+    border-radius: 6px;
+
+    background-color: #1b5e20;
+    color: white;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.crear-modulo-botones button:hover {
+    opacity: 0.9;
+}
+
+.crear-modulo-botones button:last-child {
+    background-color: #777;
+}
+
+.crear-modulo-botones button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
