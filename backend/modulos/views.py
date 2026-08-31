@@ -34,3 +34,49 @@ class CrearModuloView(APIView):
             serializer.errors,
             status=400
         )
+
+class EditarModuloView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk):
+        try:
+            modulo = Modulo.objects.get(pk=pk)
+        except Modulo.DoesNotExist:
+            return Response(
+                {"error": "El módulo no existe."},
+                status=404
+            )
+
+        serializer = ModuloSerializer(
+            modulo,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+
+class EliminarModuloView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        try:
+            modulo = Modulo.objects.get(pk=pk)
+        except Modulo.DoesNotExist:
+            return Response(
+                {"error": "El módulo no existe."},
+                status=404
+            )
+
+        modulo.delete()
+
+        return Response(
+            {"mensaje": "Módulo eliminado correctamente."},
+            status=204
+        )
