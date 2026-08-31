@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import axios from 'axios'
 import './App.css'
 import Layout from './Layout'
 import Perfil from './pages/Perfil'
@@ -7,6 +8,7 @@ import EditarPerfil from './pages/EditarPerfil'
 import CambiarContrasena from './pages/CambiarContrasena'
 import RecuperarContrasena from './pages/RecuperarContrasena'
 import RestablecerContrasena from './pages/RestablecerContrasena'
+import ModulosYHabitaciones from "./pages/ModulosYHabitaciones";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -30,11 +32,67 @@ function tokenValido() {
     }
 }
 
+async function obtenerRol() {
+
+    const token = localStorage.getItem('access')
+
+    if (!token) {
+        return null
+    }
+
+    try {
+
+        const respuesta = await axios.get(
+            "http://127.0.0.1:8000/api/usuarios/datosperfil/",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
+
+        return respuesta.data.rol
+
+    } catch (error) {
+
+        console.error(
+            "Error al obtener el rol del usuario:",
+            error
+        )
+
+        return null
+
+    }
+}
+
 function App() {
 
     const [autenticado, setAutenticado] = useState(
         tokenValido()
     )
+
+    const [rol, setRol] = useState(null)
+
+    useEffect(() => {
+
+        const cargarRol = async () => {
+
+            if (!autenticado) {
+
+                setRol(null)
+                return
+
+            }
+
+            const rolUsuario = await obtenerRol()
+
+            setRol(rolUsuario)
+
+        }
+
+        cargarRol()
+
+    }, [autenticado])
 
     useEffect(() => {
 
@@ -50,7 +108,6 @@ function App() {
             const tiempoExpiracion = payload.exp * 1000
             const tiempoActual = Date.now()
 
-            // Aviso cuando queda 1 minuto
             const tiempoAviso = tiempoExpiracion - tiempoActual - 60000
 
             const aviso = setTimeout(() => {
@@ -69,15 +126,14 @@ function App() {
 
             }, Math.max(tiempoAviso, 0))
 
-            // Expiración de la sesión
             const expiracion = setTimeout(() => {
 
                 localStorage.removeItem('access')
                 localStorage.removeItem('refresh')
 
-                // Permitimos mostrar el aviso en una nueva sesión
                 sessionStorage.removeItem('aviso_sesion_mostrado')
 
+                setRol(null)
                 setAutenticado(false)
 
             }, Math.max(tiempoExpiracion - tiempoActual, 0))
@@ -93,11 +149,11 @@ function App() {
             localStorage.removeItem('refresh')
             sessionStorage.removeItem('aviso_sesion_mostrado')
 
+            setRol(null)
             setAutenticado(false)
         }
 
     }, [autenticado])
-
 
     if (!autenticado) {
 
@@ -145,7 +201,10 @@ function App() {
 
                     <Route
                         element={
-                            <Layout setAutenticado={setAutenticado} />
+                            <Layout
+                                setAutenticado={setAutenticado}
+                                rol={rol}
+                            />
                         }
                     >
 
@@ -171,14 +230,25 @@ function App() {
                             element={<CambiarContrasena />}
                         />
 
-                    </Route>
+                        {rol === "residentes" && (
 
-                    <Route
-                        path="*"
-                        element={
-                            <h1>Página no encontrada</h1>
-                        }
-                    />
+                            <Route
+                                path="/modulos-habitaciones"
+                                element={<ModulosYHabitaciones />}
+                            />
+
+                        )}
+
+                        {rol !== null && (
+                            <Route
+                                path="*"
+                                element={
+                                    <h1>Página no encontrada</h1>
+                                }
+                            />
+                        )}
+
+                    </Route>
 
                 </Routes>
 

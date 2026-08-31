@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-function Sidebar({ setAutenticado }) {
-    const [logOut, setLogOut] = useState(false)    
+function Sidebar({ setAutenticado, rol }) {
+    const [logOut, setLogOut] = useState(false)
+    const navigate = useNavigate()
     const cerrarSesion = () => {
         localStorage.removeItem('access')
         localStorage.removeItem('refresh')
@@ -13,10 +15,17 @@ function Sidebar({ setAutenticado }) {
         <aside className="sidebar">
             <nav>
                 <ul>
-                    <li className="sideItem">Pantalla 0</li>
-                    <li className="sideItem">Pantalla 1</li>
-                    <li className="sideItem">Pantalla 2</li>
-                    <li className="sideItem">Pantalla 3</li>
+                    {rol === "residentes" && (
+                        <li
+                            className="sideItem"
+                            onClick={() =>
+                                navigate('/modulos-habitaciones')
+                            }
+                        >
+                            Ocupación
+                        </li>
+
+                    )}
                 </ul>
             </nav>
             <div className="logout" onClick={() => setLogOut(true)}>
