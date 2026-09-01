@@ -362,3 +362,105 @@
     color: #b71c1c !important;
     font-size: 14px;
 }
+
+
+.habitaciones-titulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 15px;
+}
+
+.habitaciones-titulo h3 {
+    margin: 0;
+
+    color: #333;
+    font-size: 17px;
+}
+
+
+.habitacion-anadir {
+    width: 32px;
+    height: 32px;
+
+    border: none;
+    border-radius: 50%;
+
+    background-color: #1b5e20;
+    color: white;
+
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 32px;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.habitacion-anadir:hover:not(:disabled) {
+    background-color: #145218;
+    transform: scale(1.05);
+}
+
+.habitacion-anadir:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+
+.habitaciones-bloques {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.habitacion-bloque {
+    width: 140px;
+    min-height: 90px;
+
+    padding: 12px;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    background-color: #f8f8f8;
+
+    box-sizing: border-box;
+}
+
+.habitacion-bloque-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.habitacion-bloque-cabecera h4 {
+    margin: 0;
+
+    color: #333;
+    font-size: 15px;
+}
+
+.habitacion-info {
+    margin: 8px 0;
+
+    color: #555;
+    font-size: 13px;
+}
+
+.habitacion-capacidad {
+    margin: 0;
+
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.habitaciones-bloques-vacio {
+    margin: 0;
+
+    color: #777;
+    font-size: 14px;
+}
