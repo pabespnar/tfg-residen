@@ -146,6 +146,21 @@ const ModulosYHabitaciones = () => {
             nuevosErrores.nombre =
                 "El nombre no puede superar los 100 caracteres.";
 
+        } else {
+
+            const nombreModuloExiste = modulos.some(
+                (modulo) =>
+                    modulo.nombre.trim().toLowerCase() ===
+                    nombre.trim().toLowerCase()
+            );
+
+            if (nombreModuloExiste) {
+
+                nuevosErrores.nombre =
+                    "Ya existe un módulo con ese nombre.";
+
+            }
+
         }
 
         if (!numHabitacionesMax) {
@@ -301,6 +316,22 @@ const ModulosYHabitaciones = () => {
 
             nuevosErrores.nombre =
                 "El nombre no puede superar los 100 caracteres.";
+
+        } else {
+
+            const nombreModuloExiste = modulos.some(
+                (modulo) =>
+                    modulo.id !== moduloEditando.id &&
+                    modulo.nombre.trim().toLowerCase() ===
+                    nombreEditar.trim().toLowerCase()
+            );
+
+            if (nombreModuloExiste) {
+
+                nuevosErrores.nombre =
+                    "Ya existe un módulo con ese nombre.";
+
+            }
 
         }
 
@@ -482,28 +513,28 @@ const ModulosYHabitaciones = () => {
             setMostrarEliminarModulo(false);
             setModuloEliminando(null);
 
-            } catch (error) {
+        } catch (error) {
 
-                console.error(
-                    "Error al eliminar el módulo:",
-                    error
+            console.error(
+                "Error al eliminar el módulo:",
+                error
+            );
+
+            if (error.response?.data?.error) {
+
+                setErrorEliminar(
+                    error.response.data.error
                 );
 
-                if (error.response?.data?.error) {
+            } else {
 
-                    setErrorEliminar(
-                        error.response.data.error
-                    );
+                setErrorEliminar(
+                    "No se ha podido eliminar el módulo."
+                );
 
-                } else {
+            }
 
-                    setErrorEliminar(
-                        "No se ha podido eliminar el módulo."
-                    );
-
-                }
-
-            } finally {
+        } finally {
 
             setEliminandoModulo(false);
 
