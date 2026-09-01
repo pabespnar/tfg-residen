@@ -13,14 +13,21 @@
 
 .main-container {
     display: flex;
+    min-height: calc(100vh - 70px);
 }
 
 main {
     flex: 1;
+    min-width: 0;
+    min-height: calc(100vh - 70px);
+
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+
+    align-items: stretch;
+    justify-content: flex-start;
+
+    background-color: #f2f2f2;
 }
 
 .sidebar {

@@ -6,6 +6,7 @@
 
 
 .perfil-header {
+    max-width: 1000px;
     display: flex;
     align-items: center;
     gap: 25px;
@@ -129,7 +130,8 @@
 }
 
 .perfil-seguridad {
-    margin-top: 30px;
+    max-width: 1000px;
+    margin: 30px auto 0 auto;
     padding-top: 20px;
     border-top: 1px solid #e0e0e0;
 }
