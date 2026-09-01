@@ -5,6 +5,11 @@ from .models import Residente
 
 class ResidenteSerializer(serializers.ModelSerializer):
 
+
+    habitacion_nombre = serializers.CharField(
+        source='habitacion.nombre',
+        read_only=True
+    )
     class Meta:
         model = Residente
         fields = [
@@ -21,10 +26,11 @@ class ResidenteSerializer(serializers.ModelSerializer):
             'dni_nie',
             'activo',
             'habitacion',
+            'habitacion_nombre',
             'foto',
             'genero',
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'habitacion_nombre']
 
     def validate_nombre(self, value):
 

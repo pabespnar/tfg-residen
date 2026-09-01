@@ -11,7 +11,7 @@ class ListaResidentesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
 
     def get(self, request):
-        residentes = Residente.objects.all()
+        residentes = Residente.objects.filter(activo=True)
         serializer = ResidenteSerializer(
             residentes,
             many=True
