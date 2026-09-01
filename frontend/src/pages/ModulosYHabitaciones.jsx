@@ -482,18 +482,28 @@ const ModulosYHabitaciones = () => {
             setMostrarEliminarModulo(false);
             setModuloEliminando(null);
 
-        } catch (error) {
+            } catch (error) {
 
-            console.error(
-                "Error al eliminar el módulo:",
-                error
-            );
+                console.error(
+                    "Error al eliminar el módulo:",
+                    error
+                );
 
-            setErrorEliminar(
-                "No se ha podido eliminar el módulo."
-            );
+                if (error.response?.data?.error) {
 
-        } finally {
+                    setErrorEliminar(
+                        error.response.data.error
+                    );
+
+                } else {
+
+                    setErrorEliminar(
+                        "No se ha podido eliminar el módulo."
+                    );
+
+                }
+
+            } finally {
 
             setEliminandoModulo(false);
 

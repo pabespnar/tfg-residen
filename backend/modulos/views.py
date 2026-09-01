@@ -73,6 +73,16 @@ class EliminarModuloView(APIView):
                 status=404
             )
 
+        if modulo.habitaciones.exists():
+            return Response(
+                {
+                    "error": (
+                        "No se puede eliminar un módulo "
+                        "que tiene habitaciones asociadas."
+                    )
+                },
+                status=400
+            )
         modulo.delete()
 
         return Response(
