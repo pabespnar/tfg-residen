@@ -551,6 +551,22 @@ const ModulosYHabitaciones = () => {
             nuevosErrores.nombre =
                 "El nombre no puede superar los 100 caracteres.";
 
+        } else {
+
+            const nombreHabitacionExiste =
+                (habitaciones[moduloHabitacion.id] || []).some(
+                    (habitacion) =>
+                        habitacion.nombre.trim().toLowerCase() ===
+                        nombreHabitacion.trim().toLowerCase()
+                );
+
+            if (nombreHabitacionExiste) {
+
+                nuevosErrores.nombre =
+                    "Ya existe una habitación con ese nombre en este módulo.";
+
+            }
+
         }
 
         if (!capacidadHabitacion) {

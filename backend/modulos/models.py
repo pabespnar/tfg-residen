@@ -23,5 +23,13 @@ class Habitacion(models.Model):
         related_name='habitaciones'
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['modulo', 'nombre'],
+                name='unique_habitacion_por_modulo'
+            )
+        ]
+
     def __str__(self):
         return self.nombre

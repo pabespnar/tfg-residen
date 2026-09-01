@@ -16,6 +16,7 @@ class ListaModulosView(APIView):
 
         return Response(serializer.data)
 
+
 class CrearModuloView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
 
@@ -33,6 +34,7 @@ class CrearModuloView(APIView):
             serializer.errors,
             status=400
         )
+
 
 class EditarModuloView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
@@ -83,12 +85,14 @@ class EliminarModuloView(APIView):
                 },
                 status=400
             )
+
         modulo.delete()
 
         return Response(
             status=204
         )
-    
+
+
 class ListaHabitacionesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
 
@@ -100,13 +104,16 @@ class ListaHabitacionesView(APIView):
                 {"error": "El módulo no existe."},
                 status=404
             )
+
         habitaciones = Habitacion.objects.filter(
             modulo=modulo
         )
+
         serializer = HabitacionSerializer(
             habitaciones,
             many=True
         )
+
         return Response(serializer.data)
 
 
@@ -121,6 +128,7 @@ class CrearHabitacionView(APIView):
                 {"error": "El módulo no existe."},
                 status=404
             )
+
         if modulo.habitaciones.count() >= modulo.num_habitaciones_max:
             return Response(
                 {
@@ -131,15 +139,35 @@ class CrearHabitacionView(APIView):
                 },
                 status=400
             )
+
+        nombre = request.data.get("nombre", "").strip()
+
+        if Habitacion.objects.filter(
+            modulo=modulo,
+            nombre__iexact=nombre
+        ).exists():
+            return Response(
+                {
+                    "nombre": (
+                        "Ya existe una habitación con ese nombre "
+                        "en este módulo."
+                    )
+                },
+                status=400
+            )
+
         serializer = HabitacionSerializer(
             data=request.data
         )
+
         if serializer.is_valid():
             serializer.save(modulo=modulo)
+
             return Response(
                 serializer.data,
                 status=201
             )
+
         return Response(
             serializer.errors,
             status=400

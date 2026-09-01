@@ -60,6 +60,31 @@ class HabitacionSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate(self, data):
+
+        modulo = data.get('modulo')
+
+        if modulo is None and self.instance is not None:
+            modulo = self.instance.modulo
+
+        nombre = data.get(
+            'nombre',
+            self.instance.nombre if self.instance else None
+        )
+
+        if Habitacion.objects.filter(
+            modulo=modulo,
+            nombre__iexact=nombre.strip()
+        ).exclude(
+            id=self.instance.id if self.instance else None
+        ).exists():
+
+            raise serializers.ValidationError({
+                'nombre': 'Ya existe una habitación con ese nombre en este módulo.'
+            })
+
+        return data
+
     def validate_info(self, value):
         if value and not value.strip():
             raise serializers.ValidationError(
