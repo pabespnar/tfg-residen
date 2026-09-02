@@ -1,5 +1,6 @@
 from django.utils import timezone
 
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,6 +26,7 @@ class ListaResidentesView(APIView):
 
 class CrearResidenteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
         serializer = ResidenteSerializer(

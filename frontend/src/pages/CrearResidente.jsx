@@ -29,6 +29,7 @@ function CrearResidente() {
         dni_nie: '',
         habitacion: '',
         genero: '',
+        foto: null,
     })
 
     useEffect(() => {
@@ -237,17 +238,42 @@ function CrearResidente() {
 
         setError('')
 
+        setErrores({})
+
         if (!validarFormulario()) {
             return
         }
 
         const token = localStorage.getItem('access')
 
+        const datos = new FormData()
+
+        datos.append('nombre', residente.nombre)
+        datos.append('apellido', residente.apellido)
+        datos.append('telefono', residente.telefono)
+        datos.append('email', residente.email)
+        datos.append('f_nacimiento', residente.f_nacimiento)
+        datos.append('info', residente.info)
+        datos.append('pais', residente.pais)
+        datos.append('dni_nie', residente.dni_nie)
+        datos.append('habitacion', residente.habitacion)
+        datos.append('genero', residente.genero)
+        datos.append('activo', 'true')
+
+        if (residente.foto instanceof File) {
+            datos.append('foto', residente.foto)
+        }
+
+        console.log(
+            'Datos enviados:',
+            Object.fromEntries(datos.entries())
+        )
+
         try {
 
             await axios.post(
                 'http://127.0.0.1:8000/api/residentes/crearresidente/',
-                residente,
+                datos,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -264,12 +290,48 @@ function CrearResidente() {
                 error
             )
 
+            console.error(
+                'Respuesta del backend:',
+                JSON.stringify(
+                    error.response?.data,
+                    null,
+                    2
+                )
+            )
+
+            console.error(
+                'Código de error:',
+                error.response?.status
+            )
+
             const erroresBackend = error.response?.data
 
             if (erroresBackend?.dni_nie) {
                 setErrores({
                     dni_nie:
                         'Ya existe un residente con ese DNI/NIE.'
+                })
+
+                return
+            }
+
+            if (erroresBackend?.foto) {
+                setErrores({
+                    foto: Array.isArray(erroresBackend.foto)
+                        ? erroresBackend.foto[0]
+                        : erroresBackend.foto,
+                })
+
+                return
+            }
+
+            if (erroresBackend?.habitacion) {
+                setErrores({
+                    habitacion: Array.isArray(
+                        erroresBackend.habitacion
+                    )
+                        ? erroresBackend.habitacion[0]
+                        : erroresBackend.habitacion,
                 })
                 return
             }
@@ -505,6 +567,42 @@ function CrearResidente() {
 
                             </div>
 
+                            <div className="crear-residente-campo">
+
+                                <label>Foto</label>
+
+                                <input
+                                    id="foto"
+                                    name="foto"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={(e) => {
+
+                                        const archivo = e.target.files[0]
+
+                                        if (archivo) {
+
+                                            setResidente({
+                                                ...residente,
+                                                foto: archivo,
+                                            })
+
+                                            setErrores({
+                                                ...errores,
+                                                foto: '',
+                                            })
+                                        }
+                                    }}
+                                />
+
+                                {errores.foto && (
+                                    <p className="crear-residente-campo-error">
+                                        {errores.foto}
+                                    </p>
+                                )}
+
+                            </div>
+
                         </div>
 
                     </div>
@@ -623,3 +721,4 @@ function CrearResidente() {
 }
 
 export default CrearResidente
+

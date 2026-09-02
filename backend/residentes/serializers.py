@@ -124,5 +124,23 @@ class ResidenteSerializer(serializers.ModelSerializer):
                     'habitacion':
                         'La habitación ha alcanzado su capacidad máxima.'
                 })
+      
 
         return data
+
+    def validate_foto(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "La imagen no puede superar los 5 MB."
+            )
+
+        if value.content_type not in [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+        ]:
+            raise serializers.ValidationError(
+                "Solo se permiten imágenes JPG, PNG o WEBP."
+            )
+
+        return value
