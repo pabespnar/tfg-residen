@@ -15,10 +15,15 @@
 }
 
 .modulos-titulo h1 {
-    margin: 0;
-
     color: #1b5e20;
     font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.modulos-titulo p {
+    margin: 0;
+    color: #555;
+    font-size: 15px;
 }
 
 

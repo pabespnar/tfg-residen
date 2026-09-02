@@ -30,7 +30,7 @@ class ResidenteSerializer(serializers.ModelSerializer):
             'foto',
             'genero',
         ]
-        read_only_fields = ['id', 'habitacion_nombre']
+        read_only_fields = ['id', 'habitacion_nombre', 'f_alta']
 
     def validate_nombre(self, value):
 

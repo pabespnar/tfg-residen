@@ -10,6 +10,7 @@ import RecuperarContrasena from './pages/RecuperarContrasena'
 import RestablecerContrasena from './pages/RestablecerContrasena'
 import ModulosYHabitaciones from "./pages/ModulosYHabitaciones";
 import Residentes from "./pages/Residentes";
+import CrearResidente from "./pages/CrearResidente";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -241,6 +242,11 @@ function App() {
                                 <Route
                                     path="/residentes"
                                     element={<Residentes />}
+                                />
+
+                                <Route
+                                    path="/residentes/nuevo"
+                                    element={<CrearResidente />}
                                 />
                             </>
                         )}

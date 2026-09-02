@@ -39,6 +39,13 @@ class ModuloSerializer(serializers.ModelSerializer):
 
 class HabitacionSerializer(serializers.ModelSerializer):
 
+    modulo_nombre = serializers.CharField(
+        source='modulo.nombre',
+        read_only=True
+    )
+
+    residentes_actuales = serializers.SerializerMethodField()
+
     class Meta:
         model = Habitacion
         fields = [
@@ -47,11 +54,18 @@ class HabitacionSerializer(serializers.ModelSerializer):
             'info',
             'capacidad',
             'modulo',
+            'modulo_nombre',
+            'residentes_actuales',
         ]
         read_only_fields = [
             'id',
             'modulo',
+            'modulo_nombre',
+            'residentes_actuales',
         ]
+
+    def get_residentes_actuales(self, obj):
+        return obj.residentes.filter(activo=True).count()
 
     def validate_nombre(self, value):
         if not value.strip():
@@ -108,4 +122,5 @@ class HabitacionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El módulo ha alcanzado el número máximo de habitaciones."
             )
+
         return value

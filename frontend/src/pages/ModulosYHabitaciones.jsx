@@ -746,7 +746,13 @@ const ModulosYHabitaciones = () => {
 
             <div className="modulos-titulo">
 
-                <h1>Módulos</h1>
+                <div>
+                    <h1>Módulos</h1>
+                    
+                    <p>
+                        Gestión de los módulos del centro
+                    </p>
+                </div>
 
                 <button
                     type="button"

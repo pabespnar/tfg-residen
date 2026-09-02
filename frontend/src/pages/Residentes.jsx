@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Residentes.css'
+import { useNavigate } from 'react-router-dom'
 
 function Residentes() {
 
     const [residentes, setResidentes] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    
+    const navigate = useNavigate()
 
     useEffect(() => {
 
@@ -83,8 +86,7 @@ function Residentes() {
                 <button
                     type="button"
                     className="residentes-anadir"
-                    title="Añadir residente"
-                    aria-label="Añadir residente"
+                    onClick={() => navigate('/residentes/nuevo')}
                 >
                     +
                 </button>
