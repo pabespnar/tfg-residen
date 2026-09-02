@@ -34,6 +34,15 @@ class ModuloSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El número máximo de habitaciones debe ser como mínimo 1."
             )
+
+        if self.instance is not None:
+            habitaciones_actuales = self.instance.habitaciones.count()
+
+            if value < habitaciones_actuales:
+                raise serializers.ValidationError(
+                    "El número máximo de habitaciones no puede ser inferior al número de habitaciones existentes."
+                )
+
         return value
 
 
