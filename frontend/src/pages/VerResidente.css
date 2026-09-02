@@ -46,10 +46,26 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 0 0 10px 0;
-    color: #333;
-    font-size: 28px;
 }
+
+.ver-residente-editar-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
+
+.ver-residente-editar-icono svg {
+    font-size: 20px;
+}
+
+.ver-residente-editar-icono:hover {
+    transform: scale(1.15);
+}
+
 
 .ver-residente-estado {
     display: inline-block;

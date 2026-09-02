@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { useNavigate, useParams } from 'react-router-dom'
 import './VerResidente.css'
+import { FiEdit2 } from 'react-icons/fi'
+import { useNavigate, useParams } from 'react-router-dom'
 
 function VerResidente() {
     const [residente, setResidente] = useState(null)
@@ -88,6 +89,18 @@ function VerResidente() {
 
                         <h1>
                             {residente.nombre} {residente.apellido}
+
+                            <button
+                                className="ver-residente-editar-icono"
+                                onClick={() =>
+                                    navigate(
+                                        `/residentes/${id}/editar`
+                                    )
+                                }
+                                title="Editar residente"
+                            >
+                                <FiEdit2 />
+                            </button>
                         </h1>
 
                         <span

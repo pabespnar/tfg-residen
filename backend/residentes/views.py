@@ -66,3 +66,33 @@ class DetalleResidenteView(APIView):
         )
 
         return Response(serializer.data)
+
+
+class EditarResidenteView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def patch(self, request, id):
+        try:
+            residente = Residente.objects.get(id=id)
+        except Residente.DoesNotExist:
+            return Response(
+                {'error': 'El residente no existe.'},
+                status=404
+            )
+
+        serializer = ResidenteSerializer(
+            residente,
+            data=request.data,
+            partial=True,
+            context={'request': request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=400
+        )

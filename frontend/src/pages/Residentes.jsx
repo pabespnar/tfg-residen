@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Residentes.css'
+import { FiEdit2 } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 function Residentes() {
@@ -90,6 +91,7 @@ function Residentes() {
                 >
                     +
                 </button>
+
             </div>
 
             {residentes.length === 0 ? (
@@ -114,6 +116,7 @@ function Residentes() {
                                 <th>País</th>
                                 <th>Habitación</th>
                                 <th>Fecha de alta</th>
+                                <th>Acciones</th>
                             </tr>
 
                         </thead>
@@ -156,6 +159,24 @@ function Residentes() {
 
                                     <td>
                                         {residente.f_alta}
+                                    </td>
+
+                                    <td>
+
+                                        <button
+                                            type="button"
+                                            className="residentes-editar-icono"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                navigate(
+                                                    `/residentes/${residente.id}/editar`
+                                                )
+                                            }}
+                                            title="Editar residente"
+                                        >
+                                            <FiEdit2 />
+                                        </button>
+
                                     </td>
 
                                 </tr>

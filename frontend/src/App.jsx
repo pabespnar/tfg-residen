@@ -12,6 +12,7 @@ import ModulosYHabitaciones from "./pages/ModulosYHabitaciones";
 import Residentes from "./pages/Residentes";
 import CrearResidente from "./pages/CrearResidente";
 import VerResidente from "./pages/VerResidente";
+import EditarResidente from "./pages/EditarResidente";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -253,6 +254,11 @@ function App() {
                                 <Route
                                     path="/residentes/:id"
                                     element={<VerResidente />}
+                                />
+
+                                <Route
+                                    path="/residentes/:id/editar"
+                                    element={<EditarResidente />}
                                 />
                             </>
                         )}
