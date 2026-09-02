@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Residente
+from modulos.models import Habitacion
 from .serializers import ResidenteSerializer
 from modulos.permissions import EsGestorResidentes
 
@@ -96,3 +97,85 @@ class EditarResidenteView(APIView):
             serializer.errors,
             status=400
         )
+
+class DarDeBajaResidenteView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+
+    def post(self, request, id):
+        try:
+            residente = Residente.objects.get(id=id)
+        except Residente.DoesNotExist:
+            return Response(
+                {'error': 'El residente no existe.'},
+                status=404
+            )
+
+        if not residente.activo:
+            return Response(
+                {'error': 'El residente ya está dado de baja.'},
+                status=400
+            )
+
+        residente.activo = False
+        residente.f_baja = timezone.now().date()
+        residente.habitacion = None
+        residente.save()
+
+        serializer = ResidenteSerializer(residente)
+
+        return Response(serializer.data)
+
+
+class DarDeAltaResidenteView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+
+    def post(self, request, id):
+        try:
+            residente = Residente.objects.get(id=id)
+        except Residente.DoesNotExist:
+            return Response(
+                {'error': 'El residente no existe.'},
+                status=404
+            )
+
+        if residente.activo:
+            return Response(
+                {'error': 'El residente ya está dado de alta.'},
+                status=400
+            )
+
+        habitacion_id = request.data.get('habitacion')
+
+        if not habitacion_id:
+            return Response(
+                {'habitacion': 'La habitación es obligatoria.'},
+                status=400
+            )
+
+        try:
+            habitacion = Habitacion.objects.get(
+                id=habitacion_id
+            )
+        except Habitacion.DoesNotExist:
+            return Response(
+                {'habitacion': 'La habitación no existe.'},
+                status=404
+            )
+
+        if habitacion.residentes.count() >= habitacion.capacidad:
+            return Response(
+                {
+                    'habitacion':
+                        'La habitación ha alcanzado su capacidad máxima.'
+                },
+                status=400
+            )
+
+        residente.activo = True
+        residente.f_alta = timezone.now().date()
+        residente.habitacion = habitacion
+        residente.save()
+
+        serializer = ResidenteSerializer(residente)
+
+        return Response(serializer.data)

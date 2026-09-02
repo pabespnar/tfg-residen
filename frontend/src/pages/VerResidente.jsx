@@ -1,12 +1,21 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './VerResidente.css'
-import { FiEdit2 } from 'react-icons/fi'
+import { FiEdit2, FiUserPlus, FiLogOut } from 'react-icons/fi'
 import { useNavigate, useParams } from 'react-router-dom'
 
 function VerResidente() {
     const [residente, setResidente] = useState(null)
     const [error, setError] = useState('')
+    const [mostrarModalAlta, setMostrarModalAlta] = useState(false)
+    const [mostrarModalBaja, setMostrarModalBaja] = useState(false)
+    const [modulos, setModulos] = useState([])
+    const [habitaciones, setHabitaciones] = useState([])
+    const [moduloSeleccionado, setModuloSeleccionado] = useState('')
+    const [habitacionSeleccionada, setHabitacionSeleccionada] = useState('')
+    const [errorAlta, setErrorAlta] = useState('')
+    const [errorBaja, setErrorBaja] = useState('')
+    const [procesando, setProcesando] = useState(false)
 
     const navigate = useNavigate()
     const { id } = useParams()
@@ -23,7 +32,6 @@ function VerResidente() {
             }
         )
         .then((response) => {
-            console.log(response.data.foto)
             setResidente(response.data)
         })
         .catch((error) => {
@@ -41,6 +49,182 @@ function VerResidente() {
             }
         })
     }, [id])
+
+    const abrirModalAlta = async () => {
+        setErrorAlta('')
+        setModuloSeleccionado('')
+        setHabitacionSeleccionada('')
+        setHabitaciones([])
+        setMostrarModalAlta(true)
+
+        const token = localStorage.getItem('access')
+
+        try {
+            const response = await axios.get(
+                'http://127.0.0.1:8000/api/modulos/listadomodulos/',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+
+            setModulos(response.data)
+        } catch (error) {
+            console.error(
+                'Error al obtener los módulos:',
+                error
+            )
+
+            setErrorAlta(
+                'No se han podido cargar los módulos.'
+            )
+        }
+    }
+
+    const cerrarModalAlta = () => {
+        if (procesando) {
+            return
+        }
+
+        setMostrarModalAlta(false)
+        setModuloSeleccionado('')
+        setHabitacionSeleccionada('')
+        setHabitaciones([])
+        setErrorAlta('')
+    }
+
+    const seleccionarModulo = async (e) => {
+        const moduloId = e.target.value
+
+        setModuloSeleccionado(moduloId)
+        setHabitacionSeleccionada('')
+        setHabitaciones([])
+        setErrorAlta('')
+
+        if (!moduloId) {
+            return
+        }
+
+        const token = localStorage.getItem('access')
+
+        try {
+            const response = await axios.get(
+                `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+
+            setHabitaciones(response.data)
+        } catch (error) {
+            console.error(
+                'Error al obtener las habitaciones:',
+                error
+            )
+
+            setErrorAlta(
+                'No se han podido cargar las habitaciones.'
+            )
+        }
+    }
+
+    const abrirModalBaja = () => {
+        setErrorBaja('')
+        setMostrarModalBaja(true)
+    }
+
+    const cerrarModalBaja = () => {
+        if (procesando) {
+            return
+        }
+
+        setMostrarModalBaja(false)
+        setErrorBaja('')
+    }
+
+    const darDeBaja = async () => {
+        const token = localStorage.getItem('access')
+
+        setProcesando(true)
+        setErrorBaja('')
+
+        try {
+            const response = await axios.post(
+                `http://127.0.0.1:8000/api/residentes/${id}/baja/`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+
+            setResidente(response.data)
+            setMostrarModalBaja(false)
+        } catch (error) {
+            console.error(
+                'Error al dar de baja al residente:',
+                error
+            )
+
+            setErrorBaja(
+                error.response?.data?.error ||
+                'No se ha podido dar de baja al residente.'
+            )
+        } finally {
+            setProcesando(false)
+        }
+    }
+
+    const darDeAlta = async () => {
+        if (!habitacionSeleccionada) {
+            setErrorAlta(
+                'Debes seleccionar una habitación.'
+            )
+            return
+        }
+
+        const token = localStorage.getItem('access')
+
+        setProcesando(true)
+        setErrorAlta('')
+
+        try {
+            const response = await axios.post(
+                `http://127.0.0.1:8000/api/residentes/${id}/alta/`,
+                {
+                    habitacion: habitacionSeleccionada,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+
+            setResidente(response.data)
+            setMostrarModalAlta(false)
+            setModuloSeleccionado('')
+            setHabitacionSeleccionada('')
+            setHabitaciones([])
+        } catch (error) {
+            console.error(
+                'Error al dar de alta al residente:',
+                error
+            )
+
+            setErrorAlta(
+                error.response?.data?.habitacion ||
+                error.response?.data?.error ||
+                'No se ha podido dar de alta al residente.'
+            )
+        } finally {
+            setProcesando(false)
+        }
+    }
 
     if (error) {
         return (
@@ -90,17 +274,41 @@ function VerResidente() {
                         <h1>
                             {residente.nombre} {residente.apellido}
 
-                            <button
-                                className="ver-residente-editar-icono"
-                                onClick={() =>
-                                    navigate(
-                                        `/residentes/${id}/editar`
-                                    )
-                                }
-                                title="Editar residente"
-                            >
-                                <FiEdit2 />
-                            </button>
+                            <span className="ver-residente-acciones">
+
+                                <button
+                                    className="ver-residente-editar-icono"
+                                    onClick={() =>
+                                        navigate(
+                                            `/residentes/${id}/editar`
+                                        )
+                                    }
+                                    title="Editar residente"
+                                >
+                                    <FiEdit2 />
+                                </button>
+
+                                {residente.activo ? (
+                                    <button
+                                        className="ver-residente-baja-icono"
+                                        onClick={abrirModalBaja}
+                                        disabled={procesando}
+                                        title="Dar de baja"
+                                    >
+                                        <FiLogOut />
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="ver-residente-alta-icono"
+                                        onClick={abrirModalAlta}
+                                        disabled={procesando}
+                                        title="Dar de alta"
+                                    >
+                                        <FiUserPlus />
+                                    </button>
+                                )}
+
+                            </span>
                         </h1>
 
                         <span
@@ -120,7 +328,6 @@ function VerResidente() {
                 </div>
 
                 <div className="ver-residente-card">
-
                     <h2>Datos personales</h2>
 
                     <div className="ver-residente-grid">
@@ -129,7 +336,6 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 Nombre
                             </span>
-
                             <span className="ver-residente-valor">
                                 {residente.nombre}
                             </span>
@@ -139,7 +345,6 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 Apellido
                             </span>
-
                             <span className="ver-residente-valor">
                                 {residente.apellido}
                             </span>
@@ -149,7 +354,6 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 DNI/NIE
                             </span>
-
                             <span className="ver-residente-valor">
                                 {residente.dni_nie}
                             </span>
@@ -159,7 +363,6 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 Género
                             </span>
-
                             <span className="ver-residente-valor">
                                 {residente.genero === 'M'
                                     ? 'Masculino'
@@ -173,7 +376,6 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 Fecha de nacimiento
                             </span>
-
                             <span className="ver-residente-valor">
                                 {residente.f_nacimiento}
                             </span>
@@ -183,18 +385,15 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 País
                             </span>
-
                             <span className="ver-residente-valor">
                                 {residente.pais}
                             </span>
                         </div>
 
                     </div>
-
                 </div>
 
                 <div className="ver-residente-card">
-
                     <h2>Datos de contacto</h2>
 
                     <div className="ver-residente-grid">
@@ -203,10 +402,8 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 Teléfono
                             </span>
-
                             <span className="ver-residente-valor">
-                                {residente.telefono ||
-                                    'No especificado'}
+                                {residente.telefono || 'No especificado'}
                             </span>
                         </div>
 
@@ -214,19 +411,15 @@ function VerResidente() {
                             <span className="ver-residente-label">
                                 Correo electrónico
                             </span>
-
                             <span className="ver-residente-valor">
-                                {residente.email ||
-                                    'No especificado'}
+                                {residente.email || 'No especificado'}
                             </span>
                         </div>
 
                     </div>
-
                 </div>
 
                 <div className="ver-residente-card">
-
                     <h2>Información adicional</h2>
 
                     <div className="ver-residente-grid">
@@ -237,17 +430,14 @@ function VerResidente() {
                             </span>
 
                             <span className="ver-residente-valor">
-                                {residente.info ||
-                                    'No especificada'}
+                                {residente.info || 'No especificada'}
                             </span>
                         </div>
 
                     </div>
-
                 </div>
 
                 <div className="ver-residente-card">
-
                     <h2>Estancia</h2>
 
                     <div className="ver-residente-grid">
@@ -258,8 +448,7 @@ function VerResidente() {
                             </span>
 
                             <span className="ver-residente-valor">
-                                {residente.habitacion_nombre ||
-                                    'Sin habitación'}
+                                {residente.habitacion_nombre || 'Sin habitación'}
                             </span>
                         </div>
 
@@ -279,13 +468,11 @@ function VerResidente() {
                             </span>
 
                             <span className="ver-residente-valor">
-                                {residente.f_baja ||
-                                    'No tiene fecha de baja'}
+                                {residente.f_baja || 'No tiene fecha de baja'}
                             </span>
                         </div>
 
                     </div>
-
                 </div>
 
                 <div className="ver-residente-botones">
@@ -300,6 +487,177 @@ function VerResidente() {
                 </div>
 
             </div>
+
+            {mostrarModalBaja && (
+                <div className="ver-residente-modal-overlay">
+
+                    <div className="ver-residente-modal">
+
+                        <h2>Dar de baja residente</h2>
+
+                        <p>
+                            ¿Estás seguro de que quieres dar de baja
+                            a este residente?
+                        </p>
+
+                        {errorBaja && (
+                            <p className="ver-residente-modal-error">
+                                {errorBaja}
+                            </p>
+                        )}
+
+                        <div className="ver-residente-modal-botones">
+
+                            <button
+                                type="button"
+                                className="ver-residente-modal-cancelar"
+                                onClick={cerrarModalBaja}
+                                disabled={procesando}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className="ver-residente-modal-confirmar ver-residente-modal-confirmar-baja"
+                                onClick={darDeBaja}
+                                disabled={procesando}
+                            >
+                                {procesando
+                                    ? 'Procesando...'
+                                    : 'Dar de baja'}
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+
+            {mostrarModalAlta && (
+                <div className="ver-residente-modal-overlay">
+
+                    <div className="ver-residente-modal">
+
+                        <h2>Dar de alta residente</h2>
+
+                        <p>
+                            Selecciona la habitación que se
+                            asignará al residente.
+                        </p>
+
+                        {errorAlta && (
+                            <p className="ver-residente-modal-error">
+                                {errorAlta}
+                            </p>
+                        )}
+
+                        <div className="ver-residente-modal-campo">
+
+                            <label>Módulo</label>
+
+                            <select
+                                value={moduloSeleccionado}
+                                onChange={seleccionarModulo}
+                                disabled={procesando}
+                            >
+                                <option value="">
+                                    Selecciona un módulo
+                                </option>
+
+                                {modulos.map((modulo) => (
+                                    <option
+                                        key={modulo.id}
+                                        value={modulo.id}
+                                    >
+                                        {modulo.nombre}
+                                    </option>
+                                ))}
+
+                            </select>
+
+                        </div>
+
+                        <div className="ver-residente-modal-campo">
+
+                            <label>Habitación</label>
+
+                            <select
+                                value={habitacionSeleccionada}
+                                onChange={(e) =>
+                                    setHabitacionSeleccionada(
+                                        e.target.value
+                                    )
+                                }
+                                disabled={
+                                    !moduloSeleccionado ||
+                                    habitaciones.length === 0 ||
+                                    procesando
+                                }
+                            >
+                                <option value="">
+                                    Selecciona una habitación
+                                </option>
+
+                                {habitaciones.map((habitacion) => {
+
+                                    const completa =
+                                        habitacion.residentes_actuales >=
+                                        habitacion.capacidad
+
+                                    return (
+                                        <option
+                                            key={habitacion.id}
+                                            value={habitacion.id}
+                                            disabled={completa}
+                                        >
+                                            {habitacion.nombre} (
+                                            {habitacion.residentes_actuales}/
+                                            {habitacion.capacidad}
+                                            )
+                                            {completa
+                                                ? ' - Completa'
+                                                : ''}
+                                        </option>
+                                    )
+                                })}
+
+                            </select>
+
+                        </div>
+
+                        <div className="ver-residente-modal-botones">
+
+                            <button
+                                type="button"
+                                className="ver-residente-modal-cancelar"
+                                onClick={cerrarModalAlta}
+                                disabled={procesando}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className="ver-residente-modal-confirmar"
+                                onClick={darDeAlta}
+                                disabled={
+                                    !habitacionSeleccionada ||
+                                    procesando
+                                }
+                            >
+                                {procesando
+                                    ? 'Procesando...'
+                                    : 'Dar de alta'}
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
 
         </div>
     )
