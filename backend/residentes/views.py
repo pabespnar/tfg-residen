@@ -47,3 +47,22 @@ class CrearResidenteView(APIView):
             serializer.errors,
             status=400
         )
+
+class DetalleResidenteView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+
+    def get(self, request, id):
+        try:
+            residente = Residente.objects.get(id=id)
+        except Residente.DoesNotExist:
+            return Response(
+                {'error': 'El residente no existe.'},
+                status=404
+            )
+
+        serializer = ResidenteSerializer(
+            residente,
+            context={'request': request}
+        )
+
+        return Response(serializer.data)

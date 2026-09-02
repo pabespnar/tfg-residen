@@ -8,7 +8,7 @@ function Residentes() {
     const [residentes, setResidentes] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
-    
+
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -122,7 +122,12 @@ function Residentes() {
 
                             {residentes.map((residente) => (
 
-                                <tr key={residente.id}>
+                                <tr
+                                    key={residente.id}
+                                    onClick={() =>
+                                        navigate(`/residentes/${residente.id}`)
+                                    }
+                                >
 
                                     <td>
                                         <div className="residente-nombre">
@@ -152,7 +157,6 @@ function Residentes() {
                                     <td>
                                         {residente.f_alta}
                                     </td>
-
 
                                 </tr>
 
