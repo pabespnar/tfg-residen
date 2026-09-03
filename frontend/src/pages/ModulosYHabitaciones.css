@@ -414,53 +414,93 @@
     cursor: not-allowed;
 }
 
-
 .habitaciones-bloques {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
 }
 
 .habitacion-bloque {
-    width: 140px;
-    min-height: 90px;
+    min-height: 125px;
 
-    padding: 12px;
+    padding: 18px;
 
-    border: 1px solid #ddd;
-    border-radius: 8px;
-
-    background-color: #f8f8f8;
+    border: 2px solid;
+    border-radius: 10px;
 
     box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.habitacion-bloque:hover {
+    transform: translateY(-3px);
+
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
+}
+
+.habitacion-bloque-baja {
+    background-color: #e8f5e9;
+    border-color: #81c784;
+}
+
+.habitacion-bloque-media {
+    background-color: #fffde7;
+    border-color: #fbc02d;
+}
+
+.habitacion-bloque-alta {
+    background-color: #fff3e0;
+    border-color: #f57c00;
+}
+
+.habitacion-bloque-completa {
+    background-color: #ffebee;
+    border-color: #e53935;
+}
+
+.habitacion-bloque-sin-capacidad {
+    background-color: #f5f5f5;
+    border-color: #aaa;
 }
 
 .habitacion-bloque-cabecera {
     display: flex;
     align-items: center;
-    justify-content: space-between;
 }
 
 .habitacion-bloque-cabecera h4 {
     margin: 0;
 
     color: #333;
-    font-size: 15px;
+    font-size: 17px;
+    font-weight: 700;
 }
 
-.habitacion-info {
-    margin: 8px 0;
+.habitacion-ocupacion {
+    display: flex;
+    align-items: baseline;
 
-    color: #555;
-    font-size: 13px;
+    margin-top: 20px;
+}
+
+.habitacion-residentes {
+    color: #333;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
 }
 
 .habitacion-capacidad {
-    margin: 0;
+    margin-left: 5px;
 
-    color: #333;
-    font-size: 13px;
-    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .habitaciones-bloques-vacio {
