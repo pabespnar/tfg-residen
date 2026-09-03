@@ -74,28 +74,3 @@ class SesionTests(APITestCase):
             response.status_code,
             status.HTTP_401_UNAUTHORIZED
         )
-
-    from django.urls import reverse
-from rest_framework.test import APITestCase
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-
-from usuarios.models import Usuario
-
-
-class PerfilTests(APITestCase):
-
-    def setUp(self):
-        self.usuario = Usuario.objects.create_user(
-            email='test@tfg.com',
-            password='Test1234',
-            nombre='Usuario',
-            apellido='Prueba',
-            dni='12345678Z',
-        )
-
-        refresh = RefreshToken.for_user(self.usuario)
-        self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
-        )
-

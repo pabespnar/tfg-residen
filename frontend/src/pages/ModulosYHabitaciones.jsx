@@ -740,13 +740,51 @@ const ModulosYHabitaciones = () => {
 
     };
 
+    const obtenerClaseOcupacion = (habitacion) => {
+
+        const capacidad = Number(habitacion.capacidad);
+
+        const residentesActuales =
+            Number(habitacion.residentes_actuales || 0);
+
+        if (!capacidad) {
+            return "habitacion-bloque-sin-capacidad";
+        }
+
+        const ocupacion =
+            (residentesActuales / capacidad) * 100;
+
+        if (ocupacion >= 100) {
+            return "habitacion-bloque-completa";
+        }
+
+        if (ocupacion >= 75) {
+            return "habitacion-bloque-alta";
+        }
+
+        if (ocupacion >= 50) {
+            return "habitacion-bloque-media";
+        }
+
+        return "habitacion-bloque-baja";
+
+    };
+
     return (
 
         <div className="modulos-container">
 
             <div className="modulos-titulo">
 
-                <h1>Módulos</h1>
+                <div>
+
+                    <h1>Módulos</h1>
+
+                    <p>
+                        Gestión de los módulos del centro
+                    </p>
+
+                </div>
 
                 <button
                     type="button"
@@ -866,33 +904,56 @@ const ModulosYHabitaciones = () => {
                                     ) : (
 
                                         habitacionesModulo.map(
-                                            (habitacion) => (
+                                            (habitacion) => {
 
-                                                <div
-                                                    className="habitacion-bloque"
-                                                    key={habitacion.id}
-                                                >
+                                                const claseOcupacion =
+                                                    obtenerClaseOcupacion(
+                                                        habitacion
+                                                    );
 
-                                                    <div className="habitacion-bloque-cabecera">
+                                                const residentesActuales =
+                                                    Number(
+                                                        habitacion.residentes_actuales ||
+                                                        0
+                                                    );
 
-                                                        <h4>
-                                                            {habitacion.nombre}
-                                                        </h4>
+                                                const capacidad =
+                                                    Number(
+                                                        habitacion.capacidad
+                                                    );
+
+                                                return (
+
+                                                    <div
+                                                        className={`habitacion-bloque ${claseOcupacion}`}
+                                                        key={habitacion.id}
+                                                    >
+
+                                                        <div className="habitacion-bloque-cabecera">
+
+                                                            <h4>
+                                                                {habitacion.nombre}
+                                                            </h4>
+
+                                                        </div>
+
+                                                        <div className="habitacion-ocupacion">
+
+                                                            <span className="habitacion-residentes">
+                                                                {residentesActuales}
+                                                            </span>
+
+                                                            <span className="habitacion-capacidad">
+                                                                / {capacidad} residentes
+                                                            </span>
+
+                                                        </div>
 
                                                     </div>
 
-                                                    <p className="habitacion-info">
-                                                        {habitacion.info ||
-                                                            "Sin información"}
-                                                    </p>
+                                                );
 
-                                                    <span className="habitacion-capacidad">
-                                                        Capacidad:{" "}
-                                                        {habitacion.capacidad}
-                                                    </span>
-
-                                                </div>
-                                            )
+                                            }
                                         )
 
                                     )}

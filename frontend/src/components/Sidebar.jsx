@@ -16,14 +16,25 @@ function Sidebar({ setAutenticado, rol }) {
             <nav>
                 <ul>
                     {rol === "residentes" && (
-                        <li
-                            className="sideItem"
-                            onClick={() =>
-                                navigate('/modulos-habitaciones')
-                            }
-                        >
-                            Ocupación
-                        </li>
+                        <>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/modulos-habitaciones')
+                                }
+                            >
+                                Ocupación
+                            </li>
+
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/residentes')
+                                }
+                            >
+                                Residentes
+                            </li>
+                        </>
 
                     )}
                 </ul>

@@ -9,6 +9,10 @@ import CambiarContrasena from './pages/CambiarContrasena'
 import RecuperarContrasena from './pages/RecuperarContrasena'
 import RestablecerContrasena from './pages/RestablecerContrasena'
 import ModulosYHabitaciones from "./pages/ModulosYHabitaciones";
+import Residentes from "./pages/Residentes";
+import CrearResidente from "./pages/CrearResidente";
+import VerResidente from "./pages/VerResidente";
+import EditarResidente from "./pages/EditarResidente";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -231,12 +235,32 @@ function App() {
                         />
 
                         {rol === "residentes" && (
+                            <>
+                                <Route
+                                    path="/modulos-habitaciones"
+                                    element={<ModulosYHabitaciones />}
+                                />
 
-                            <Route
-                                path="/modulos-habitaciones"
-                                element={<ModulosYHabitaciones />}
-                            />
+                                <Route
+                                    path="/residentes"
+                                    element={<Residentes />}
+                                />
 
+                                <Route
+                                    path="/residentes/nuevo"
+                                    element={<CrearResidente />}
+                                />
+
+                                <Route
+                                    path="/residentes/:id"
+                                    element={<VerResidente />}
+                                />
+
+                                <Route
+                                    path="/residentes/:id/editar"
+                                    element={<EditarResidente />}
+                                />
+                            </>
                         )}
 
                         {rol !== null && (

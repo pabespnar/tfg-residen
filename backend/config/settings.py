@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     'usuarios',
     'modulos',
+    'residentes',
 ]
 
 MIDDLEWARE = [
@@ -110,7 +111,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=30000),
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=3600),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
