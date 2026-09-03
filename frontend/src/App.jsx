@@ -13,6 +13,7 @@ import Residentes from "./pages/Residentes";
 import CrearResidente from "./pages/CrearResidente";
 import VerResidente from "./pages/VerResidente";
 import EditarResidente from "./pages/EditarResidente";
+import VerHabitacion from "./pages/VerHabitacion";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -259,6 +260,11 @@ function App() {
                                 <Route
                                     path="/residentes/:id/editar"
                                     element={<EditarResidente />}
+                                />
+
+                                <Route
+                                    path="/modulos-habitaciones/:moduloId/habitacion/:habitacionId"
+                                    element={<VerHabitacion />}
                                 />
                             </>
                         )}

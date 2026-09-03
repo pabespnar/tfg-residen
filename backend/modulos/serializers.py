@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Modulo, Habitacion
+from residentes.serializers import ResidenteSerializer
 
 
 class ModuloSerializer(serializers.ModelSerializer):
@@ -54,6 +55,7 @@ class HabitacionSerializer(serializers.ModelSerializer):
     )
 
     residentes_actuales = serializers.SerializerMethodField()
+    residentes = serializers.SerializerMethodField()
 
     class Meta:
         model = Habitacion
@@ -65,6 +67,7 @@ class HabitacionSerializer(serializers.ModelSerializer):
             'modulo',
             'modulo_nombre',
             'residentes_actuales',
+            'residentes',
             'f_alta',
         ]
         read_only_fields = [
@@ -72,11 +75,21 @@ class HabitacionSerializer(serializers.ModelSerializer):
             'modulo',
             'modulo_nombre',
             'residentes_actuales',
+            'residentes',
             'f_alta',
         ]
 
     def get_residentes_actuales(self, obj):
         return obj.residentes.filter(activo=True).count()
+
+    def get_residentes(self, obj):
+        residentes = obj.residentes.filter(activo=True)
+
+        return ResidenteSerializer(
+            residentes,
+            many=True,
+            context=self.context
+        ).data
 
     def validate_nombre(self, value):
         if not value.strip():

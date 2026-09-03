@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from .models import Modulo, Habitacion
 from .serializers import ModuloSerializer, HabitacionSerializer
 from .permissions import EsGestorResidentes
+from django.utils import timezone
 
 
 class ListaModulosView(APIView):
@@ -161,7 +162,10 @@ class CrearHabitacionView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save(modulo=modulo)
+            serializer.save(
+                modulo=modulo,
+                f_alta=timezone.now().date()
+            )
 
             return Response(
                 serializer.data,
@@ -172,3 +176,19 @@ class CrearHabitacionView(APIView):
             serializer.errors,
             status=400
         )
+
+class DetallesHabitacionView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+
+    def get(self, request, modulo_pk, habitacion_pk):
+        habitacion = Habitacion.objects.get(
+            pk=habitacion_pk,
+            modulo_id=modulo_pk
+        )
+
+        serializer = HabitacionSerializer(
+            habitacion,
+            context={'request': request}
+        )
+
+        return Response(serializer.data)
