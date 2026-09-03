@@ -65,12 +65,14 @@ class HabitacionSerializer(serializers.ModelSerializer):
             'modulo',
             'modulo_nombre',
             'residentes_actuales',
+            'f_alta',
         ]
         read_only_fields = [
             'id',
             'modulo',
             'modulo_nombre',
             'residentes_actuales',
+            'f_alta',
         ]
 
     def get_residentes_actuales(self, obj):
