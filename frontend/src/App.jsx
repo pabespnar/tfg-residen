@@ -238,7 +238,7 @@ function App() {
                         {rol === "residentes" && (
                             <>
                                 <Route
-                                    path="/modulos-habitaciones"
+                                    path="/modulos"
                                     element={<ModulosYHabitaciones />}
                                 />
 
@@ -263,7 +263,7 @@ function App() {
                                 />
 
                                 <Route
-                                    path="/modulos-habitaciones/:moduloId/habitacion/:habitacionId"
+                                    path="/modulos/:moduloId/habitacion/:habitacionId"
                                     element={<VerHabitacion />}
                                 />
                             </>

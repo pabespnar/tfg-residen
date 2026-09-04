@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaPencilAlt, FaTrash } from "react-icons/fa";
 
 import "./ModulosYHabitaciones.css";
 
 const ModulosYHabitaciones = () => {
+    const navigate = useNavigate();
 
     const [modulos, setModulos] = useState([]);
     const [habitaciones, setHabitaciones] = useState({});
@@ -47,11 +49,8 @@ const ModulosYHabitaciones = () => {
     const [creandoHabitacion, setCreandoHabitacion] = useState(false);
 
     useEffect(() => {
-
         const obtenerModulos = async () => {
-
             try {
-
                 const token = localStorage.getItem("access");
 
                 const respuesta = await axios.get(
@@ -64,36 +63,25 @@ const ModulosYHabitaciones = () => {
                 );
 
                 if (Array.isArray(respuesta.data)) {
-
                     setModulos(respuesta.data);
                     setError(null);
 
                     respuesta.data.forEach((modulo) => {
                         obtenerHabitaciones(modulo.id);
                     });
-
                 } else {
-
                     setError(
                         "La respuesta del servidor no tiene un formato válido."
                     );
-
                 }
-
             } catch (error) {
-
                 console.error("Error al obtener los módulos:", error);
-
                 setError("No se han podido cargar los módulos.");
-
             }
-
         };
 
         const obtenerHabitaciones = async (moduloId) => {
-
             try {
-
                 const token = localStorage.getItem("access");
 
                 const respuesta = await axios.get(
@@ -111,9 +99,7 @@ const ModulosYHabitaciones = () => {
                         ? respuesta.data
                         : [],
                 }));
-
             } catch (error) {
-
                 console.error(
                     `Error al obtener las habitaciones del módulo ${moduloId}:`,
                     error
@@ -123,31 +109,21 @@ const ModulosYHabitaciones = () => {
                     ...habitacionesActuales,
                     [moduloId]: [],
                 }));
-
             }
-
         };
 
         obtenerModulos();
-
     }, []);
 
     const validarFormulario = () => {
-
         const nuevosErrores = {};
 
         if (!nombre.trim()) {
-
-            nuevosErrores.nombre =
-                "El nombre es obligatorio.";
-
+            nuevosErrores.nombre = "El nombre es obligatorio.";
         } else if (nombre.trim().length > 100) {
-
             nuevosErrores.nombre =
                 "El nombre no puede superar los 100 caracteres.";
-
         } else {
-
             const nombreModuloExiste = modulos.some(
                 (modulo) =>
                     modulo.nombre.trim().toLowerCase() ===
@@ -155,43 +131,33 @@ const ModulosYHabitaciones = () => {
             );
 
             if (nombreModuloExiste) {
-
                 nuevosErrores.nombre =
                     "Ya existe un módulo con ese nombre.";
-
             }
-
         }
 
         if (!numHabitacionesMax) {
-
             nuevosErrores.numHabitacionesMax =
                 "El número máximo de habitaciones es obligatorio.";
-
         } else if (
             !Number.isInteger(Number(numHabitacionesMax)) ||
             Number(numHabitacionesMax) < 1
         ) {
-
             nuevosErrores.numHabitacionesMax =
                 "Debe ser un número entero mayor o igual que 1.";
-
         }
 
         setErroresFormulario(nuevosErrores);
 
         return Object.keys(nuevosErrores).length === 0;
-
     };
 
     const crearModulo = async () => {
-
         if (!validarFormulario()) {
             return;
         }
 
         try {
-
             setCreandoModulo(true);
             setErroresFormulario({});
 
@@ -222,61 +188,41 @@ const ModulosYHabitaciones = () => {
             }));
 
             cerrarCrearModulo();
-
         } catch (error) {
-
             console.error("Error al crear el módulo:", error);
 
             if (error.response?.data) {
-
                 const erroresBackend = {};
 
                 if (error.response.data.nombre) {
-
                     erroresBackend.nombre =
                         error.response.data.nombre[0];
-
                 }
 
                 if (error.response.data.num_habitaciones_max) {
-
                     erroresBackend.numHabitacionesMax =
                         error.response.data.num_habitaciones_max[0];
-
                 }
 
                 if (Object.keys(erroresBackend).length > 0) {
-
                     setErroresFormulario(erroresBackend);
-
                 } else {
-
                     setErroresFormulario({
-                        general:
-                            "No se ha podido crear el módulo.",
+                        general: "No se ha podido crear el módulo.",
                     });
-
                 }
-
             } else {
-
                 setErroresFormulario({
                     general:
                         "No se ha podido conectar con el servidor.",
                 });
-
             }
-
         } finally {
-
             setCreandoModulo(false);
-
         }
-
     };
 
     const cerrarCrearModulo = () => {
-
         setMostrarCrearModulo(false);
 
         setNombre("");
@@ -284,11 +230,9 @@ const ModulosYHabitaciones = () => {
         setNumHabitacionesMax("");
 
         setErroresFormulario({});
-
     };
 
     const abrirEditarModulo = (modulo) => {
-
         setModuloEditando(modulo);
 
         setNombreEditar(modulo.nombre);
@@ -300,25 +244,17 @@ const ModulosYHabitaciones = () => {
         setErroresEditar({});
 
         setMostrarEditarModulo(true);
-
     };
 
     const validarEditarModulo = () => {
-
         const nuevosErrores = {};
 
         if (!nombreEditar.trim()) {
-
-            nuevosErrores.nombre =
-                "El nombre es obligatorio.";
-
+            nuevosErrores.nombre = "El nombre es obligatorio.";
         } else if (nombreEditar.trim().length > 100) {
-
             nuevosErrores.nombre =
                 "El nombre no puede superar los 100 caracteres.";
-
         } else {
-
             const nombreModuloExiste = modulos.some(
                 (modulo) =>
                     modulo.id !== moduloEditando.id &&
@@ -327,43 +263,33 @@ const ModulosYHabitaciones = () => {
             );
 
             if (nombreModuloExiste) {
-
                 nuevosErrores.nombre =
                     "Ya existe un módulo con ese nombre.";
-
             }
-
         }
 
         if (!numHabitacionesMaxEditar) {
-
             nuevosErrores.numHabitacionesMax =
                 "El número máximo de habitaciones es obligatorio.";
-
         } else if (
             !Number.isInteger(Number(numHabitacionesMaxEditar)) ||
             Number(numHabitacionesMaxEditar) < 1
         ) {
-
             nuevosErrores.numHabitacionesMax =
                 "Debe ser un número entero mayor o igual que 1.";
-
         }
 
         setErroresEditar(nuevosErrores);
 
         return Object.keys(nuevosErrores).length === 0;
-
     };
 
     const editarModulo = async () => {
-
         if (!validarEditarModulo()) {
             return;
         }
 
         try {
-
             setEditandoModulo(true);
             setErroresEditar({});
 
@@ -393,64 +319,45 @@ const ModulosYHabitaciones = () => {
             );
 
             cerrarEditarModulo();
-
         } catch (error) {
-
             console.error(
                 "Error al editar el módulo:",
                 error
             );
 
             if (error.response?.data) {
-
                 const erroresBackend = {};
 
                 if (error.response.data.nombre) {
-
                     erroresBackend.nombre =
                         error.response.data.nombre[0];
-
                 }
 
                 if (error.response.data.num_habitaciones_max) {
-
                     erroresBackend.numHabitacionesMax =
                         error.response.data.num_habitaciones_max[0];
-
                 }
 
                 if (Object.keys(erroresBackend).length > 0) {
-
                     setErroresEditar(erroresBackend);
-
                 } else {
-
                     setErroresEditar({
                         general:
                             "No se ha podido editar el módulo.",
                     });
-
                 }
-
             } else {
-
                 setErroresEditar({
                     general:
                         "No se ha podido conectar con el servidor.",
                 });
-
             }
-
         } finally {
-
             setEditandoModulo(false);
-
         }
-
     };
 
     const cerrarEditarModulo = () => {
-
         setMostrarEditarModulo(false);
 
         setModuloEditando(null);
@@ -460,23 +367,18 @@ const ModulosYHabitaciones = () => {
         setNumHabitacionesMaxEditar("");
 
         setErroresEditar({});
-
     };
 
     const abrirEliminarModulo = (modulo) => {
-
         setModuloEliminando(modulo);
 
         setErrorEliminar(null);
 
         setMostrarEliminarModulo(true);
-
     };
 
     const eliminarModulo = async () => {
-
         try {
-
             setEliminandoModulo(true);
             setErrorEliminar(null);
 
@@ -499,7 +401,6 @@ const ModulosYHabitaciones = () => {
             );
 
             setHabitaciones((habitacionesActuales) => {
-
                 const nuevasHabitaciones = {
                     ...habitacionesActuales,
                 };
@@ -507,43 +408,31 @@ const ModulosYHabitaciones = () => {
                 delete nuevasHabitaciones[moduloEliminando.id];
 
                 return nuevasHabitaciones;
-
             });
 
             setMostrarEliminarModulo(false);
             setModuloEliminando(null);
-
         } catch (error) {
-
             console.error(
                 "Error al eliminar el módulo:",
                 error
             );
 
             if (error.response?.data?.error) {
-
                 setErrorEliminar(
                     error.response.data.error
                 );
-
             } else {
-
                 setErrorEliminar(
                     "No se ha podido eliminar el módulo."
                 );
-
             }
-
         } finally {
-
             setEliminandoModulo(false);
-
         }
-
     };
 
     const cerrarEliminarModulo = () => {
-
         if (eliminandoModulo) {
             return;
         }
@@ -551,11 +440,9 @@ const ModulosYHabitaciones = () => {
         setMostrarEliminarModulo(false);
         setModuloEliminando(null);
         setErrorEliminar(null);
-
     };
 
     const abrirCrearHabitacion = (modulo) => {
-
         setModuloHabitacion(modulo);
 
         setNombreHabitacion("");
@@ -565,25 +452,17 @@ const ModulosYHabitaciones = () => {
         setErroresHabitacion({});
 
         setMostrarCrearHabitacion(true);
-
     };
 
     const validarHabitacion = () => {
-
         const nuevosErrores = {};
 
         if (!nombreHabitacion.trim()) {
-
-            nuevosErrores.nombre =
-                "El nombre es obligatorio.";
-
+            nuevosErrores.nombre = "El nombre es obligatorio.";
         } else if (nombreHabitacion.trim().length > 100) {
-
             nuevosErrores.nombre =
                 "El nombre no puede superar los 100 caracteres.";
-
         } else {
-
             const nombreHabitacionExiste =
                 (habitaciones[moduloHabitacion.id] || []).some(
                     (habitacion) =>
@@ -592,43 +471,33 @@ const ModulosYHabitaciones = () => {
                 );
 
             if (nombreHabitacionExiste) {
-
                 nuevosErrores.nombre =
                     "Ya existe una habitación con ese nombre en este módulo.";
-
             }
-
         }
 
         if (!capacidadHabitacion) {
-
             nuevosErrores.capacidad =
                 "La capacidad es obligatoria.";
-
         } else if (
             !Number.isInteger(Number(capacidadHabitacion)) ||
             Number(capacidadHabitacion) < 1
         ) {
-
             nuevosErrores.capacidad =
                 "La capacidad debe ser un número entero mayor o igual que 1.";
-
         }
 
         setErroresHabitacion(nuevosErrores);
 
         return Object.keys(nuevosErrores).length === 0;
-
     };
 
     const crearHabitacion = async () => {
-
         if (!validarHabitacion()) {
             return;
         }
 
         try {
-
             setCreandoHabitacion(true);
             setErroresHabitacion({});
 
@@ -657,77 +526,54 @@ const ModulosYHabitaciones = () => {
             }));
 
             cerrarCrearHabitacion();
-
         } catch (error) {
-
             console.error(
                 "Error al crear la habitación:",
                 error
             );
 
             if (error.response?.data?.error) {
-
                 setErroresHabitacion({
                     general: error.response.data.error,
                 });
-
             } else if (error.response?.data) {
-
                 const erroresBackend = {};
 
                 if (error.response.data.nombre) {
-
                     erroresBackend.nombre =
                         error.response.data.nombre[0];
-
                 }
 
                 if (error.response.data.capacidad) {
-
                     erroresBackend.capacidad =
                         error.response.data.capacidad[0];
-
                 }
 
                 if (error.response.data.info) {
-
                     erroresBackend.info =
                         error.response.data.info[0];
-
                 }
 
                 if (Object.keys(erroresBackend).length > 0) {
-
                     setErroresHabitacion(erroresBackend);
-
                 } else {
-
                     setErroresHabitacion({
                         general:
                             "No se ha podido crear la habitación.",
                     });
-
                 }
-
             } else {
-
                 setErroresHabitacion({
                     general:
                         "No se ha podido conectar con el servidor.",
                 });
-
             }
-
         } finally {
-
             setCreandoHabitacion(false);
-
         }
-
     };
 
     const cerrarCrearHabitacion = () => {
-
         setMostrarCrearHabitacion(false);
 
         setModuloHabitacion(null);
@@ -737,11 +583,9 @@ const ModulosYHabitaciones = () => {
         setCapacidadHabitacion("");
 
         setErroresHabitacion({});
-
     };
 
     const obtenerClaseOcupacion = (habitacion) => {
-
         const capacidad = Number(habitacion.capacidad);
 
         const residentesActuales =
@@ -767,23 +611,17 @@ const ModulosYHabitaciones = () => {
         }
 
         return "habitacion-bloque-baja";
-
     };
 
     return (
-
         <div className="modulos-container">
-
             <div className="modulos-titulo">
-
                 <div>
-
                     <h1>Módulos</h1>
 
                     <p>
                         Gestión de los módulos del centro
                     </p>
-
                 </div>
 
                 <button
@@ -793,7 +631,6 @@ const ModulosYHabitaciones = () => {
                 >
                     +
                 </button>
-
             </div>
 
             {error && (
@@ -803,27 +640,21 @@ const ModulosYHabitaciones = () => {
             )}
 
             <div className="modulos-listado">
-
                 {modulos.map((modulo) => {
-
                     const habitacionesModulo =
                         habitaciones[modulo.id] || [];
 
                     return (
-
                         <div
                             className="modulo-card"
                             key={modulo.id}
                         >
-
                             <div className="modulo-cabecera">
-
                                 <h2>
                                     {modulo.nombre}
                                 </h2>
 
                                 <div className="modulo-acciones">
-
                                     <button
                                         type="button"
                                         className="modulo-editar"
@@ -847,9 +678,7 @@ const ModulosYHabitaciones = () => {
                                     >
                                         <FaTrash />
                                     </button>
-
                                 </div>
-
                             </div>
 
                             <p className="modulo-descripcion">
@@ -863,9 +692,7 @@ const ModulosYHabitaciones = () => {
                             </p>
 
                             <div className="modulo-contenido">
-
                                 <div className="habitaciones-titulo">
-
                                     <h3>
                                         Habitaciones
                                     </h3>
@@ -890,22 +717,16 @@ const ModulosYHabitaciones = () => {
                                     >
                                         +
                                     </button>
-
                                 </div>
 
                                 <div className="habitaciones-bloques">
-
                                     {habitacionesModulo.length === 0 ? (
-
                                         <p className="habitaciones-bloques-vacio">
                                             No hay habitaciones en este módulo.
                                         </p>
-
                                     ) : (
-
                                         habitacionesModulo.map(
                                             (habitacion) => {
-
                                                 const claseOcupacion =
                                                     obtenerClaseOcupacion(
                                                         habitacion
@@ -914,7 +735,7 @@ const ModulosYHabitaciones = () => {
                                                 const residentesActuales =
                                                     Number(
                                                         habitacion.residentes_actuales ||
-                                                        0
+                                                            0
                                                     );
 
                                                 const capacidad =
@@ -923,22 +744,22 @@ const ModulosYHabitaciones = () => {
                                                     );
 
                                                 return (
-
                                                     <div
                                                         className={`habitacion-bloque ${claseOcupacion}`}
                                                         key={habitacion.id}
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/modulos/${modulo.id}/habitacion/${habitacion.id}`
+                                                            )
+                                                        }
                                                     >
-
                                                         <div className="habitacion-bloque-cabecera">
-
                                                             <h4>
                                                                 {habitacion.nombre}
                                                             </h4>
-
                                                         </div>
 
                                                         <div className="habitacion-ocupacion">
-
                                                             <span className="habitacion-residentes">
                                                                 {residentesActuales}
                                                             </span>
@@ -946,42 +767,27 @@ const ModulosYHabitaciones = () => {
                                                             <span className="habitacion-capacidad">
                                                                 / {capacidad} residentes
                                                             </span>
-
                                                         </div>
-
                                                     </div>
-
                                                 );
-
                                             }
                                         )
-
                                     )}
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     );
-
                 })}
-
             </div>
 
             {mostrarCrearModulo && (
-
                 <div className="crear-modulo-overlay">
-
                     <div className="crear-modulo-confirmacion">
-
                         <h2>
                             Crear módulo
                         </h2>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="nombre">
                                 Nombre
                             </label>
@@ -990,7 +796,9 @@ const ModulosYHabitaciones = () => {
                                 id="nombre"
                                 type="text"
                                 value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
+                                onChange={(e) =>
+                                    setNombre(e.target.value)
+                                }
                             />
 
                             {erroresFormulario.nombre && (
@@ -998,11 +806,9 @@ const ModulosYHabitaciones = () => {
                                     {erroresFormulario.nombre}
                                 </p>
                             )}
-
                         </div>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="descripcion">
                                 Descripción
                             </label>
@@ -1014,11 +820,9 @@ const ModulosYHabitaciones = () => {
                                     setDescripcion(e.target.value)
                                 }
                             />
-
                         </div>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="num-habitaciones-max">
                                 Número máximo de habitaciones
                             </label>
@@ -1038,7 +842,6 @@ const ModulosYHabitaciones = () => {
                                     {erroresFormulario.numHabitacionesMax}
                                 </p>
                             )}
-
                         </div>
 
                         {erroresFormulario.general && (
@@ -1048,7 +851,6 @@ const ModulosYHabitaciones = () => {
                         )}
 
                         <div className="crear-modulo-botones">
-
                             <button
                                 type="button"
                                 onClick={crearModulo}
@@ -1066,27 +868,19 @@ const ModulosYHabitaciones = () => {
                             >
                                 Cancelar
                             </button>
-
                         </div>
-
                     </div>
-
                 </div>
-
             )}
 
             {mostrarEditarModulo && (
-
                 <div className="crear-modulo-overlay">
-
                     <div className="crear-modulo-confirmacion">
-
                         <h2>
                             Editar módulo
                         </h2>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="nombre-editar">
                                 Nombre
                             </label>
@@ -1107,11 +901,9 @@ const ModulosYHabitaciones = () => {
                                     {erroresEditar.nombre}
                                 </p>
                             )}
-
                         </div>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="descripcion-editar">
                                 Descripción
                             </label>
@@ -1125,11 +917,9 @@ const ModulosYHabitaciones = () => {
                                     )
                                 }
                             />
-
                         </div>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="num-habitaciones-max-editar">
                                 Número máximo de habitaciones
                             </label>
@@ -1153,7 +943,6 @@ const ModulosYHabitaciones = () => {
                                     }
                                 </p>
                             )}
-
                         </div>
 
                         {erroresEditar.general && (
@@ -1163,7 +952,6 @@ const ModulosYHabitaciones = () => {
                         )}
 
                         <div className="crear-modulo-botones">
-
                             <button
                                 type="button"
                                 onClick={editarModulo}
@@ -1181,21 +969,14 @@ const ModulosYHabitaciones = () => {
                             >
                                 Cancelar
                             </button>
-
                         </div>
-
                     </div>
-
                 </div>
-
             )}
 
             {mostrarEliminarModulo && (
-
                 <div className="eliminar-modulo-overlay">
-
                     <div className="eliminar-modulo-confirmacion">
-
                         <p>
                             ¿Seguro que desea eliminar el módulo{" "}
                             <strong>
@@ -1227,19 +1008,13 @@ const ModulosYHabitaciones = () => {
                         >
                             Cancelar
                         </button>
-
                     </div>
-
                 </div>
-
             )}
 
             {mostrarCrearHabitacion && (
-
                 <div className="crear-modulo-overlay">
-
                     <div className="crear-modulo-confirmacion">
-
                         <h2>
                             Crear habitación
                         </h2>
@@ -1252,7 +1027,6 @@ const ModulosYHabitaciones = () => {
                         </p>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="nombre-habitacion">
                                 Nombre
                             </label>
@@ -1273,11 +1047,9 @@ const ModulosYHabitaciones = () => {
                                     {erroresHabitacion.nombre}
                                 </p>
                             )}
-
                         </div>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="info-habitacion">
                                 Información
                             </label>
@@ -1297,11 +1069,9 @@ const ModulosYHabitaciones = () => {
                                     {erroresHabitacion.info}
                                 </p>
                             )}
-
                         </div>
 
                         <div className="crear-modulo-campo">
-
                             <label htmlFor="capacidad-habitacion">
                                 Capacidad
                             </label>
@@ -1323,7 +1093,6 @@ const ModulosYHabitaciones = () => {
                                     {erroresHabitacion.capacidad}
                                 </p>
                             )}
-
                         </div>
 
                         {erroresHabitacion.general && (
@@ -1333,7 +1102,6 @@ const ModulosYHabitaciones = () => {
                         )}
 
                         <div className="crear-modulo-botones">
-
                             <button
                                 type="button"
                                 onClick={crearHabitacion}
@@ -1351,19 +1119,12 @@ const ModulosYHabitaciones = () => {
                             >
                                 Cancelar
                             </button>
-
                         </div>
-
                     </div>
-
                 </div>
-
             )}
-
         </div>
-
     );
-
 };
 
 export default ModulosYHabitaciones;
