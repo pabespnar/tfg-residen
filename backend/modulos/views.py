@@ -192,3 +192,105 @@ class DetallesHabitacionView(APIView):
         )
 
         return Response(serializer.data)
+
+
+class EditarHabitacionView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+
+    def put(self, request, modulo_pk, habitacion_pk):
+        try:
+            habitacion = Habitacion.objects.get(
+                pk=habitacion_pk,
+                modulo_id=modulo_pk
+            )
+        except Habitacion.DoesNotExist:
+            return Response(
+                {"error": "La habitación no existe."},
+                status=404
+            )
+
+        nombre = request.data.get(
+            "nombre",
+            habitacion.nombre
+        ).strip()
+
+        if Habitacion.objects.filter(
+            modulo=habitacion.modulo,
+            nombre__iexact=nombre
+        ).exclude(
+            pk=habitacion.pk
+        ).exists():
+            return Response(
+                {
+                    "nombre": (
+                        "Ya existe una habitación con ese nombre "
+                        "en este módulo."
+                    )
+                },
+                status=400
+            )
+
+        capacidad = request.data.get(
+            "capacidad",
+            habitacion.capacidad
+        )
+
+        if int(capacidad) < habitacion.residentes.count():
+            return Response(
+                {
+                    "capacidad": (
+                        "La capacidad no puede ser inferior "
+                        "al número de residentes actuales."
+                    )
+                },
+                status=400
+            )
+
+        serializer = HabitacionSerializer(
+            habitacion,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                serializer.data
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+class EliminarHabitacionView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+
+    def delete(self, request, modulo_pk, habitacion_pk):
+        try:
+            habitacion = Habitacion.objects.get(
+                pk=habitacion_pk,
+                modulo_id=modulo_pk
+            )
+        except Habitacion.DoesNotExist:
+            return Response(
+                {"error": "La habitación no existe."},
+                status=404
+            )
+
+        if habitacion.residentes.exists():
+            return Response(
+                {
+                    "error": (
+                        "No se puede eliminar una habitación "
+                        "que tiene residentes asociados."
+                    )
+                },
+                status=400
+            )
+
+        habitacion.delete()
+
+        return Response(
+            status=204
+        )

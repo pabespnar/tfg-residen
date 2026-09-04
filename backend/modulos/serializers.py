@@ -135,6 +135,18 @@ class HabitacionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "La capacidad debe ser como mínimo 1."
             )
+
+        if self.instance is not None:
+            residentes_actuales = self.instance.residentes.filter(
+                activo=True
+            ).count()
+
+            if value < residentes_actuales:
+                raise serializers.ValidationError(
+                    "La capacidad no puede ser inferior al número "
+                    "de residentes actuales."
+                )
+
         return value
 
     def validate_modulo(self, value):

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import DetallesHabitacionView, ListaModulosView, CrearModuloView, EditarModuloView, EliminarModuloView, ListaHabitacionesView, CrearHabitacionView
+from .views import DetallesHabitacionView, ListaModulosView, CrearModuloView, EditarModuloView, EliminarModuloView, ListaHabitacionesView, CrearHabitacionView, EditarHabitacionView, EliminarHabitacionView
 
 
 urlpatterns = [
@@ -11,4 +11,6 @@ urlpatterns = [
     path('<int:pk>/habitaciones/', ListaHabitacionesView.as_view(), name='lista_habitaciones'),
     path('<int:pk>/habitaciones/crear/', CrearHabitacionView.as_view(), name='crear_habitacion'),
     path('<int:modulo_pk>/habitaciones/<int:habitacion_pk>/', DetallesHabitacionView.as_view(), name='detalle_habitacion'),
+    path('<int:modulo_pk>/habitaciones/<int:habitacion_pk>/editar/', EditarHabitacionView.as_view(), name='editar_habitacion'),
+    path('<int:modulo_pk>/habitaciones/<int:habitacion_pk>/eliminar/', EliminarHabitacionView.as_view(), name='eliminar_habitacion'),
 ]

@@ -48,6 +48,26 @@ const ModulosYHabitaciones = () => {
     const [erroresHabitacion, setErroresHabitacion] = useState({});
     const [creandoHabitacion, setCreandoHabitacion] = useState(false);
 
+    const [mostrarEditarHabitacion, setMostrarEditarHabitacion] =
+        useState(false);
+    const [habitacionEditando, setHabitacionEditando] = useState(null);
+
+    const [nombreHabitacionEditar, setNombreHabitacionEditar] = useState("");
+    const [infoHabitacionEditar, setInfoHabitacionEditar] = useState("");
+    const [capacidadHabitacionEditar, setCapacidadHabitacionEditar] =
+        useState("");
+
+    const [erroresEditarHabitacion, setErroresEditarHabitacion] =
+        useState({});
+    const [editandoHabitacion, setEditandoHabitacion] = useState(false);
+
+    const [mostrarEliminarHabitacion, setMostrarEliminarHabitacion] =
+        useState(false);
+    const [habitacionEliminando, setHabitacionEliminando] = useState(null);
+    const [eliminandoHabitacion, setEliminandoHabitacion] = useState(false);
+    const [errorEliminarHabitacion, setErrorEliminarHabitacion] =
+        useState(null);
+
     useEffect(() => {
         const obtenerModulos = async () => {
             try {
@@ -585,6 +605,234 @@ const ModulosYHabitaciones = () => {
         setErroresHabitacion({});
     };
 
+    const abrirEditarHabitacion = (habitacion) => {
+        setHabitacionEditando(habitacion);
+
+        setNombreHabitacionEditar(habitacion.nombre);
+        setInfoHabitacionEditar(habitacion.info || "");
+        setCapacidadHabitacionEditar(habitacion.capacidad);
+
+        setErroresEditarHabitacion({});
+
+        setMostrarEditarHabitacion(true);
+    };
+
+    const validarEditarHabitacion = () => {
+        const nuevosErrores = {};
+
+        if (!nombreHabitacionEditar.trim()) {
+            nuevosErrores.nombre =
+                "El nombre es obligatorio.";
+        } else if (nombreHabitacionEditar.trim().length > 100) {
+            nuevosErrores.nombre =
+                "El nombre no puede superar los 100 caracteres.";
+        } else {
+            const nombreHabitacionExiste =
+                (habitaciones[habitacionEditando.modulo] || []).some(
+                    (habitacion) =>
+                        habitacion.id !== habitacionEditando.id &&
+                        habitacion.nombre.trim().toLowerCase() ===
+                            nombreHabitacionEditar.trim().toLowerCase()
+                );
+
+            if (nombreHabitacionExiste) {
+                nuevosErrores.nombre =
+                    "Ya existe una habitación con ese nombre en este módulo.";
+            }
+        }
+
+        if (!capacidadHabitacionEditar) {
+            nuevosErrores.capacidad =
+                "La capacidad es obligatoria.";
+        } else if (
+            !Number.isInteger(
+                Number(capacidadHabitacionEditar)
+            ) ||
+            Number(capacidadHabitacionEditar) < 1
+        ) {
+            nuevosErrores.capacidad =
+                "La capacidad debe ser un número entero mayor o igual que 1.";
+        } else if (
+            Number(capacidadHabitacionEditar) <
+            Number(habitacionEditando.residentes_actuales || 0)
+        ) {
+            nuevosErrores.capacidad =
+                "La capacidad no puede ser inferior al número de residentes actuales.";
+        }
+
+        setErroresEditarHabitacion(nuevosErrores);
+
+        return Object.keys(nuevosErrores).length === 0;
+    };
+
+    const editarHabitacion = async () => {
+        if (!validarEditarHabitacion()) {
+            return;
+        }
+
+        try {
+            setEditandoHabitacion(true);
+            setErroresEditarHabitacion({});
+
+            const token = localStorage.getItem("access");
+
+            const respuesta = await axios.put(
+                `http://127.0.0.1:8000/api/modulos/${habitacionEditando.modulo}/habitaciones/${habitacionEditando.id}/editar/`,
+                {
+                    nombre: nombreHabitacionEditar.trim(),
+                    info: infoHabitacionEditar,
+                    capacidad: Number(
+                        capacidadHabitacionEditar
+                    ),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setHabitaciones((habitacionesActuales) => ({
+                ...habitacionesActuales,
+                [habitacionEditando.modulo]: (
+                    habitacionesActuales[
+                        habitacionEditando.modulo
+                    ] || []
+                ).map((habitacion) =>
+                    habitacion.id === respuesta.data.id
+                        ? respuesta.data
+                        : habitacion
+                ),
+            }));
+
+            cerrarEditarHabitacion();
+        } catch (error) {
+            console.error(
+                "Error al editar la habitación:",
+                error
+            );
+
+            if (error.response?.data) {
+                const erroresBackend = {};
+
+                if (error.response.data.nombre) {
+                    erroresBackend.nombre =
+                        error.response.data.nombre[0];
+                }
+
+                if (error.response.data.capacidad) {
+                    erroresBackend.capacidad =
+                        error.response.data.capacidad[0];
+                }
+
+                if (error.response.data.info) {
+                    erroresBackend.info =
+                        error.response.data.info[0];
+                }
+
+                if (Object.keys(erroresBackend).length > 0) {
+                    setErroresEditarHabitacion(
+                        erroresBackend
+                    );
+                } else {
+                    setErroresEditarHabitacion({
+                        general:
+                            error.response.data.error ||
+                            "No se ha podido editar la habitación.",
+                    });
+                }
+            } else {
+                setErroresEditarHabitacion({
+                    general:
+                        "No se ha podido conectar con el servidor.",
+                });
+            }
+        } finally {
+            setEditandoHabitacion(false);
+        }
+    };
+
+    const cerrarEditarHabitacion = () => {
+        setMostrarEditarHabitacion(false);
+
+        setHabitacionEditando(null);
+
+        setNombreHabitacionEditar("");
+        setInfoHabitacionEditar("");
+        setCapacidadHabitacionEditar("");
+
+        setErroresEditarHabitacion({});
+    };
+
+    const abrirEliminarHabitacion = (habitacion) => {
+        setHabitacionEliminando(habitacion);
+
+        setErrorEliminarHabitacion(null);
+
+        setMostrarEliminarHabitacion(true);
+    };
+
+    const eliminarHabitacion = async () => {
+        try {
+            setEliminandoHabitacion(true);
+            setErrorEliminarHabitacion(null);
+
+            const token = localStorage.getItem("access");
+
+            await axios.delete(
+                `http://127.0.0.1:8000/api/modulos/${habitacionEliminando.modulo}/habitaciones/${habitacionEliminando.id}/eliminar/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setHabitaciones((habitacionesActuales) => ({
+                ...habitacionesActuales,
+                [habitacionEliminando.modulo]: (
+                    habitacionesActuales[
+                        habitacionEliminando.modulo
+                    ] || []
+                ).filter(
+                    (habitacion) =>
+                        habitacion.id !==
+                        habitacionEliminando.id
+                ),
+            }));
+
+            setMostrarEliminarHabitacion(false);
+            setHabitacionEliminando(null);
+        } catch (error) {
+            console.error(
+                "Error al eliminar la habitación:",
+                error
+            );
+
+            if (error.response?.data?.error) {
+                setErrorEliminarHabitacion(
+                    error.response.data.error
+                );
+            } else {
+                setErrorEliminarHabitacion(
+                    "No se ha podido eliminar la habitación."
+                );
+            }
+        } finally {
+            setEliminandoHabitacion(false);
+        }
+    };
+
+    const cerrarEliminarHabitacion = () => {
+        if (eliminandoHabitacion) {
+            return;
+        }
+
+        setMostrarEliminarHabitacion(false);
+        setHabitacionEliminando(null);
+        setErrorEliminarHabitacion(null);
+    };
+
     const obtenerClaseOcupacion = (habitacion) => {
         const capacidad = Number(habitacion.capacidad);
 
@@ -757,6 +1005,38 @@ const ModulosYHabitaciones = () => {
                                                             <h4>
                                                                 {habitacion.nombre}
                                                             </h4>
+
+                                                            <div className="modulo-acciones">
+                                                                <button
+                                                                    type="button"
+                                                                    className="modulo-editar"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        abrirEditarHabitacion(
+                                                                            habitacion
+                                                                        );
+                                                                    }}
+                                                                    title="Editar habitación"
+                                                                    aria-label="Editar habitación"
+                                                                >
+                                                                    <FaPencilAlt />
+                                                                </button>
+
+                                                                <button
+                                                                    type="button"
+                                                                    className="modulo-eliminar"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        abrirEliminarHabitacion(
+                                                                            habitacion
+                                                                        );
+                                                                    }}
+                                                                    title="Eliminar habitación"
+                                                                    aria-label="Eliminar habitación"
+                                                                >
+                                                                    <FaTrash />
+                                                                </button>
+                                                            </div>
                                                         </div>
 
                                                         <div className="habitacion-ocupacion">
@@ -1120,6 +1400,151 @@ const ModulosYHabitaciones = () => {
                                 Cancelar
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {mostrarEditarHabitacion && (
+                <div className="crear-modulo-overlay">
+                    <div className="crear-modulo-confirmacion">
+                        <h2>
+                            Editar habitación
+                        </h2>
+
+                        <div className="crear-modulo-campo">
+                            <label htmlFor="nombre-habitacion-editar">
+                                Nombre
+                            </label>
+
+                            <input
+                                id="nombre-habitacion-editar"
+                                type="text"
+                                value={nombreHabitacionEditar}
+                                onChange={(e) =>
+                                    setNombreHabitacionEditar(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                            {erroresEditarHabitacion.nombre && (
+                                <p className="crear-modulo-error">
+                                    {erroresEditarHabitacion.nombre}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="crear-modulo-campo">
+                            <label htmlFor="info-habitacion-editar">
+                                Información
+                            </label>
+
+                            <textarea
+                                id="info-habitacion-editar"
+                                value={infoHabitacionEditar}
+                                onChange={(e) =>
+                                    setInfoHabitacionEditar(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                            {erroresEditarHabitacion.info && (
+                                <p className="crear-modulo-error">
+                                    {erroresEditarHabitacion.info}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="crear-modulo-campo">
+                            <label htmlFor="capacidad-habitacion-editar">
+                                Capacidad
+                            </label>
+
+                            <input
+                                id="capacidad-habitacion-editar"
+                                type="number"
+                                min="1"
+                                value={capacidadHabitacionEditar}
+                                onChange={(e) =>
+                                    setCapacidadHabitacionEditar(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                            {erroresEditarHabitacion.capacidad && (
+                                <p className="crear-modulo-error">
+                                    {
+                                        erroresEditarHabitacion.capacidad
+                                    }
+                                </p>
+                            )}
+                        </div>
+
+                        {erroresEditarHabitacion.general && (
+                            <p className="crear-modulo-error">
+                                {erroresEditarHabitacion.general}
+                            </p>
+                        )}
+
+                        <div className="crear-modulo-botones">
+                            <button
+                                type="button"
+                                onClick={editarHabitacion}
+                                disabled={editandoHabitacion}
+                            >
+                                {editandoHabitacion
+                                    ? "Guardando..."
+                                    : "Guardar"}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={cerrarEditarHabitacion}
+                                disabled={editandoHabitacion}
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {mostrarEliminarHabitacion && (
+                <div className="eliminar-modulo-overlay">
+                    <div className="eliminar-modulo-confirmacion">
+                        <p>
+                            ¿Seguro que desea eliminar la habitación{" "}
+                            <strong>
+                                {habitacionEliminando?.nombre}
+                            </strong>
+                            ?
+                        </p>
+
+                        {errorEliminarHabitacion && (
+                            <p className="eliminar-modulo-error">
+                                {errorEliminarHabitacion}
+                            </p>
+                        )}
+
+                        <button
+                            type="button"
+                            onClick={eliminarHabitacion}
+                            disabled={eliminandoHabitacion}
+                        >
+                            {eliminandoHabitacion
+                                ? "Eliminando..."
+                                : "Sí, eliminar habitación"}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={cerrarEliminarHabitacion}
+                            disabled={eliminandoHabitacion}
+                        >
+                            Cancelar
+                        </button>
                     </div>
                 </div>
             )}

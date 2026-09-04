@@ -472,6 +472,8 @@
 .habitacion-bloque-cabecera {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .habitacion-bloque-cabecera h4 {
@@ -480,6 +482,15 @@
     color: #333;
     font-size: 17px;
     font-weight: 700;
+}
+
+.habitacion-bloque-cabecera .modulo-acciones {
+    gap: 4px;
+}
+
+.habitacion-bloque-cabecera .modulo-acciones button {
+    padding: 5px 7px;
+    font-size: 11px;
 }
 
 .habitacion-ocupacion {
