@@ -17,6 +17,7 @@ class Habitacion(models.Model):
     capacidad = models.IntegerField(
         validators=[MinValueValidator(1)]
     )
+    f_alta = models.DateField()
     modulo = models.ForeignKey(
         Modulo,
         on_delete=models.CASCADE,

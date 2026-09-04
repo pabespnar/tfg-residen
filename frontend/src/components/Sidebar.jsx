@@ -20,7 +20,7 @@ function Sidebar({ setAutenticado, rol }) {
                             <li
                                 className="sideItem"
                                 onClick={() =>
-                                    navigate('/modulos-habitaciones')
+                                    navigate('/modulos')
                                 }
                             >
                                 Ocupación
