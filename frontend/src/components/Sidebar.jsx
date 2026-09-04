@@ -34,6 +34,15 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Residentes
                             </li>
+
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/historico_residentes')
+                                }
+                            >
+                                Histórico
+                            </li>
                         </>
 
                     )}

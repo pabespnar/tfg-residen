@@ -6,7 +6,8 @@ from .views import (
     CrearResidenteView,
     DetalleResidenteView,
     DarDeBajaResidenteView,
-    DarDeAltaResidenteView
+    DarDeAltaResidenteView,
+    ListaHistoricoResidentesView
 )
 
 
@@ -17,4 +18,5 @@ urlpatterns = [
     path('<int:id>/editar/', EditarResidenteView.as_view(), name='editar_residente'),
     path('<int:id>/baja/', DarDeBajaResidenteView.as_view(), name='dar_de_baja_residente'),
     path('<int:id>/alta/', DarDeAltaResidenteView.as_view(), name='dar_de_alta_residente'),
+    path('historicoresidentes/', ListaHistoricoResidentesView.as_view(), name='historico_residentes'),
 ]
