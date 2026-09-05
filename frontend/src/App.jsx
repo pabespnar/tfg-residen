@@ -15,6 +15,7 @@ import VerResidente from "./pages/VerResidente";
 import EditarResidente from "./pages/EditarResidente";
 import VerHabitacion from "./pages/VerHabitacion";
 import VerHistoricoResidentes from "./pages/HistoricoResidentes";
+import DashboardResidentes from "./pages/DashboardResidentes";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -270,6 +271,10 @@ function App() {
                                 <Route
                                     path="/historico_residentes"
                                     element={<VerHistoricoResidentes />}
+                                />
+                                <Route
+                                    path="/dashboard_residentes"
+                                    element={<DashboardResidentes />}
                                 />
                             </>
                         )}
