@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import './Residentes.css'
+import './HistoricoResidentes.css'
 import { useNavigate } from 'react-router-dom'
 
 function HistoricoResidentes() {
