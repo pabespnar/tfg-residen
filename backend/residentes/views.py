@@ -179,3 +179,17 @@ class DarDeAltaResidenteView(APIView):
         serializer = ResidenteSerializer(residente)
 
         return Response(serializer.data)
+
+
+class ListaHistoricoResidentesView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorResidentes]
+
+    def get(self, request):
+        residentes = Residente.objects.filter(activo=False)
+
+        serializer = ResidenteSerializer(
+            residentes,
+            many=True
+        )
+
+        return Response(serializer.data)
