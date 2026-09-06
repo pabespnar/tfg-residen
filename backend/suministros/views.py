@@ -110,15 +110,15 @@ class CrearCategoriaView(APIView):
         )
 
 
-    class ListaCategoriasView(APIView):
-        permission_classes = [IsAuthenticated, EsGestorAlmacen]
+class ListaCategoriasView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
-        def get(self, request):
-            categorias = Categoria.objects.all()
+    def get(self, request):
+        categorias = Categoria.objects.all()
 
-            serializer = CategoriaSerializer(
-                categorias,
-                many=True
-            )
+        serializer = CategoriaSerializer(
+            categorias,
+            many=True
+        )
 
-            return Response(serializer.data)
+        return Response(serializer.data)

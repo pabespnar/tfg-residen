@@ -52,7 +52,20 @@ function Sidebar({ setAutenticado, rol }) {
                                 Dashboard
                             </li>
                         </>
+                        
+                    )}
 
+                    {rol === "almacen" && (
+                        <>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/suministros')
+                                }
+                            >
+                                Suministros
+                            </li>
+                        </>
                     )}
                 </ul>
             </nav>
