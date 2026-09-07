@@ -121,4 +121,23 @@ class ListaCategoriasView(APIView):
             many=True
         )
 
-        return Response(serializer.data)
+        datos = serializer.data
+
+        suministros_sin_categoria = Suministro.objects.filter(
+            categoria__isnull=True
+        )
+
+        suministros_serializer = SuministroSerializer(
+            suministros_sin_categoria,
+            many=True
+        )
+
+        if suministros_serializer.data:
+            datos.append({
+                'id': 'sin-asignar',
+                'nombre': 'Sin asignar',
+                'descripcion': 'Suministros que todavía no han sido asignados a una categoría.',
+                'suministros': suministros_serializer.data,
+            })
+
+        return Response(datos)

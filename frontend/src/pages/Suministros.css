@@ -150,3 +150,153 @@
 
     background-color: #fafafa;
 }
+
+.suministros-anadir {
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+
+    background-color: #1b5e20;
+    color: white;
+
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 42px;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.suministros-anadir:hover {
+    background-color: #145218;
+    transform: scale(1.05);
+}
+
+
+.crear-categoria-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.crear-categoria-confirmacion {
+    width: 450px;
+
+    padding: 30px;
+
+    background-color: white;
+
+    border-radius: 10px;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.crear-categoria-confirmacion h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+
+    color: #1b5e20;
+    font-size: 22px;
+}
+
+
+.crear-categoria-campo {
+    display: flex;
+    flex-direction: column;
+
+    margin-bottom: 20px;
+}
+
+.crear-categoria-campo label {
+    margin-bottom: 7px;
+
+    color: #333;
+    font-weight: 600;
+}
+
+.crear-categoria-campo input,
+.crear-categoria-campo textarea {
+    padding: 10px 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.crear-categoria-campo input:focus,
+.crear-categoria-campo textarea:focus {
+    border-color: #1b5e20;
+}
+
+.crear-categoria-campo textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+
+.crear-categoria-error {
+    margin: 7px 0 0 0;
+
+    color: #b71c1c;
+    font-size: 13px;
+}
+
+
+.crear-categoria-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+.crear-categoria-botones button {
+    padding: 10px 18px;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.crear-categoria-botones button:first-child {
+    border: none;
+
+    background-color: #1b5e20;
+    color: white;
+}
+
+.crear-categoria-botones button:last-child {
+    border: 1px solid #ccc;
+
+    background-color: white;
+    color: #555;
+}
+
+.crear-categoria-botones button:hover {
+    opacity: 0.9;
+}
+
+.crear-categoria-botones button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

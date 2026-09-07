@@ -8,6 +8,12 @@ const Suministros = () => {
     const [categoriasAbiertas, setCategoriasAbiertas] = useState({});
     const [error, setError] = useState(null);
 
+    const [modalCrearCategoria, setModalCrearCategoria] = useState(false);
+    const [nombreCategoria, setNombreCategoria] = useState("");
+    const [descripcionCategoria, setDescripcionCategoria] = useState("");
+    const [errorCrearCategoria, setErrorCrearCategoria] = useState(null);
+    const [creandoCategoria, setCreandoCategoria] = useState(false);
+
     useEffect(() => {
         const obtenerCategorias = async () => {
             try {
@@ -52,6 +58,101 @@ const Suministros = () => {
         }));
     };
 
+    const abrirModalCrearCategoria = () => {
+        setNombreCategoria("");
+        setDescripcionCategoria("");
+        setErrorCrearCategoria(null);
+        setModalCrearCategoria(true);
+    };
+
+    const cerrarModalCrearCategoria = () => {
+        if (creandoCategoria) {
+            return;
+        }
+
+        setModalCrearCategoria(false);
+        setNombreCategoria("");
+        setDescripcionCategoria("");
+        setErrorCrearCategoria(null);
+    };
+
+    const crearCategoria = async (evento) => {
+        evento.preventDefault();
+
+        if (!nombreCategoria.trim()) {
+            setErrorCrearCategoria(
+                "El nombre de la categoría es obligatorio."
+            );
+            return;
+        }
+
+        try {
+            setCreandoCategoria(true);
+            setErrorCrearCategoria(null);
+
+            const token = localStorage.getItem("access");
+
+            const respuesta = await axios.post(
+                "http://127.0.0.1:8000/api/suministros/crearcategoria/",
+                {
+                    nombre: nombreCategoria.trim(),
+                    descripcion: descripcionCategoria.trim(),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setCategorias((categoriasAnteriores) => [
+                ...categoriasAnteriores,
+                {
+                    ...respuesta.data,
+                    suministros: respuesta.data.suministros || [],
+                },
+            ]);
+
+            setModalCrearCategoria(false);
+            setNombreCategoria("");
+            setDescripcionCategoria("");
+            setErrorCrearCategoria(null);
+        } catch (error) {
+            console.error(
+                "Error al crear la categoría:",
+                error
+            );
+
+            if (error.response?.data) {
+                const errores = error.response.data;
+
+                if (errores.nombre) {
+                    setErrorCrearCategoria(
+                        errores.nombre[0]
+                    );
+                } else if (errores.descripcion) {
+                    setErrorCrearCategoria(
+                        errores.descripcion[0]
+                    );
+                } else if (errores.error) {
+                    setErrorCrearCategoria(
+                        errores.error
+                    );
+                } else {
+                    setErrorCrearCategoria(
+                        "No se ha podido crear la categoría."
+                    );
+                }
+            } else {
+                setErrorCrearCategoria(
+                    "No se ha podido crear la categoría."
+                );
+            }
+        } finally {
+            setCreandoCategoria(false);
+        }
+    };
+
     return (
         <div className="suministros-container">
             <div className="suministros-titulo">
@@ -59,9 +160,16 @@ const Suministros = () => {
                     <h1>Suministros</h1>
 
                     <p>
-                        Gestión de los suministros del centro
+                        Gestión de los suministros del centro dividido en categorías.
                     </p>
                 </div>
+
+                <button
+                    className="suministros-anadir"
+                    onClick={abrirModalCrearCategoria}
+                >
+                    +
+                </button>
             </div>
 
             {error && (
@@ -131,6 +239,77 @@ const Suministros = () => {
                     );
                 })}
             </div>
+
+            {modalCrearCategoria && (
+                <div className="crear-categoria-overlay">
+                    <div className="crear-categoria-confirmacion">
+                        <h2>Crear categoría</h2>
+
+                        <form onSubmit={crearCategoria}>
+                            <div className="crear-categoria-campo">
+                                <label htmlFor="nombre-categoria">
+                                    Nombre
+                                </label>
+
+                                <input
+                                    id="nombre-categoria"
+                                    type="text"
+                                    value={nombreCategoria}
+                                    onChange={(evento) =>
+                                        setNombreCategoria(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={creandoCategoria}
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="crear-categoria-campo">
+                                <label htmlFor="descripcion-categoria">
+                                    Descripción
+                                </label>
+
+                                <textarea
+                                    id="descripcion-categoria"
+                                    value={descripcionCategoria}
+                                    onChange={(evento) =>
+                                        setDescripcionCategoria(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={creandoCategoria}
+                                />
+                            </div>
+
+                            {errorCrearCategoria && (
+                                <p className="crear-categoria-error">
+                                    {errorCrearCategoria}
+                                </p>
+                            )}
+
+                            <div className="crear-categoria-botones">
+                                <button
+                                    type="submit"
+                                    disabled={creandoCategoria}
+                                >
+                                    {creandoCategoria
+                                        ? "Creando..."
+                                        : "Crear categoría"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={cerrarModalCrearCategoria}
+                                    disabled={creandoCategoria}
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
