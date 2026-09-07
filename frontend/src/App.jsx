@@ -16,6 +16,7 @@ import EditarResidente from "./pages/EditarResidente";
 import VerHabitacion from "./pages/VerHabitacion";
 import VerHistoricoResidentes from "./pages/HistoricoResidentes";
 import DashboardResidentes from "./pages/DashboardResidentes";
+import Suministros from "./pages/Suministros";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -275,6 +276,15 @@ function App() {
                                 <Route
                                     path="/dashboard_residentes"
                                     element={<DashboardResidentes />}
+                                />
+                            </>
+                        )}
+
+                        {rol === "almacen" && (
+                            <>
+                                <Route
+                                    path="/suministros"
+                                    element={<Suministros />}
                                 />
                             </>
                         )}
