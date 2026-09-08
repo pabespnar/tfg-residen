@@ -17,6 +17,7 @@ import VerHabitacion from "./pages/VerHabitacion";
 import VerHistoricoResidentes from "./pages/HistoricoResidentes";
 import DashboardResidentes from "./pages/DashboardResidentes";
 import Suministros from "./pages/Suministros";
+import Packs from "./pages/Packs";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -295,6 +296,13 @@ function App() {
                                 element={
                                     <h1>Página no encontrada</h1>
                                 }
+                            />
+                        )}
+
+                        {rol === "almacen" && (
+                            <Route
+                                path="/packs"
+                                element={<Packs />}
                             />
                         )}
 
