@@ -2,8 +2,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Categoria, Suministro
-from .serializers import CategoriaSerializer, SuministroSerializer
+from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
+from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
 
 
@@ -141,3 +141,37 @@ class ListaCategoriasView(APIView):
             })
 
         return Response(datos)
+
+class ListaPacksView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def get(self, request):
+        packs = Pack.objects.all()
+
+        serializer = PackSerializer(
+            packs,
+            many=True
+        )
+
+        return Response(serializer.data)
+
+class CrearPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def post(self, request):
+        serializer = PackSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )

@@ -26,3 +26,30 @@ class Suministro(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class Pack(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+class ContenidoPack(models.Model):
+    pack = models.ForeignKey(Pack, on_delete=models.CASCADE)
+    suministro = models.ForeignKey(Suministro, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField(default=1)
+
+
+    def __str__(self):
+        return f"{self.cantidad} x {self.suministro.nombre} in {self.pack.nombre}"
+
+
+class EntregaPack(models.Model):
+    pack = models.ForeignKey(Pack, on_delete=models.CASCADE)
+    residente = models.ForeignKey('residentes.Residente', on_delete=models.CASCADE)
+    fecha_entrega = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.pack.nombre} delivered to {self.residente.nombre} on {self.fecha_entrega}"
