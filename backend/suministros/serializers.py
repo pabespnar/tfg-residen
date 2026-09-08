@@ -135,6 +135,10 @@ class PackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El nombre no puede superar los 100 caracteres."
             )
+        if value.exists():
+            raise serializers.ValidationError(
+                "Ya existe un pack con este nombre."
+            )
         return value
 
     def validate_descripcion(self, value):

@@ -86,9 +86,7 @@ function VerHabitacion() {
             habitacion.residentes.some(
                 () => false
             )
-        ) {
-            // La unicidad se valida principalmente en el backend.
-        }
+        ) 
 
         if (!Number.isInteger(capacidad) || capacidad < 1) {
             nuevosErrores.capacidad =

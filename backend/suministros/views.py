@@ -175,3 +175,24 @@ class CrearPackView(APIView):
             serializer.errors,
             status=400
         )
+
+class CrearContenidoPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def post(self, request):
+        serializer = ContenidoPackSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
