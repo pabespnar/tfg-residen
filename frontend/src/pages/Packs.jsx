@@ -527,7 +527,7 @@ const Packs = () => {
                                                 </span>
 
                                                 <span>
-                                                    {contenido.cantidad}
+                                                    {contenido.cantidad} {contenido.suministro_unidad}
                                                 </span>
 
                                             </div>

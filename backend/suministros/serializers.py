@@ -57,6 +57,7 @@ class SuministroSerializer(serializers.ModelSerializer):
 
         return value
 
+
 class CategoriaSerializer(serializers.ModelSerializer):
 
     suministros = SuministroSerializer(
@@ -107,53 +108,18 @@ class CategoriaSerializer(serializers.ModelSerializer):
 
         return value
 
-class PackSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Pack
-
-        fields = [
-            'id',
-            'nombre',
-            'descripcion',
-        ]
-
-        read_only_fields = [
-            'id',
-        ]
-
-    def validate_nombre(self, value):
-        if not value.strip():
-            raise serializers.ValidationError(
-                "El nombre no puede estar vacío."
-            )
-        if Pack.objects.filter(nombre=value).exists():
-            raise serializers.ValidationError(
-                "Ya existe un pack con este nombre."
-            )
-        if len(value) > 100:
-            raise serializers.ValidationError(
-                "El nombre no puede superar los 100 caracteres."
-            )
-        if value.exists():
-            raise serializers.ValidationError(
-                "Ya existe un pack con este nombre."
-            )
-        return value
-
-    def validate_descripcion(self, value):
-        if value and not value.strip():
-            raise serializers.ValidationError(
-                "La descripción no puede estar formada únicamente por espacios."
-            )
-        if value and len(value) > 500:
-            raise serializers.ValidationError(
-                "La descripción no puede superar los 500 caracteres."
-            )
-        return value
-
 
 class ContenidoPackSerializer(serializers.ModelSerializer):
+
+    suministro_nombre = serializers.CharField(
+        source='suministro.nombre',
+        read_only=True
+    )
+    
+    suministro_unidad = serializers.CharField(
+        source='suministro.unidad',
+        read_only=True
+    )
 
     class Meta:
         model = ContenidoPack
@@ -162,11 +128,14 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             'id',
             'pack',
             'suministro',
+            'suministro_nombre',
+            'suministro_unidad',
             'cantidad',
         ]
 
         read_only_fields = [
             'id',
+            'suministro_nombre',
         ]
 
     def validate_pack(self, value):
@@ -188,6 +157,58 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "La cantidad debe ser un número positivo."
             )
+        return value
+
+
+class PackSerializer(serializers.ModelSerializer):
+
+    contenido = ContenidoPackSerializer(
+        source='contenidopack_set',
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = Pack
+
+        fields = [
+            'id',
+            'nombre',
+            'descripcion',
+            'contenido',
+        ]
+
+        read_only_fields = [
+            'id',
+            'contenido',
+        ]
+
+    def validate_nombre(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "El nombre no puede estar vacío."
+            )
+        if Pack.objects.filter(nombre=value).exists():
+            raise serializers.ValidationError(
+                "Ya existe un pack con este nombre."
+            )
+        if len(value) > 100:
+            raise serializers.ValidationError(
+                "El nombre no puede superar los 100 caracteres."
+            )
+
+        return value
+
+    def validate_descripcion(self, value):
+        if value and not value.strip():
+            raise serializers.ValidationError(
+                "La descripción no puede estar formada únicamente por espacios."
+            )
+        if value and len(value) > 500:
+            raise serializers.ValidationError(
+                "La descripción no puede superar los 500 caracteres."
+            )
+
         return value
 
 
