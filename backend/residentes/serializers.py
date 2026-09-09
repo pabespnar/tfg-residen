@@ -12,6 +12,8 @@ class ResidenteSerializer(serializers.ModelSerializer):
     )
 
     pack_recibido = serializers.SerializerMethodField()
+    packs_recibidos = serializers.SerializerMethodField()
+
     class Meta:
         model = Residente
         fields = [
@@ -31,7 +33,8 @@ class ResidenteSerializer(serializers.ModelSerializer):
             'habitacion_nombre',
             'foto',
             'genero',
-            'pack_recibido'
+            'pack_recibido',
+            'packs_recibidos'
         ]
         read_only_fields = ['id', 'habitacion_nombre', 'f_alta']
 
@@ -158,3 +161,19 @@ class ResidenteSerializer(serializers.ModelSerializer):
         return residente.entregapack_set.filter(
             pack_id=pack_id
         ).exists()
+
+
+    def get_packs_recibidos(self, residente):
+
+        entregas = residente.entregapack_set.select_related(
+            'pack'
+        ).order_by('-fecha_entrega')
+
+        return [
+            {
+                'id': entrega.pack.id,
+                'nombre': entrega.pack.nombre,
+                'fecha_entrega': entrega.fecha_entrega
+            }
+            for entrega in entregas
+        ]

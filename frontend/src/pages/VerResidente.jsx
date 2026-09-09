@@ -475,6 +475,47 @@ function VerResidente() {
                     </div>
                 </div>
 
+                <div className="ver-residente-card">
+                    <h2>Packs recibidos</h2>
+
+                    {residente.packs_recibidos?.length > 0 ? (
+                        <div className="ver-residente-packs">
+
+                            {residente.packs_recibidos.map((pack) => (
+                                <div
+                                    className="ver-residente-pack"
+                                    key={pack.id}
+                                >
+                                    <div className="ver-residente-pack-info">
+                                        <span className="ver-residente-label">
+                                            Pack
+                                        </span>
+
+                                        <span className="ver-residente-valor">
+                                            {pack.nombre}
+                                        </span>
+                                    </div>
+
+                                    <div className="ver-residente-pack-info">
+                                        <span className="ver-residente-label">
+                                            Fecha de entrega
+                                        </span>
+
+                                        <span className="ver-residente-valor">
+                                            {pack.fecha_entrega}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+
+                        </div>
+                    ) : (
+                        <p className="ver-residente-sin-packs">
+                            No ha recibido ningún pack.
+                        </p>
+                    )}
+                </div>
+
                 <div className="ver-residente-botones">
 
                     <button
