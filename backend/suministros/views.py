@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
-
+from django.db import transaction
 
 class ListaSuministrosView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
@@ -218,7 +218,11 @@ class CrearEntregaPackView(APIView):
                 status=404
             )
 
-        if not pack.contenidopack_set.exists():
+        contenidos = pack.contenidopack_set.select_related(
+            'suministro'
+        ).all()
+
+        if not contenidos.exists():
             return Response(
                 {"error": "El pack no contiene suministros."},
                 status=400
@@ -240,24 +244,58 @@ class CrearEntregaPackView(APIView):
                     status=400
                 )
 
-        entregas = []
+        numero_residentes = len(residentes_ids)
 
-        for residente_id in residentes_ids:
+        for contenido in contenidos:
 
-            datos = {
-                'pack': pack.id,
-                'residente': residente_id,
-            }
+            cantidad_necesaria = (
+                contenido.cantidad * numero_residentes
+            )
 
-            serializer = EntregaPackSerializer(data=datos)
-
-            if not serializer.is_valid():
+            if contenido.suministro.stock < cantidad_necesaria:
                 return Response(
-                    serializer.errors,
+                    {
+                        "error": (
+                            f"No hay stock suficiente de "
+                            f"{contenido.suministro.nombre}."
+                        )
+                    },
                     status=400
                 )
 
-            entregas.append(serializer.save())
+        with transaction.atomic():
+
+            for contenido in contenidos:
+
+                cantidad_necesaria = (
+                    contenido.cantidad * numero_residentes
+                )
+
+                suministro = contenido.suministro
+
+                suministro.stock -= cantidad_necesaria
+                suministro.save(update_fields=['stock'])
+
+            entregas = []
+
+            for residente_id in residentes_ids:
+
+                datos = {
+                    'pack': pack.id,
+                    'residente': residente_id,
+                }
+
+                serializer = EntregaPackSerializer(
+                    data=datos
+                )
+
+                if not serializer.is_valid():
+                    return Response(
+                        serializer.errors,
+                        status=400
+                    )
+
+                entregas.append(serializer.save())
 
         serializer = EntregaPackSerializer(
             entregas,
