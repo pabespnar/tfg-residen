@@ -1,494 +1,389 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+import './Packs.css'
+import { useNavigate, useLocation } from 'react-router-dom'
 
-import "./Packs.css";
+function Packs() {
 
-const Packs = () => {
-    const [packs, setPacks] = useState([]);
-    const [packSeleccionado, setPackSeleccionado] = useState(null);
-    const [error, setError] = useState(null);
+    const navigate = useNavigate()
+    const location = useLocation()
 
-    const [categorias, setCategorias] = useState([]);
-    const [suministros, setSuministros] = useState([]);
+    const [packs, setPacks] = useState([])
+    const [suministros, setSuministros] = useState([])
+    const [categorias, setCategorias] = useState([])
 
-    const [modalCrearPack, setModalCrearPack] = useState(false);
-    const [nombrePack, setNombrePack] = useState("");
-    const [descripcionPack, setDescripcionPack] = useState("");
+    const [packSeleccionado, setPackSeleccionado] = useState(null)
+    const [mostrarCrearPack, setMostrarCrearPack] = useState(false)
+    const [confirmandoEliminacion, setConfirmandoEliminacion] = useState(false)
 
-    const [confirmandoEliminacion, setConfirmandoEliminacion] = useState(false);
+    const [nombrePack, setNombrePack] = useState('')
+    const [descripcionPack, setDescripcionPack] = useState('')
+    const [contenidoPack, setContenidoPack] = useState([
+        { suministro: '', cantidad: 1, categoria: '' }
+    ])
 
-    const navigate = useNavigate();
-
-    const [suministrosPack, setSuministrosPack] = useState([
-        {
-            categoria: "",
-            suministro: "",
-            cantidad: "",
-        },
-    ]);
-
-    const [erroresFormulario, setErroresFormulario] = useState({});
-    const [creandoPack, setCreandoPack] = useState(false);
+    const [errores, setErrores] = useState({})
+    const [error, setError] = useState('')
+    const [mensaje, setMensaje] = useState('')
 
     useEffect(() => {
-        const obtenerPacks = async () => {
-            try {
-                const token = localStorage.getItem("access");
+        obtenerPacks()
+        obtenerSuministros()
+        obtenerCategorias()
 
-                const respuesta = await axios.get(
-                    "http://127.0.0.1:8000/api/suministros/packs/",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+        if (location.state?.mensaje) {
+            setMensaje(location.state.mensaje)
 
-                if (Array.isArray(respuesta.data)) {
-                    setPacks(respuesta.data);
-                    setError(null);
-                } else {
-                    setError(
-                        "La respuesta del servidor no tiene un formato válido."
-                    );
-                }
-            } catch (error) {
-                console.error(
-                    "Error al obtener los packs:",
-                    error
-                );
+            window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+            )
+        }
+    }, [])
 
-                setError(
-                    "No se han podido cargar los packs."
-                );
-            }
-        };
-
-        obtenerPacks();
-    }, []);
-
-    useEffect(() => {
-        const obtenerSuministros = async () => {
-            try {
-                const token = localStorage.getItem("access");
-
-                const respuesta = await axios.get(
-                    "http://127.0.0.1:8000/api/suministros/suministros/",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-
-                if (Array.isArray(respuesta.data)) {
-                    setSuministros(respuesta.data);
-                }
-            } catch (error) {
-                console.error(
-                    "Error al obtener los suministros:",
-                    error
-                );
-            }
-        };
-
-        obtenerSuministros();
-    }, []);
-
-    useEffect(() => {
-        const obtenerCategorias = async () => {
-            try {
-                const token = localStorage.getItem("access");
-
-                const respuesta = await axios.get(
-                    "http://127.0.0.1:8000/api/suministros/categorias/",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-
-                if (Array.isArray(respuesta.data)) {
-                    setCategorias(respuesta.data);
-                }
-            } catch (error) {
-                console.error(
-                    "Error al obtener las categorías:",
-                    error
-                );
-            }
-        };
-
-        obtenerCategorias();
-    }, []);
-
-    const abrirDetallePack = (pack) => {
-        setPackSeleccionado(pack);
-        setConfirmandoEliminacion(false);
-    };
-
-    const cerrarDetallePack = () => {
-        setPackSeleccionado(null);
-        setConfirmandoEliminacion(false);
-    };
-
-    const eliminarPack = async () => {
-
-        const token = localStorage.getItem("access");
+    const obtenerPacks = async () => {
+        const token = localStorage.getItem('access')
 
         try {
+            const response = await axios.get(
+                'http://127.0.0.1:8000/api/suministros/packs/',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
 
+            setPacks(response.data)
+        } catch (error) {
+            console.error('Error al obtener los packs:', error)
+            setError('No se han podido cargar los packs.')
+        }
+    }
+
+    const obtenerSuministros = async () => {
+        const token = localStorage.getItem('access')
+
+        try {
+            const response = await axios.get(
+                'http://127.0.0.1:8000/api/suministros/suministros/',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setSuministros(response.data)
+        } catch (error) {
+            console.error('Error al obtener los suministros:', error)
+        }
+    }
+
+    const obtenerCategorias = async () => {
+        const token = localStorage.getItem('access')
+
+        try {
+            const response = await axios.get(
+                'http://127.0.0.1:8000/api/suministros/categorias/',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setCategorias(response.data)
+        } catch (error) {
+            console.error('Error al obtener las categorías:', error)
+        }
+    }
+
+    const abrirDetallePack = (pack) => {
+        setPackSeleccionado(pack)
+        setConfirmandoEliminacion(false)
+        setError('')
+    }
+
+    const cerrarDetallePack = () => {
+        setPackSeleccionado(null)
+        setConfirmandoEliminacion(false)
+    }
+
+    const abrirCrearPack = () => {
+        setNombrePack('')
+        setDescripcionPack('')
+        setContenidoPack([
+            { suministro: '', cantidad: 1, categoria: '' }
+        ])
+        setErrores({})
+        setError('')
+        setMostrarCrearPack(true)
+    }
+
+    const cerrarCrearPack = () => {
+        setMostrarCrearPack(false)
+        setErrores({})
+        setError('')
+    }
+
+    const cambiarContenido = (index, campo, valor) => {
+        const nuevoContenido = [...contenidoPack]
+
+        nuevoContenido[index] = {
+            ...nuevoContenido[index],
+            [campo]: valor
+        }
+
+        if (campo === 'categoria') {
+            nuevoContenido[index].suministro = ''
+        }
+
+        setContenidoPack(nuevoContenido)
+
+        setErrores((erroresActuales) => ({
+            ...erroresActuales,
+            [`suministro_${index}`]: '',
+            [`cantidad_${index}`]: ''
+        }))
+    }
+
+    const añadirSuministro = () => {
+        setContenidoPack([
+            ...contenidoPack,
+            {
+                suministro: '',
+                cantidad: 1,
+                categoria: ''
+            }
+        ])
+    }
+
+    const eliminarSuministro = (index) => {
+        if (contenidoPack.length === 1) {
+            return
+        }
+
+        setContenidoPack(
+            contenidoPack.filter((_, i) => i !== index)
+        )
+    }
+
+    const validarFormulario = () => {
+        const nuevosErrores = {}
+
+        if (!nombrePack.trim()) {
+            nuevosErrores.nombre = 'El nombre no puede estar vacío.'
+        } else if (nombrePack.length > 100) {
+            nuevosErrores.nombre =
+                'El nombre no puede superar los 100 caracteres.'
+        }
+
+        if (descripcionPack && !descripcionPack.trim()) {
+            nuevosErrores.descripcion =
+                'La descripción no puede estar formada únicamente por espacios.'
+        } else if (descripcionPack.length > 500) {
+            nuevosErrores.descripcion =
+                'La descripción no puede superar los 500 caracteres.'
+        }
+
+        const suministrosSeleccionados = []
+
+        contenidoPack.forEach((contenido, index) => {
+
+            if (!contenido.suministro) {
+                nuevosErrores[`suministro_${index}`] =
+                    'Debes seleccionar un suministro.'
+            } else if (
+                suministrosSeleccionados.includes(
+                    contenido.suministro
+                )
+            ) {
+                nuevosErrores[`suministro_${index}`] =
+                    'Este suministro ya está incluido en el pack.'
+            } else {
+                suministrosSeleccionados.push(
+                    contenido.suministro
+                )
+            }
+
+            if (
+                contenido.cantidad === '' ||
+                Number(contenido.cantidad) <= 0
+            ) {
+                nuevosErrores[`cantidad_${index}`] =
+                    'La cantidad debe ser un número positivo.'
+            }
+        })
+
+        setErrores(nuevosErrores)
+
+        return Object.keys(nuevosErrores).length === 0
+    }
+
+    const crearPack = async () => {
+        setError('')
+        setMensaje('')
+
+        if (!validarFormulario()) {
+            return
+        }
+
+        const token = localStorage.getItem('access')
+
+        try {
+            const response = await axios.post(
+                'http://127.0.0.1:8000/api/suministros/crearpack/',
+                {
+                    nombre: nombrePack.trim(),
+                    descripcion: descripcionPack.trim()
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            const packCreado = response.data
+
+            for (const contenido of contenidoPack) {
+                await axios.post(
+                    'http://127.0.0.1:8000/api/suministros/crearcontenidopack/',
+                    {
+                        pack: packCreado.id,
+                        suministro: contenido.suministro,
+                        cantidad: Number(contenido.cantidad)
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                )
+            }
+
+            await obtenerPacks()
+
+            cerrarCrearPack()
+
+            setMensaje('Pack creado correctamente.')
+        } catch (error) {
+            console.error(
+                'Error al crear el pack:',
+                error.response?.data
+            )
+
+            const datosError = error.response?.data
+
+            if (datosError) {
+                const nuevosErrores = {}
+
+                if (datosError.nombre) {
+                    nuevosErrores.nombre =
+                        Array.isArray(datosError.nombre)
+                            ? datosError.nombre[0]
+                            : datosError.nombre
+                }
+
+                if (datosError.descripcion) {
+                    nuevosErrores.descripcion =
+                        Array.isArray(datosError.descripcion)
+                            ? datosError.descripcion[0]
+                            : datosError.descripcion
+                }
+
+                setErrores(nuevosErrores)
+            } else {
+                setError('Ha ocurrido un error al crear el pack.')
+            }
+        }
+    }
+
+    const eliminarPack = async () => {
+        const token = localStorage.getItem('access')
+
+        try {
             await axios.delete(
                 `http://127.0.0.1:8000/api/suministros/packs/${packSeleccionado.id}/eliminar/`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            );
-
-            setPacks((packsActuales) =>
-                packsActuales.filter(
-                    (pack) => pack.id !== packSeleccionado.id
-                )
-            );
-
-            cerrarDetallePack();
-
-        } catch (error) {
-
-            console.error(
-                "Error al eliminar el pack:",
-                error
-            );
-
-            cerrarDetallePack();
-
-            if (error.response?.data?.error) {
-                setError(error.response.data.error);
-            } else {
-                setError(
-                    "No se ha podido eliminar el pack."
-                );
-            }
-        }
-    };
-
-    const abrirModalCrearPack = () => {
-        setNombrePack("");
-        setDescripcionPack("");
-
-        setSuministrosPack([
-            {
-                categoria: "",
-                suministro: "",
-                cantidad: "",
-            },
-        ]);
-
-        setErroresFormulario({});
-
-        setModalCrearPack(true);
-    };
-
-    const cerrarModalCrearPack = () => {
-        if (creandoPack) {
-            return;
-        }
-
-        setModalCrearPack(false);
-
-        setNombrePack("");
-        setDescripcionPack("");
-
-        setSuministrosPack([
-            {
-                categoria: "",
-                suministro: "",
-                cantidad: "",
-            },
-        ]);
-
-        setErroresFormulario({});
-    };
-
-    const cambiarSuministroPack = (indice, valor) => {
-        setSuministrosPack((suministrosAnteriores) =>
-            suministrosAnteriores.map((fila, indiceFila) =>
-                indiceFila === indice
-                    ? {
-                        ...fila,
-                        suministro: valor,
-                    }
-                    : fila
             )
-        );
-    };
 
-    const suministroSeleccionadoEnOtraFila = (
-        suministroId,
-        indiceFila
-    ) => {
-        return suministrosPack.some(
-            (fila, indice) =>
-                indice !== indiceFila &&
-                String(fila.suministro) === String(suministroId)
-        );
-    };
+            setPackSeleccionado(null)
+            setConfirmandoEliminacion(false)
 
-    const cambiarCantidadPack = (indice, valor) => {
-        setSuministrosPack((suministrosAnteriores) =>
-            suministrosAnteriores.map((fila, indiceFila) =>
-                indiceFila === indice
-                    ? {
-                        ...fila,
-                        cantidad: valor,
-                    }
-                    : fila
-            )
-        );
-    };
+            await obtenerPacks()
 
-    const anadirSuministroPack = () => {
-        setSuministrosPack((suministrosAnteriores) => [
-            ...suministrosAnteriores,
-            {
-                categoria: "",
-                suministro: "",
-                cantidad: "",
-            },
-        ]);
-    };
-
-    const eliminarSuministroPack = (indice) => {
-        setSuministrosPack((suministrosAnteriores) =>
-            suministrosAnteriores.filter(
-                (_, indiceFila) => indiceFila !== indice
-            )
-        );
-    };
-
-    const cambiarCategoriaPack = (indice, valor) => {
-        setSuministrosPack((suministrosAnteriores) =>
-            suministrosAnteriores.map((fila, indiceFila) =>
-                indiceFila === indice
-                    ? {
-                        ...fila,
-                        categoria: valor,
-                        suministro: "",
-                    }
-                    : fila
-            )
-        );
-    };
-
-    const validarFormulario = () => {
-        const nuevosErrores = {};
-
-        if (!nombrePack.trim()) {
-            nuevosErrores.nombre =
-                "El nombre es obligatorio.";
-        } else if (nombrePack.trim().length > 100) {
-            nuevosErrores.nombre =
-                "El nombre no puede superar los 100 caracteres.";
-        } else if (
-            packs.some(
-                (pack) =>
-                    pack.nombre.trim().toLowerCase() ===
-                    nombrePack.trim().toLowerCase()
-            )
-        ) {
-            nuevosErrores.nombre =
-                "Ya existe un pack con ese nombre.";
-        }
-
-        if (
-            descripcionPack.trim().length > 500
-        ) {
-            nuevosErrores.descripcion =
-                "La descripción no puede superar los 500 caracteres.";
-        }
-
-        for (const fila of suministrosPack) {
-            if (!fila.suministro) {
-                nuevosErrores.suministros =
-                    "Debe seleccionar un suministro en todas las filas.";
-                break;
-            }
-
-            if (
-                !fila.cantidad ||
-                Number(fila.cantidad) <= 0
-            ) {
-                nuevosErrores.suministros =
-                    "La cantidad debe ser un número positivo.";
-                break;
-            }
-        }
-
-        setErroresFormulario(nuevosErrores);
-
-        return Object.keys(nuevosErrores).length === 0;
-    };
-
-    const crearPack = async () => {
-        if (!validarFormulario()) {
-            return;
-        }
-
-        try {
-            setCreandoPack(true);
-            setErroresFormulario({});
-
-            const token = localStorage.getItem("access");
-
-            const respuestaPack = await axios.post(
-                "http://127.0.0.1:8000/api/suministros/crearpack/",
-                {
-                    nombre: nombrePack.trim(),
-                    descripcion: descripcionPack,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            const packCreado = respuestaPack.data;
-
-            for (const fila of suministrosPack) {
-                await axios.post(
-                    "http://127.0.0.1:8000/api/suministros/crearcontenidopack/",
-                    {
-                        pack: packCreado.id,
-                        suministro: fila.suministro,
-                        cantidad: Number(fila.cantidad),
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-            }
-
-            const respuestaPacks = await axios.get(
-                "http://127.0.0.1:8000/api/suministros/packs/",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (Array.isArray(respuestaPacks.data)) {
-                setPacks(respuestaPacks.data);
-            } else {
-                setError(
-                    "La respuesta del servidor no tiene un formato válido."
-                );
-            }
-
-            cerrarModalCrearPack();
-
+            setMensaje('Pack eliminado correctamente.')
         } catch (error) {
             console.error(
-                "Error al crear el pack:",
-                error
-            );
+                'Error al eliminar el pack:',
+                error.response?.data
+            )
 
-            if (error.response?.data) {
-                const datosError = error.response.data;
-                const erroresBackend = {};
+            setPackSeleccionado(null)
+            setConfirmandoEliminacion(false)
 
-                if (datosError.nombre) {
-                    erroresBackend.nombre =
-                        Array.isArray(datosError.nombre)
-                            ? datosError.nombre[0]
-                            : datosError.nombre;
-                }
+            const mensajeError =
+                error.response?.data?.error ||
+                'Ha ocurrido un error al eliminar el pack.'
 
-                if (datosError.descripcion) {
-                    erroresBackend.descripcion =
-                        Array.isArray(datosError.descripcion)
-                            ? datosError.descripcion[0]
-                            : datosError.descripcion;
-                }
-
-                if (datosError.suministro) {
-                    erroresBackend.suministros =
-                        Array.isArray(datosError.suministro)
-                            ? datosError.suministro[0]
-                            : datosError.suministro;
-                }
-
-                if (datosError.cantidad) {
-                    erroresBackend.suministros =
-                        Array.isArray(datosError.cantidad)
-                            ? datosError.cantidad[0]
-                            : datosError.cantidad;
-                }
-
-                if (datosError.pack) {
-                    erroresBackend.suministros =
-                        Array.isArray(datosError.pack)
-                            ? datosError.pack[0]
-                            : datosError.pack;
-                }
-
-                if (datosError.error) {
-                    erroresBackend.general =
-                        datosError.error;
-                }
-
-                if (Object.keys(erroresBackend).length > 0) {
-                    setErroresFormulario(
-                        erroresBackend
-                    );
-                } else {
-                    setErroresFormulario({
-                        general:
-                            "No se ha podido crear el pack.",
-                    });
-                }
-            } else {
-                setErroresFormulario({
-                    general:
-                        "No se ha podido conectar con el servidor.",
-                });
-            }
-        } finally {
-            setCreandoPack(false);
+            setError(mensajeError)
         }
-    };
+    }
+
+    const irAAsignarPack = () => {
+        navigate(`/packs/asignar/${packSeleccionado.id}`)
+    }
+
+    const obtenerSuministrosCategoria = (categoriaId) => {
+
+        if (!categoriaId) {
+            return suministros
+        }
+
+        const categoria = categorias.find(
+            (categoria) =>
+                String(categoria.id) === String(categoriaId)
+        )
+
+        if (!categoria) {
+            return []
+        }
+
+        return categoria.suministros || []
+    }
 
     return (
         <div className="packs-container">
 
             <div className="packs-titulo">
-
                 <div>
-                    <h1>
-                        Packs
-                    </h1>
-
+                    <h1>Packs</h1>
                     <p>
-                        Gestión de los packs de suministros del centro.
+                        Gestiona los packs de suministros disponibles
                     </p>
                 </div>
 
                 <button
-                    className="packs-anadir"
                     type="button"
-                    onClick={abrirModalCrearPack}
+                    className="packs-anadir"
+                    onClick={abrirCrearPack}
                 >
                     +
                 </button>
-
             </div>
+
+            {mensaje && (
+                <p className="packs-mensaje">
+                    {mensaje}
+                </p>
+            )}
 
             {error && (
                 <p className="packs-error">
@@ -496,60 +391,42 @@ const Packs = () => {
                 </p>
             )}
 
-            <div className="packs-listado">
-
-                {packs.length === 0 ? (
-
-                    <p className="packs-sin-elementos">
-                        No hay packs creados.
+            {packs.length === 0 ? (
+                <div className="packs-sin-elementos">
+                    <p>
+                        No hay packs registrados.
                     </p>
-
-                ) : (
-
-                    packs.map((pack) => (
-
+                </div>
+            ) : (
+                <div className="packs-listado">
+                    {packs.map((pack) => (
                         <button
                             type="button"
                             className="pack-card"
                             key={pack.id}
-                            onClick={() =>
-                                abrirDetallePack(pack)
-                            }
+                            onClick={() => abrirDetallePack(pack)}
                         >
-
                             <strong>
                                 {pack.nombre}
                             </strong>
 
                             <span>
-                                {pack.descripcion ||
-                                    "Sin descripción"}
+                                {pack.contenido?.length || 0}{' '}
+                                {pack.contenido?.length === 1
+                                    ? 'suministro'
+                                    : 'suministros'}
                             </span>
-
                         </button>
-
-                    ))
-
-                )}
-
-            </div>
+                    ))}
+                </div>
+            )}
 
             {packSeleccionado && (
+                <div className="pack-detalle-overlay">
 
-                <div
-                    className="pack-detalle-overlay"
-                    onClick={cerrarDetallePack}
-                >
-
-                    <div
-                        className="pack-detalle"
-                        onClick={(evento) =>
-                            evento.stopPropagation()
-                        }
-                    >
+                    <div className="pack-detalle">
 
                         {!confirmandoEliminacion ? (
-
                             <>
                                 <button
                                     type="button"
@@ -564,74 +441,55 @@ const Packs = () => {
                                 </h2>
 
                                 <div className="pack-detalle-descripcion">
-
                                     <h3>
                                         Descripción
                                     </h3>
 
                                     <p>
                                         {packSeleccionado.descripcion ||
-                                            "Sin descripción"}
+                                            'Sin descripción.'}
                                     </p>
-
                                 </div>
 
                                 <div className="pack-detalle-contenido">
-
                                     <h3>
-                                        Suministros incluidos
+                                        Contenido
                                     </h3>
 
-                                    {packSeleccionado.contenido &&
-                                    packSeleccionado.contenido.length > 0 ? (
+                                    {packSeleccionado.contenido?.length > 0 ? (
+                                        packSeleccionado.contenido.map(
+                                            (contenido) => (
+                                                <div
+                                                    className="pack-suministro"
+                                                    key={contenido.id}
+                                                >
+                                                    <span>
+                                                        {contenido.suministro_nombre}
+                                                    </span>
 
-                                        <div>
-
-                                            {packSeleccionado.contenido.map(
-                                                (contenido) => (
-
-                                                    <div
-                                                        className="pack-suministro"
-                                                        key={contenido.id}
-                                                    >
-
-                                                        <span>
-                                                            {contenido.suministro_nombre}
-                                                        </span>
-
-                                                        <span>
-                                                            {contenido.cantidad}{" "}
-                                                            {contenido.suministro_unidad}
-                                                        </span>
-
-                                                    </div>
-
-                                                )
-                                            )}
-
-                                        </div>
-
+                                                    <span>
+                                                        {contenido.cantidad}{' '}
+                                                        {
+                                                            contenido.suministro_unidad
+                                                        }
+                                                    </span>
+                                                </div>
+                                            )
+                                        )
                                     ) : (
-
                                         <p>
                                             Este pack no contiene suministros.
                                         </p>
-
                                     )}
-
                                 </div>
 
                                 <div className="pack-detalle-botones">
 
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            navigate(
-                                                `/packs/asignar/${packSeleccionado.id}`
-                                            )
-                                        }
+                                        onClick={irAAsignarPack}
                                     >
-                                        Asignar Pack
+                                        Asignar pack
                                     </button>
 
                                     <button
@@ -646,9 +504,7 @@ const Packs = () => {
 
                                 </div>
                             </>
-
                         ) : (
-
                             <div className="pack-confirmar-eliminacion">
 
                                 <h2>
@@ -656,7 +512,7 @@ const Packs = () => {
                                 </h2>
 
                                 <p>
-                                    ¿Seguro que quieres eliminar el pack{" "}
+                                    ¿Seguro que quieres eliminar el pack{' '}
                                     <strong>
                                         "{packSeleccionado.nombre}"
                                     </strong>
@@ -671,6 +527,15 @@ const Packs = () => {
 
                                     <button
                                         type="button"
+                                        className="pack-eliminar"
+                                        onClick={eliminarPack}
+                                    >
+                                        Eliminar pack
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="pack-cancelar"
                                         onClick={() =>
                                             setConfirmandoEliminacion(false)
                                         }
@@ -678,98 +543,75 @@ const Packs = () => {
                                         Cancelar
                                     </button>
 
-                                    <button
-                                        type="button"
-                                        className="pack-eliminar"
-                                        onClick={eliminarPack}
-                                    >
-                                        Eliminar pack
-                                    </button>
-
                                 </div>
 
                             </div>
-
                         )}
 
                     </div>
 
                 </div>
-
             )}
 
-            {modalCrearPack && (
+            {mostrarCrearPack && (
+                <div className="crear-pack-overlay">
 
-                <div
-                    className="crear-pack-overlay"
-                    onClick={cerrarModalCrearPack}
-                >
-
-                    <div
-                        className="crear-pack-confirmacion"
-                        onClick={(evento) =>
-                            evento.stopPropagation()
-                        }
-                    >
+                    <div className="crear-pack-confirmacion">
 
                         <h2>
                             Crear pack
                         </h2>
 
                         <div className="crear-pack-campo">
-
-                            <label htmlFor="nombre-pack">
+                            <label>
                                 Nombre
                             </label>
 
                             <input
-                                id="nombre-pack"
                                 type="text"
                                 value={nombrePack}
-                                onChange={(evento) =>
-                                    setNombrePack(
-                                        evento.target.value
-                                    )
-                                }
-                                autoFocus
+                                onChange={(e) => {
+                                    setNombrePack(e.target.value)
+                                    setErrores({
+                                        ...errores,
+                                        nombre: ''
+                                    })
+                                }}
                             />
 
-                            {erroresFormulario.nombre && (
+                            {errores.nombre && (
                                 <p className="crear-pack-error">
-                                    {erroresFormulario.nombre}
+                                    {errores.nombre}
                                 </p>
                             )}
-
                         </div>
 
                         <div className="crear-pack-campo">
-
-                            <label htmlFor="descripcion-pack">
+                            <label>
                                 Descripción
                             </label>
 
                             <textarea
-                                id="descripcion-pack"
                                 value={descripcionPack}
-                                onChange={(evento) =>
-                                    setDescripcionPack(
-                                        evento.target.value
-                                    )
-                                }
+                                onChange={(e) => {
+                                    setDescripcionPack(e.target.value)
+                                    setErrores({
+                                        ...errores,
+                                        descripcion: ''
+                                    })
+                                }}
                             />
 
-                            {erroresFormulario.descripcion && (
+                            {errores.descripcion && (
                                 <p className="crear-pack-error">
-                                    {erroresFormulario.descripcion}
+                                    {errores.descripcion}
                                 </p>
                             )}
-
                         </div>
 
                         <div className="crear-pack-contenido">
 
                             <div className="crear-pack-titulo-suministros">
-
                                 <label>
                                     Suministros
                                 </label>
@@ -777,135 +619,131 @@ const Packs = () => {
                                 <button
                                     type="button"
                                     className="crear-pack-anadir-suministro"
-                                    onClick={anadirSuministroPack}
+                                    onClick={añadirSuministro}
                                 >
                                     +
                                 </button>
-
                             </div>
 
-                            {suministrosPack.map(
-                                (fila, indice) => (
+                            {contenidoPack.map(
+                                (contenido, index) => {
 
-                                    <div
-                                        className="crear-pack-suministro"
-                                        key={indice}
-                                    >
+                                    const suministrosDisponibles =
+                                        obtenerSuministrosCategoria(
+                                            contenido.categoria
+                                        )
 
-                                        <select
-                                            value={fila.categoria}
-                                            onChange={(evento) =>
-                                                cambiarCategoriaPack(
-                                                    indice,
-                                                    evento.target.value
-                                                )
-                                            }
+                                    return (
+                                        <div
+                                            className="crear-pack-suministro"
+                                            key={index}
                                         >
 
-                                            <option value="">
-                                                Categoría
-                                            </option>
-
-                                            {categorias.map(
-                                                (categoria) => (
-
-                                                    <option
-                                                        key={categoria.id}
-                                                        value={categoria.id}
-                                                    >
-                                                        {categoria.nombre}
-                                                    </option>
-
-                                                )
-                                            )}
-
-                                        </select>
-
-                                        <select
-                                            value={fila.suministro}
-                                            onChange={(evento) =>
-                                                cambiarSuministroPack(
-                                                    indice,
-                                                    evento.target.value
-                                                )
-                                            }
-                                            disabled={!fila.categoria}
-                                        >
-                                            <option value="">
-                                                {fila.categoria
-                                                    ? "Suministro"
-                                                    : "---"}
-                                            </option>
-
-                                            {categorias
-                                                .find(
-                                                    (categoria) =>
-                                                        String(categoria.id) ===
-                                                        String(fila.categoria)
-                                                )
-                                                ?.suministros
-                                                ?.filter(
-                                                    (suministro) =>
-                                                        !suministroSeleccionadoEnOtraFila(
-                                                            suministro.id,
-                                                            indice
-                                                        )
-                                                )
-                                                .map((suministro) => (
-                                                    <option
-                                                        key={suministro.id}
-                                                        value={suministro.id}
-                                                    >
-                                                        {suministro.nombre}
-                                                    </option>
-                                                ))}
-                                        </select>
-
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            placeholder="Cantidad"
-                                            value={fila.cantidad}
-                                            onChange={(evento) =>
-                                                cambiarCantidadPack(
-                                                    indice,
-                                                    evento.target.value
-                                                )
-                                            }
-                                        />
-
-                                        {suministrosPack.length > 1 && (
-
-                                            <button
-                                                type="button"
-                                                className="crear-pack-eliminar-suministro"
-                                                onClick={() =>
-                                                    eliminarSuministroPack(
-                                                        indice
+                                            <select
+                                                value={contenido.categoria}
+                                                onChange={(e) =>
+                                                    cambiarContenido(
+                                                        index,
+                                                        'categoria',
+                                                        e.target.value
                                                     )
                                                 }
                                             >
-                                                -
-                                            </button>
+                                                <option value="">
+                                                    Todas las categorías
+                                                </option>
 
-                                        )}
+                                                {categorias.map(
+                                                    (categoria) => (
+                                                        <option
+                                                            key={categoria.id}
+                                                            value={categoria.id}
+                                                        >
+                                                            {categoria.nombre}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
 
-                                    </div>
+                                            <select
+                                                value={contenido.suministro}
+                                                onChange={(e) =>
+                                                    cambiarContenido(
+                                                        index,
+                                                        'suministro',
+                                                        e.target.value
+                                                    )
+                                                }
+                                            >
+                                                <option value="">
+                                                    Seleccionar suministro
+                                                </option>
 
-                                )
-                            )}
+                                                {suministrosDisponibles.map(
+                                                    (suministro) => (
+                                                        <option
+                                                            key={suministro.id}
+                                                            value={suministro.id}
+                                                        >
+                                                            {suministro.nombre}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
 
-                            {erroresFormulario.suministros && (
-                                <p className="crear-pack-error">
-                                    {erroresFormulario.suministros}
-                                </p>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={contenido.cantidad}
+                                                onChange={(e) =>
+                                                    cambiarContenido(
+                                                        index,
+                                                        'cantidad',
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                            {contenidoPack.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    className="crear-pack-eliminar-suministro"
+                                                    onClick={() =>
+                                                        eliminarSuministro(
+                                                            index
+                                                        )
+                                                    }
+                                                >
+                                                    −
+                                                </button>
+                                            )}
+
+                                            {(errores[
+                                                `suministro_${index}`
+                                            ] ||
+                                                errores[
+                                                    `cantidad_${index}`
+                                                ]) && (
+                                                <p className="crear-pack-error">
+                                                    {errores[
+                                                        `suministro_${index}`
+                                                    ] ||
+                                                        errores[
+                                                            `cantidad_${index}`
+                                                        ]}
+                                                </p>
+                                            )}
+
+                                        </div>
+                                    )
+                                }
                             )}
 
                         </div>
 
-                        {erroresFormulario.general && (
+                        {error && (
                             <p className="crear-pack-error">
-                                {erroresFormulario.general}
+                                {error}
                             </p>
                         )}
 
@@ -914,17 +752,13 @@ const Packs = () => {
                             <button
                                 type="button"
                                 onClick={crearPack}
-                                disabled={creandoPack}
                             >
-                                {creandoPack
-                                    ? "Creando..."
-                                    : "Crear pack"}
+                                Crear pack
                             </button>
 
                             <button
                                 type="button"
-                                onClick={cerrarModalCrearPack}
-                                disabled={creandoPack}
+                                onClick={cerrarCrearPack}
                             >
                                 Cancelar
                             </button>
@@ -934,11 +768,10 @@ const Packs = () => {
                     </div>
 
                 </div>
-
             )}
 
         </div>
-    );
-};
+    )
+}
 
-export default Packs;
+export default Packs

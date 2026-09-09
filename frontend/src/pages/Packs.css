@@ -25,6 +25,21 @@
     font-size: 15px;
 }
 
+.packs-mensaje {
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+
+    padding: 15px;
+
+    text-align: center;
+
+    color: #1b5e20;
+    background-color: #e8f5e9;
+
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+}
+
 .packs-error {
     max-width: 1000px;
     margin: 0 auto 20px auto;
@@ -139,8 +154,6 @@
     background-color: #145218;
     transform: scale(1.05);
 }
-
-
 
 .pack-detalle-overlay {
     position: fixed;
@@ -276,7 +289,65 @@
     opacity: 0.9;
 }
 
+.pack-detalle-botones button.pack-eliminar {
+    padding: 10px 18px;
 
+    border: none;
+    border-radius: 6px;
+
+    background-color: #c62828;
+    color: white;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+.pack-detalle-botones button.pack-eliminar:hover {
+    background-color: #b71c1c;
+    opacity: 1;
+}
+
+.pack-detalle-botones button.pack-cancelar {
+    padding: 5px 10px;
+
+    border: none;
+    background: none;
+
+    color: #777;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.pack-detalle-botones button.pack-cancelar:hover {
+    background: none;
+
+    color: #333;
+
+    opacity: 1;
+}
+
+.pack-confirmar-eliminacion {
+    text-align: center;
+}
+
+.pack-confirmar-eliminacion h2 {
+    margin-bottom: 20px;
+}
+
+.pack-confirmar-eliminacion p {
+    margin: 8px 0;
+
+    color: #555;
+    font-size: 14px;
+}
+
+.pack-confirmar-eliminacion p strong {
+    color: #333;
+}
 
 .crear-pack-overlay {
     position: fixed;
@@ -396,8 +467,6 @@
     box-sizing: border-box;
 }
 
-
-
 .crear-pack-anadir-suministro,
 .crear-pack-eliminar-suministro {
     flex-shrink: 0;
@@ -440,7 +509,6 @@
     background-color: #8e1515;
     transform: scale(1.05);
 }
-
 
 .crear-pack-botones {
     display: flex;
@@ -489,23 +557,4 @@
     color: #b71c1c;
 
     font-size: 13px;
-}
-
-.pack-detalle-botones button.pack-eliminar {
-    padding: 6px 10px;
-
-    border: none;
-    border-radius: 4px;
-
-    background-color: transparent;
-    color: #c62828;
-
-    font-size: 13px;
-
-    cursor: pointer;
-}
-
-.pack-detalle-botones button.pack-eliminar:hover {
-    background-color: #ffebee;
-    color: #b71c1c;
 }
