@@ -224,6 +224,22 @@ class CrearEntregaPackView(APIView):
                 status=400
             )
 
+        for residente_id in residentes_ids:
+
+            if EntregaPack.objects.filter(
+                pack=pack,
+                residente_id=residente_id
+            ).exists():
+                return Response(
+                    {
+                        "error": (
+                            "Uno de los residentes seleccionados "
+                            "ya ha recibido este pack."
+                        )
+                    },
+                    status=400
+                )
+
         entregas = []
 
         for residente_id in residentes_ids:
