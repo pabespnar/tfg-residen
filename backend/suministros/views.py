@@ -2,10 +2,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Categoria, Suministro
-from .serializers import CategoriaSerializer, SuministroSerializer
+from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
+from residentes.models import Residente
+from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
-
+from django.db import transaction
 
 class ListaSuministrosView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
@@ -141,3 +142,212 @@ class ListaCategoriasView(APIView):
             })
 
         return Response(datos)
+
+class ListaPacksView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def get(self, request):
+        packs = Pack.objects.all()
+
+        serializer = PackSerializer(
+            packs,
+            many=True
+        )
+
+        return Response(serializer.data)
+
+class CrearPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def post(self, request):
+        serializer = PackSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+class CrearContenidoPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def post(self, request):
+        serializer = ContenidoPackSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+class CrearEntregaPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def post(self, request, id):
+
+        residentes_ids = request.data.get('residentes')
+
+        if not residentes_ids:
+            return Response(
+                {"error": "Se debe seleccionar al menos un residente."},
+                status=400
+            )
+
+        try:
+            pack = Pack.objects.get(id=id)
+        except Pack.DoesNotExist:
+            return Response(
+                {"error": "El pack no existe."},
+                status=404
+            )
+
+        contenidos = pack.contenidopack_set.select_related(
+            'suministro'
+        ).all()
+
+        if not contenidos.exists():
+            return Response(
+                {"error": "El pack no contiene suministros."},
+                status=400
+            )
+
+        for residente_id in residentes_ids:
+
+            if not Residente.objects.filter(
+                id=residente_id,
+                activo=True
+            ).exists():
+                return Response(
+                    {
+                        "error": (
+                            "El residente no existe o no está activo."
+                        )
+                    },
+                    status=400
+                )
+
+            if EntregaPack.objects.filter(
+                pack=pack,
+                residente_id=residente_id
+            ).exists():
+                return Response(
+                    {
+                        "error": (
+                            "Uno de los residentes seleccionados "
+                            "ya ha recibido este pack."
+                        )
+                    },
+                    status=400
+                )
+
+        numero_residentes = len(residentes_ids)
+
+        for contenido in contenidos:
+
+            cantidad_necesaria = (
+                contenido.cantidad * numero_residentes
+            )
+
+            if contenido.suministro.stock < cantidad_necesaria:
+                return Response(
+                    {
+                        "error": (
+                            f"No hay stock suficiente de "
+                            f"{contenido.suministro.nombre}."
+                        )
+                    },
+                    status=400
+                )
+
+        with transaction.atomic():
+
+            for contenido in contenidos:
+
+                cantidad_necesaria = (
+                    contenido.cantidad * numero_residentes
+                )
+
+                suministro = contenido.suministro
+
+                suministro.stock -= cantidad_necesaria
+                suministro.save(update_fields=['stock'])
+
+            entregas = []
+
+            for residente_id in residentes_ids:
+
+                datos = {
+                    'pack': pack.id,
+                    'residente': residente_id,
+                }
+
+                serializer = EntregaPackSerializer(
+                    data=datos
+                )
+
+                if not serializer.is_valid():
+                    return Response(
+                        serializer.errors,
+                        status=400
+                    )
+
+                entregas.append(serializer.save())
+
+        serializer = EntregaPackSerializer(
+            entregas,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=201
+        )
+
+class EliminarPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def delete(self, request, id):
+
+        try:
+            pack = Pack.objects.get(id=id)
+        except Pack.DoesNotExist:
+            return Response(
+                {"error": "El pack no existe."},
+                status=404
+            )
+
+        if EntregaPack.objects.filter(pack=pack).exists():
+            return Response(
+                {
+                    "error": (
+                        "No se puede eliminar un pack que ya ha sido "
+                        "asignado a un residente."
+                    )
+                },
+                status=400
+            )
+
+        pack.delete()
+
+        return Response(
+            {"mensaje": "Pack eliminado correctamente."},
+            status=200
+        )

@@ -65,6 +65,14 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Suministros
                             </li>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/packs')
+                                }
+                            >
+                                Packs
+                            </li>
                         </>
                     )}
                 </ul>

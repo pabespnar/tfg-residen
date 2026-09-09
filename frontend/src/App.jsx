@@ -17,6 +17,8 @@ import VerHabitacion from "./pages/VerHabitacion";
 import VerHistoricoResidentes from "./pages/HistoricoResidentes";
 import DashboardResidentes from "./pages/DashboardResidentes";
 import Suministros from "./pages/Suministros";
+import Packs from "./pages/Packs";
+import AsignarPack from "./pages/AsignarPack";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 function tokenValido() {
@@ -285,6 +287,16 @@ function App() {
                                 <Route
                                     path="/suministros"
                                     element={<Suministros />}
+                                />
+
+                                <Route
+                                    path="/packs"
+                                    element={<Packs />}
+                                />
+
+                                <Route
+                                    path="/packs/asignar/:packId"
+                                    element={<AsignarPack />}
                                 />
                             </>
                         )}

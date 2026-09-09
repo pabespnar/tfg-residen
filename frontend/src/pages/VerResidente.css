@@ -154,6 +154,8 @@
 
 .ver-residente-campo-completo {
     grid-column: 1 / -1;
+    white-space: normal;
+    overflow-wrap: break-word;
 }
 
 .ver-residente-botones {
@@ -320,4 +322,32 @@
 .ver-residente-modal-confirmar:disabled {
     opacity: 0.5;
     cursor: default;
+}
+
+.ver-residente-packs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ver-residente-pack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 14px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+
+.ver-residente-pack-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ver-residente-sin-packs {
+    margin: 0;
+    color: #777;
+    font-size: 14px;
 }
