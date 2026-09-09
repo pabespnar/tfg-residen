@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
+from residentes.models import Residente
 from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
 from django.db import transaction
@@ -229,6 +230,19 @@ class CrearEntregaPackView(APIView):
             )
 
         for residente_id in residentes_ids:
+
+            if not Residente.objects.filter(
+                id=residente_id,
+                activo=True
+            ).exists():
+                return Response(
+                    {
+                        "error": (
+                            "El residente no existe o no está activo."
+                        )
+                    },
+                    status=400
+                )
 
             if EntregaPack.objects.filter(
                 pack=pack,
