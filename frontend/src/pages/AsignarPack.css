@@ -156,3 +156,8 @@
 .asignar-pack-boton:hover {
     opacity: 0.9;
 }
+
+.asignar-pack-boton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

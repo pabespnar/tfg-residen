@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AsignarPack.css'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 function AsignarPack() {
 
     const { packId } = useParams()
+    const navigate = useNavigate()
 
     const [residentes, setResidentes] = useState([])
     const [residentesSeleccionados, setResidentesSeleccionados] = useState([])
@@ -98,19 +99,21 @@ function AsignarPack() {
                 }
             )
 
-            setResidentesSeleccionados([])
-
-            await obtenerResidentes()
-
-            console.log(
-                'Pack asignado correctamente.'
-            )
+            navigate('/packs', {
+                state: {
+                    mensaje: 'Pack asignado correctamente.'
+                }
+            })
 
         } catch (error) {
 
             console.error(
                 'Error al asignar el pack:',
                 error.response?.data
+            )
+
+            setError(
+                'Ha ocurrido un error al asignar el pack.'
             )
 
         }
@@ -131,19 +134,6 @@ function AsignarPack() {
 
     }
 
-    if (error) {
-
-        return (
-            <div className="residentes-container">
-
-                <p className="residentes-error">
-                    {error}
-                </p>
-
-            </div>
-        )
-
-    }
 
     return (
         <div className="residentes-container">
@@ -166,11 +156,18 @@ function AsignarPack() {
                     type="button"
                     className="asignar-pack-boton"
                     onClick={asignarPack}
+                    disabled={residentesSeleccionados.length === 0}
                 >
                     Asignar pack
                 </button>
 
             </div>
+
+            {error && (
+                <p className="residentes-error">
+                    {error}
+                </p>
+            )}
 
             {residentes.length === 0 ? (
 
