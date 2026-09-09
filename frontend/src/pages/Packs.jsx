@@ -440,15 +440,29 @@ function Packs() {
                                     {packSeleccionado.nombre}
                                 </h2>
 
-                                <div className="pack-detalle-descripcion">
-                                    <h3>
-                                        Descripción
-                                    </h3>
+                                <div className="pack-detalle-informacion">
 
-                                    <p>
-                                        {packSeleccionado.descripcion ||
-                                            'Sin descripción.'}
-                                    </p>
+                                    <div className="pack-detalle-descripcion">
+                                        <h3>
+                                            Descripción
+                                        </h3>
+
+                                        <p>
+                                            {packSeleccionado.descripcion ||
+                                                'Sin descripción.'}
+                                        </p>
+                                    </div>
+
+                                    <div className="pack-residentes-recibidos">
+                                        <span>
+                                            Residentes con el pack
+                                        </span>
+
+                                        <strong>
+                                            {packSeleccionado.residentes_recibidos}
+                                        </strong>
+                                    </div>
+
                                 </div>
 
                                 <div className="pack-detalle-contenido">

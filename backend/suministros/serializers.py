@@ -169,6 +169,8 @@ class PackSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    residentes_recibidos = serializers.SerializerMethodField()
+
     class Meta:
         model = Pack
 
@@ -177,11 +179,13 @@ class PackSerializer(serializers.ModelSerializer):
             'nombre',
             'descripcion',
             'contenido',
+            'residentes_recibidos',
         ]
 
         read_only_fields = [
             'id',
             'contenido',
+            'residentes_recibidos',
         ]
 
     def validate_nombre(self, value):
@@ -212,7 +216,10 @@ class PackSerializer(serializers.ModelSerializer):
 
         return value
 
+    def get_residentes_recibidos(self, pack):
+        return pack.entregapack_set.count()
 
+    
 class EntregaPackSerializer(serializers.ModelSerializer):
 
     class Meta:
