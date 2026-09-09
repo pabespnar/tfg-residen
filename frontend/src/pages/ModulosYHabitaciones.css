@@ -482,6 +482,12 @@
     color: #333;
     font-size: 17px;
     font-weight: 700;
+
+    min-width: 0;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .habitacion-bloque-cabecera .modulo-acciones {

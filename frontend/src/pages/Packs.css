@@ -234,6 +234,9 @@
 .pack-detalle-descripcion p {
     margin: 0;
 
+    max-height: 100px;
+    overflow-y: auto;
+
     color: #555;
     font-size: 14px;
 }
