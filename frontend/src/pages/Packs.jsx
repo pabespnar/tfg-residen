@@ -16,6 +16,8 @@ const Packs = () => {
     const [nombrePack, setNombrePack] = useState("");
     const [descripcionPack, setDescripcionPack] = useState("");
 
+    const [confirmandoEliminacion, setConfirmandoEliminacion] = useState(false);
+
     const navigate = useNavigate();
 
     const [suministrosPack, setSuministrosPack] = useState([
@@ -124,10 +126,54 @@ const Packs = () => {
 
     const abrirDetallePack = (pack) => {
         setPackSeleccionado(pack);
+        setConfirmandoEliminacion(false);
     };
 
     const cerrarDetallePack = () => {
         setPackSeleccionado(null);
+        setConfirmandoEliminacion(false);
+    };
+
+    const eliminarPack = async () => {
+
+        const token = localStorage.getItem("access");
+
+        try {
+
+            await axios.delete(
+                `http://127.0.0.1:8000/api/suministros/packs/${packSeleccionado.id}/eliminar/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setPacks((packsActuales) =>
+                packsActuales.filter(
+                    (pack) => pack.id !== packSeleccionado.id
+                )
+            );
+
+            cerrarDetallePack();
+
+        } catch (error) {
+
+            console.error(
+                "Error al eliminar el pack:",
+                error
+            );
+
+            cerrarDetallePack();
+
+            if (error.response?.data?.error) {
+                setError(error.response.data.error);
+            } else {
+                setError(
+                    "No se ha podido eliminar el pack."
+                );
+            }
+        }
     };
 
     const abrirModalCrearPack = () => {
@@ -329,12 +375,25 @@ const Packs = () => {
                 );
             }
 
-            setPacks((packsActuales) => [
-                ...packsActuales,
-                packCreado,
-            ]);
+            const respuestaPacks = await axios.get(
+                "http://127.0.0.1:8000/api/suministros/packs/",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (Array.isArray(respuestaPacks.data)) {
+                setPacks(respuestaPacks.data);
+            } else {
+                setError(
+                    "La respuesta del servidor no tiene un formato válido."
+                );
+            }
 
             cerrarModalCrearPack();
+
         } catch (error) {
             console.error(
                 "Error al crear el pack:",
@@ -489,87 +548,149 @@ const Packs = () => {
                         }
                     >
 
-                        <button
-                            type="button"
-                            className="pack-detalle-cerrar"
-                            onClick={cerrarDetallePack}
-                        >
-                            ×
-                        </button>
+                        {!confirmandoEliminacion ? (
 
-                        <h2>
-                            {packSeleccionado.nombre}
-                        </h2>
+                            <>
+                                <button
+                                    type="button"
+                                    className="pack-detalle-cerrar"
+                                    onClick={cerrarDetallePack}
+                                >
+                                    ×
+                                </button>
 
-                        <div className="pack-detalle-descripcion">
+                                <h2>
+                                    {packSeleccionado.nombre}
+                                </h2>
 
-                            <h3>
-                                Descripción
-                            </h3>
+                                <div className="pack-detalle-descripcion">
 
-                            <p>
-                                {packSeleccionado.descripcion ||
-                                    "Sin descripción"}
-                            </p>
+                                    <h3>
+                                        Descripción
+                                    </h3>
 
-                        </div>
+                                    <p>
+                                        {packSeleccionado.descripcion ||
+                                            "Sin descripción"}
+                                    </p>
 
-                        <div className="pack-detalle-contenido">
+                                </div>
 
-                            <h3>
-                                Suministros incluidos
-                            </h3>
+                                <div className="pack-detalle-contenido">
 
-                            {packSeleccionado.contenido &&
-                            packSeleccionado.contenido.length > 0 ? (
+                                    <h3>
+                                        Suministros incluidos
+                                    </h3>
 
-                                <div>
+                                    {packSeleccionado.contenido &&
+                                    packSeleccionado.contenido.length > 0 ? (
 
-                                    {packSeleccionado.contenido.map(
-                                        (contenido) => (
+                                        <div>
 
-                                            <div
-                                                className="pack-suministro"
-                                                key={contenido.id}
-                                            >
+                                            {packSeleccionado.contenido.map(
+                                                (contenido) => (
 
-                                                <span>
-                                                    {contenido.suministro_nombre}
-                                                </span>
+                                                    <div
+                                                        className="pack-suministro"
+                                                        key={contenido.id}
+                                                    >
 
-                                                <span>
-                                                    {contenido.cantidad} {contenido.suministro_unidad}
-                                                </span>
+                                                        <span>
+                                                            {contenido.suministro_nombre}
+                                                        </span>
 
-                                            </div>
+                                                        <span>
+                                                            {contenido.cantidad}{" "}
+                                                            {contenido.suministro_unidad}
+                                                        </span>
 
-                                        )
+                                                    </div>
+
+                                                )
+                                            )}
+
+                                        </div>
+
+                                    ) : (
+
+                                        <p>
+                                            Este pack no contiene suministros.
+                                        </p>
+
                                     )}
 
                                 </div>
 
-                            ) : (
+                                <div className="pack-detalle-botones">
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navigate(
+                                                `/packs/asignar/${packSeleccionado.id}`
+                                            )
+                                        }
+                                    >
+                                        Asignar Pack
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="pack-eliminar"
+                                        onClick={() =>
+                                            setConfirmandoEliminacion(true)
+                                        }
+                                    >
+                                        Eliminar pack
+                                    </button>
+
+                                </div>
+                            </>
+
+                        ) : (
+
+                            <div className="pack-confirmar-eliminacion">
+
+                                <h2>
+                                    Eliminar pack
+                                </h2>
 
                                 <p>
-                                    Este pack no contiene suministros.
+                                    ¿Seguro que quieres eliminar el pack{" "}
+                                    <strong>
+                                        "{packSeleccionado.nombre}"
+                                    </strong>
+                                    ?
                                 </p>
 
-                            )}
+                                <p>
+                                    Esta acción no se puede deshacer.
+                                </p>
 
-                        </div>
+                                <div className="pack-detalle-botones">
 
-                        <div className="pack-detalle-botones">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setConfirmandoEliminacion(false)
+                                        }
+                                    >
+                                        Cancelar
+                                    </button>
 
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    navigate(`/packs/asignar/${packSeleccionado.id}`)
-                                }
-                            >
-                                Asignar Pack
-                            </button>
+                                    <button
+                                        type="button"
+                                        className="pack-eliminar"
+                                        onClick={eliminarPack}
+                                    >
+                                        Eliminar pack
+                                    </button>
 
-                        </div>
+                                </div>
+
+                            </div>
+
+                        )}
 
                     </div>
 

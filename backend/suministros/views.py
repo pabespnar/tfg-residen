@@ -200,7 +200,7 @@ class CrearContenidoPackView(APIView):
 class CrearEntregaPackView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
-    def post(self, request, pack_id):
+    def post(self, request, id):
 
         residentes_ids = request.data.get('residentes')
 
@@ -211,7 +211,7 @@ class CrearEntregaPackView(APIView):
             )
 
         try:
-            pack = Pack.objects.get(id=pack_id)
+            pack = Pack.objects.get(id=id)
         except Pack.DoesNotExist:
             return Response(
                 {"error": "El pack no existe."},
@@ -251,4 +251,35 @@ class CrearEntregaPackView(APIView):
         return Response(
             serializer.data,
             status=201
+        )
+
+class EliminarPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def delete(self, request, id):
+
+        try:
+            pack = Pack.objects.get(id=id)
+        except Pack.DoesNotExist:
+            return Response(
+                {"error": "El pack no existe."},
+                status=404
+            )
+
+        if EntregaPack.objects.filter(pack=pack).exists():
+            return Response(
+                {
+                    "error": (
+                        "No se puede eliminar un pack que ya ha sido "
+                        "asignado a un residente."
+                    )
+                },
+                status=400
+            )
+
+        pack.delete()
+
+        return Response(
+            {"mensaje": "Pack eliminado correctamente."},
+            status=200
         )
