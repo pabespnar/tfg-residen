@@ -161,3 +161,13 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+.asignar-pack-recibido {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background-color: #f1f1f1;
+    color: #777;
+    font-size: 13px;
+    font-weight: 600;
+}

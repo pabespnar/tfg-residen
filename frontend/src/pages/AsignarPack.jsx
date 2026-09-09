@@ -223,21 +223,24 @@ function AsignarPack() {
                                     </td>
 
                                     <td>
-
-                                        <input
-                                            type="checkbox"
-                                            className="asignar-pack-checkbox"
-                                            disabled={residente.pack_recibido}
-                                            checked={residentesSeleccionados.includes(
-                                                residente.id
-                                            )}
-                                            onChange={() =>
-                                                cambiarSeleccionResidente(
+                                        {residente.pack_recibido ? (
+                                            <span className="asignar-pack-recibido">
+                                                Ya recibido
+                                            </span>
+                                        ) : (
+                                            <input
+                                                type="checkbox"
+                                                className="asignar-pack-checkbox"
+                                                checked={residentesSeleccionados.includes(
                                                     residente.id
-                                                )
-                                            }
-                                        />
-
+                                                )}
+                                                onChange={() =>
+                                                    cambiarSeleccionResidente(
+                                                        residente.id
+                                                    )
+                                                }
+                                            />
+                                        )}
                                     </td>
 
                                 </tr>
