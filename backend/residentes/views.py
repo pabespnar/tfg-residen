@@ -5,25 +5,32 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
 from .models import Residente
 from modulos.models import Habitacion
 from .serializers import ResidenteSerializer
 from modulos.permissions import EsGestorResidentes
+from .permissions import EsGestorResidentesOAlmacen
 
 
 class ListaResidentesView(APIView):
-    permission_classes = [IsAuthenticated, EsGestorResidentes]
+    permission_classes = [IsAuthenticated, EsGestorResidentesOAlmacen]
 
     def get(self, request):
+
         residentes = Residente.objects.filter(activo=True)
+
+        pack_id = request.query_params.get('pack_id')
 
         serializer = ResidenteSerializer(
             residentes,
-            many=True
+            many=True,
+            context={
+                'pack_id': pack_id
+            }
         )
 
         return Response(serializer.data)
-
 
 class CrearResidenteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]

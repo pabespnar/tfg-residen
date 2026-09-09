@@ -160,6 +160,8 @@
 }
 
 .pack-detalle {
+    position: relative;
+
     width: 450px;
 
     padding: 30px;
@@ -169,6 +171,29 @@
     border-radius: 10px;
 
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pack-detalle-cerrar {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+
+    width: 30px;
+    height: 30px;
+
+    border: none;
+    background: none;
+
+    color: #555;
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 30px;
+
+    cursor: pointer;
+}
+
+.pack-detalle-cerrar:hover {
+    color: #222;
 }
 
 .pack-detalle h2 {
@@ -226,7 +251,7 @@
 
 .pack-detalle-botones {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 10px;
 
     margin-top: 25px;

@@ -143,6 +143,7 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El pack especificado no existe."
             )
+            
         return value
 
     def validate_suministro(self, value):
@@ -240,5 +241,9 @@ class EntregaPackSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError(
                 "El residente especificado no existe."
+            )
+        elif not value.activo:
+            raise serializers.ValidationError(
+                "El residente no está activo."
             )
         return value

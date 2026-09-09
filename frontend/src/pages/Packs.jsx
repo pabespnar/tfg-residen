@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import "./Packs.css";
 
@@ -14,6 +15,8 @@ const Packs = () => {
     const [modalCrearPack, setModalCrearPack] = useState(false);
     const [nombrePack, setNombrePack] = useState("");
     const [descripcionPack, setDescripcionPack] = useState("");
+
+    const navigate = useNavigate();
 
     const [suministrosPack, setSuministrosPack] = useState([
         {
@@ -486,6 +489,14 @@ const Packs = () => {
                         }
                     >
 
+                        <button
+                            type="button"
+                            className="pack-detalle-cerrar"
+                            onClick={cerrarDetallePack}
+                        >
+                            ×
+                        </button>
+
                         <h2>
                             {packSeleccionado.nombre}
                         </h2>
@@ -551,9 +562,11 @@ const Packs = () => {
 
                             <button
                                 type="button"
-                                onClick={cerrarDetallePack}
+                                onClick={() =>
+                                    navigate(`/packs/asignar/${packSeleccionado.id}`)
+                                }
                             >
-                                Cerrar
+                                Asignar Pack
                             </button>
 
                         </div>

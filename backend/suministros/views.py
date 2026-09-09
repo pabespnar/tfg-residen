@@ -196,3 +196,59 @@ class CrearContenidoPackView(APIView):
             serializer.errors,
             status=400
         )
+
+class CrearEntregaPackView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def post(self, request, pack_id):
+
+        residentes_ids = request.data.get('residentes')
+
+        if not residentes_ids:
+            return Response(
+                {"error": "Se debe seleccionar al menos un residente."},
+                status=400
+            )
+
+        try:
+            pack = Pack.objects.get(id=pack_id)
+        except Pack.DoesNotExist:
+            return Response(
+                {"error": "El pack no existe."},
+                status=404
+            )
+
+        if not pack.contenidopack_set.exists():
+            return Response(
+                {"error": "El pack no contiene suministros."},
+                status=400
+            )
+
+        entregas = []
+
+        for residente_id in residentes_ids:
+
+            datos = {
+                'pack': pack.id,
+                'residente': residente_id,
+            }
+
+            serializer = EntregaPackSerializer(data=datos)
+
+            if not serializer.is_valid():
+                return Response(
+                    serializer.errors,
+                    status=400
+                )
+
+            entregas.append(serializer.save())
+
+        serializer = EntregaPackSerializer(
+            entregas,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=201
+        )

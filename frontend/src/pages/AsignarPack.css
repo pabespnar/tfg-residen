@@ -1,0 +1,158 @@
+.residentes-container {
+    padding: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.residentes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.residentes-header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #1B5E20;
+}
+
+.residentes-header p {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 15px;
+}
+
+.residentes-anadir {
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+
+    background-color: #1b5e20;
+    color: white;
+
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 42px;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.residentes-anadir:hover {
+    background-color: #145218;
+    transform: scale(1.05);
+}
+
+.tabla-residentes-container {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tabla-residentes {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-residentes thead {
+    background-color: #1B5E20;
+    color: white;
+}
+
+.tabla-residentes th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tabla-residentes td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e5e5;
+    color: #333;
+    font-size: 14px;
+}
+
+.tabla-residentes tbody tr { 
+    cursor: pointer; 
+} 
+
+.tabla-residentes tbody tr:hover { 
+    background-color: #f5f7f6; 
+}
+
+.residente-nombre strong {
+    font-weight: 600;
+    color: #222;
+}
+
+.acciones-residente {
+    display: flex;
+    gap: 8px;
+}
+
+
+.residentes-vacio {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    color: #666;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.residentes-error {
+    color: #c62828;
+    background-color: #ffebee;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.residentes-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.residentes-editar-icono {
+    padding: 7px 12px;
+    border: 1px solid #1b5e20;
+    border-radius: 6px;
+    background-color: white;
+    color: #1b5e20;
+    font-size: 13px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.residentes-editar-icono:hover {
+    opacity: 0.75;
+}
+
+.residentes-editar-icono svg {
+    font-size: 16px;
+}
+
+.asignar-pack-boton {
+    padding: 10px 18px;
+
+    border: none;
+    border-radius: 6px;
+
+    background-color: #1b5e20;
+    color: white;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.asignar-pack-boton:hover {
+    opacity: 0.9;
+}
