@@ -154,6 +154,8 @@
 
 .ver-residente-campo-completo {
     grid-column: 1 / -1;
+    white-space: normal;
+    overflow-wrap: break-word;
 }
 
 .ver-residente-botones {
