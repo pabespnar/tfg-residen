@@ -291,6 +291,13 @@ class CrearEntregaPackView(APIView):
                 suministro.stock -= cantidad_necesaria
                 suministro.save(update_fields=['stock'])
 
+                BajaAlmacen.objects.create(
+                    suministro=suministro,
+                    cantidad=cantidad_necesaria,
+                    stock_tras_baja=suministro.stock,
+                    tipo=BajaAlmacen.TipoBaja.PACK
+                )
+
             entregas = []
 
             for residente_id in residentes_ids:
@@ -311,14 +318,6 @@ class CrearEntregaPackView(APIView):
                     )
 
                 entrega = serializer.save()
-
-                for contenido in contenidos:
-                    BajaAlmacen.objects.create(
-                        suministro=contenido.suministro,
-                        cantidad=contenido.cantidad,
-                        tipo=BajaAlmacen.TipoBaja.PACK,
-                        entrega_pack=entrega
-                    )
 
                 entregas.append(entrega)
 

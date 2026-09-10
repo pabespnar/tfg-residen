@@ -73,6 +73,14 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Packs
                             </li>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/almacen')
+                                }
+                            >   
+                                Almacen                  
+                            </li>
                         </>
                     )}
                 </ul>

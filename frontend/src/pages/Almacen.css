@@ -1,0 +1,61 @@
+.almacen-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.almacen-container h1 {
+    margin-bottom: 35px;
+    color: #1B5E20;
+    font-size: 28px;
+}
+
+.almacen-seccion {
+    width: 100%;
+}
+
+.almacen-seccion h2 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: #333;
+}
+
+.almacen-botones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.almacen-boton {
+    min-height: 150px;
+    padding: 25px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: white;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.almacen-boton:hover {
+    border-color: #1B5E20;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.almacen-boton-titulo {
+    display: block;
+    margin-bottom: 10px;
+    color: #1B5E20;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.almacen-boton-descripcion {
+    display: block;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}

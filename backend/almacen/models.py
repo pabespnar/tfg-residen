@@ -28,4 +28,5 @@ class BajaAlmacen(models.Model):
     entrega_pack = models.ForeignKey(EntregaPack, on_delete=models.PROTECT, null=True, blank=True, related_name='bajas')
     observaciones = models.TextField(blank=True, null=True)
     servicio = models.CharField(max_length=20, choices=Servicio.choices, null=True)
+    stock_tras_baja = models.PositiveIntegerField()
 
