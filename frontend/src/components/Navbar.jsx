@@ -3,6 +3,7 @@ import fotoperfil from '../assets/fotoperfil_placeholder.png'
 import logocentro from '../assets/logo_placeholder.png'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import logoSinTexto from '../assets/logoSinTexto.png'
 
 function Navbar() {
 
@@ -39,7 +40,10 @@ function Navbar() {
                 className="init"
                 onClick={() => navigate('/')}
             >
-                Gestión residencial
+                <img
+                    src={logoSinTexto}
+                    alt="Gestión residencial"
+                />
             </div>
 
             <div className="center-info">

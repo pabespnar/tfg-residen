@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import './App.css'
+import Inicio from "./pages/Inicio";
 import Layout from './Layout'
 import Perfil from './pages/Perfil'
 import Login from './pages/Login'
@@ -221,7 +222,7 @@ function App() {
                         <Route
                             path="/"
                             element={
-                                <h1>Página principal</h1>
+                                <Inicio rol={rol} />
                             }
                         />
 

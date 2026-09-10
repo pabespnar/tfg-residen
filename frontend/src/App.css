@@ -115,6 +115,13 @@ main {
     transform: scale(1.1);
 }
 
+.init img {
+    height: 35px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
 .logout-overlay {
     position: fixed;
     inset: 0;

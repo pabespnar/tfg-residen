@@ -1,0 +1,46 @@
+.inicio {
+    padding: 30px;
+}
+
+.inicio-cabecera {
+    margin-bottom: 30px;
+}
+
+.inicio-cabecera h1 {
+    margin: 0 0 10px;
+    color: #1b5e20;
+    font-size: 28px;
+}
+
+.inicio-cabecera p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.inicio-funciones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.inicio-funcion {
+    padding: 24px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.inicio-funcion h2 {
+    margin: 0 0 10px;
+    color: #1b5e20;
+    font-size: 19px;
+}
+
+.inicio-funcion p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+}
