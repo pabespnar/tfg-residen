@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'residentes',
     'suministros',
     'dashboards',
+    'almacen',
 ]
 
 MIDDLEWARE = [

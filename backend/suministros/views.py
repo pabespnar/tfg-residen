@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 from residentes.models import Residente
+from almacen.models import BajaAlmacen
 from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
 from django.db import transaction
@@ -309,7 +310,17 @@ class CrearEntregaPackView(APIView):
                         status=400
                     )
 
-                entregas.append(serializer.save())
+                entrega = serializer.save()
+
+                for contenido in contenidos:
+                    BajaAlmacen.objects.create(
+                        suministro=contenido.suministro,
+                        cantidad=contenido.cantidad,
+                        tipo=BajaAlmacen.TipoBaja.PACK,
+                        entrega_pack=entrega
+                    )
+
+                entregas.append(entrega)
 
         serializer = EntregaPackSerializer(
             entregas,
