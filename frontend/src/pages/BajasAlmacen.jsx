@@ -8,6 +8,7 @@ function BajasAlmacen() {
     const [bajas, setBajas] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [bajaSeleccionada, setBajaSeleccionada] = useState(null)
 
     const navigate = useNavigate()
 
@@ -51,6 +52,10 @@ function BajasAlmacen() {
         obtenerBajas()
 
     }, [])
+
+    const cerrarModal = () => {
+        setBajaSeleccionada(null)
+    }
 
     if (loading) {
         return (
@@ -120,7 +125,20 @@ function BajasAlmacen() {
 
                             {bajas.map((baja) => (
 
-                                <tr key={baja.id}>
+                                <tr
+                                    key={baja.id}
+                                    onClick={() => {
+                                        if (baja.tipo === 'EXTRAORDINARIA') {
+                                            setBajaSeleccionada(baja)
+                                        }
+                                    }}
+                                    style={{
+                                        cursor:
+                                            baja.tipo === 'EXTRAORDINARIA'
+                                                ? 'pointer'
+                                                : 'default'
+                                    }}
+                                >
 
                                     <td>
                                         {baja.suministro_nombre}
@@ -173,6 +191,43 @@ function BajasAlmacen() {
                 </button>
 
             </div>
+
+            {bajaSeleccionada && (
+                <div className="crear-modulo-overlay">
+
+                    <div className="crear-modulo-confirmacion">
+
+                        <h2>Observaciones</h2>
+
+                        <div className="crear-modulo-campo">
+
+                            <label>Observaciones</label>
+
+                            <textarea
+                                value={
+                                    bajaSeleccionada.observaciones || ''
+                                }
+                                readOnly
+                                rows="5"
+                            />
+
+                        </div>
+
+                        <div className="crear-modulo-botones">
+
+                            <button
+                                type="button"
+                                onClick={cerrarModal}
+                            >
+                                Cerrar
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
 
         </div>
     )
