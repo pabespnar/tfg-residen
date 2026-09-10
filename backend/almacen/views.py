@@ -34,7 +34,30 @@ class CrearBajaExtraordinariaView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+
+            suministro = serializer.validated_data['suministro']
+            cantidad = serializer.validated_data['cantidad']
+
+            if suministro.stock < cantidad:
+                return Response(
+                    {
+                        'cantidad':
+                        'No hay stock suficiente para realizar la baja.'
+                    },
+                    status=400
+                )
+
+            suministro.stock -= cantidad
+            suministro.save(update_fields=['stock'])
+
+            datos_baja = serializer.validated_data.copy()
+            datos_baja['stock_tras_baja'] = suministro.stock
+
+            baja = BajaAlmacen.objects.create(
+                **datos_baja
+            )
+
+            serializer = BajaAlmacenSerializer(baja)
 
             return Response(
                 serializer.data,

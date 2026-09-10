@@ -59,3 +59,112 @@
     font-size: 14px;
     line-height: 1.5;
 }
+
+.crear-modulo-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.crear-modulo-confirmacion {
+    width: 500px;
+    max-width: 90%;
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.crear-modulo-confirmacion h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: #1B5E20;
+    font-size: 22px;
+}
+
+.crear-modulo-campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+.crear-modulo-campo label {
+    margin-bottom: 7px;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.crear-modulo-campo input,
+.crear-modulo-campo select,
+.crear-modulo-campo textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.crear-modulo-campo textarea {
+    resize: vertical;
+}
+
+.crear-modulo-campo input:focus,
+.crear-modulo-campo select:focus,
+.crear-modulo-campo textarea:focus {
+    outline: none;
+    border-color: #1B5E20;
+}
+
+.crear-modulo-error {
+    display: block;
+    margin-top: 6px;
+    color: #d32f2f;
+    font-size: 13px;
+}
+
+.crear-modulo-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.crear-modulo-botones button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.crear-modulo-botones button[type="submit"] {
+    background-color: #1B5E20;
+    color: white;
+}
+
+.crear-modulo-botones button[type="submit"]:hover {
+    background-color: #144716;
+}
+
+.crear-modulo-botones button[type="button"] {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.crear-modulo-botones button[type="button"]:hover {
+    background-color: #d0d0d0;
+}
+
+.crear-modulo-botones button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

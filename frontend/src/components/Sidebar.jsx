@@ -79,7 +79,7 @@ function Sidebar({ setAutenticado, rol }) {
                                     navigate('/almacen')
                                 }
                             >   
-                                Almacen                  
+                                Almacén                  
                             </li>
                         </>
                     )}
