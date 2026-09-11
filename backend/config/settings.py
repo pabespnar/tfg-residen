@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'suministros',
     'dashboards',
     'almacen',
+    'expedientes',
 ]
 
 MIDDLEWARE = [
