@@ -11,7 +11,7 @@ class ListaBajasAlmacenView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
     def get(self, request):
-        bajas = BajaAlmacen.objects.all()
+        bajas = BajaAlmacen.objects.all().order_by('-fecha', '-id')
 
         serializer = BajaAlmacenSerializer(
             bajas,

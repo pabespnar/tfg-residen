@@ -128,15 +128,10 @@ function BajasAlmacen() {
                                 <tr
                                     key={baja.id}
                                     onClick={() => {
-                                        if (baja.tipo === 'EXTRAORDINARIA') {
-                                            setBajaSeleccionada(baja)
-                                        }
+                                        setBajaSeleccionada(baja)
                                     }}
                                     style={{
-                                        cursor:
-                                            baja.tipo === 'EXTRAORDINARIA'
-                                                ? 'pointer'
-                                                : 'default'
+                                        cursor: 'pointer'
                                     }}
                                 >
 

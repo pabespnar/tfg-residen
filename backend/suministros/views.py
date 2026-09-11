@@ -278,6 +278,12 @@ class CrearEntregaPackView(APIView):
                     status=400
                 )
 
+        observaciones = (
+            f'Baja causada por la asignación de '
+            f'"{pack.nombre}" a {numero_residentes} '
+            f'{"residente" if numero_residentes == 1 else "residentes"}.'
+        )
+
         with transaction.atomic():
 
             for contenido in contenidos:
@@ -295,7 +301,8 @@ class CrearEntregaPackView(APIView):
                     suministro=suministro,
                     cantidad=cantidad_necesaria,
                     stock_tras_baja=suministro.stock,
-                    tipo=BajaAlmacen.TipoBaja.PACK
+                    tipo=BajaAlmacen.TipoBaja.PACK,
+                    observaciones=observaciones
                 )
 
             entregas = []
