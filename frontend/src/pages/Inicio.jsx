@@ -1,6 +1,9 @@
+import { useNavigate } from 'react-router-dom'
 import './Inicio.css'
 
 function Inicio({ rol }) {
+
+    const navigate = useNavigate()
 
     const contenido = {
         residentes: {
@@ -12,21 +15,57 @@ function Inicio({ rol }) {
                     titulo: 'Residentes',
                     descripcion:
                         'Consulta, registra y modifica la información de los residentes del centro.',
+                    ruta: '/residentes',
                 },
                 {
                     titulo: 'Módulos y habitaciones',
                     descripcion:
                         'Gestiona los módulos y habitaciones, su capacidad y la ocupación de los mismos.',
+                    ruta: '/modulos',
                 },
                 {
                     titulo: 'Histórico de residentes',
                     descripcion:
                         'Consulta las estancias finalizadas y el histórico de residentes dados de baja.',
+                    ruta: '/historico_residentes',
                 },
                 {
                     titulo: 'Dashboard',
                     descripcion:
                         'Consulta información y estadísticas relacionadas con los residentes del centro.',
+                    ruta: '/dashboard_residentes',
+                },
+            ],
+        },
+
+        almacen: {
+            titulo: 'Gestión de almacén',
+            descripcion:
+                'Desde este apartado podrás gestionar los suministros, packs y movimientos de almacén del centro.',
+            funciones: [
+                {
+                    titulo: 'Suministros',
+                    descripcion:
+                        'Consulta y gestiona los suministros disponibles en el almacén, organizados por categorías.',
+                    ruta: '/suministros',
+                },
+                {
+                    titulo: 'Packs',
+                    descripcion:
+                        'Gestiona los packs de suministros y su asignación a los residentes.',
+                    ruta: '/packs',
+                },
+                {
+                    titulo: 'Almacén',
+                    descripcion:
+                        'Gestiona las entradas y salidas de suministros del almacén.',
+                    ruta: '/almacen',
+                },
+                {
+                    titulo: 'Dashboard',
+                    descripcion:
+                        'Consulta información y estadísticas relacionadas con el almacén y sus suministros.',
+                    ruta: '/dashboard_almacen',
                 },
             ],
         },
@@ -53,6 +92,10 @@ function Inicio({ rol }) {
                     <div
                         className="inicio-funcion"
                         key={funcion.titulo}
+                        onClick={() => navigate(funcion.ruta)}
+                        style={{
+                            cursor: 'pointer'
+                        }}
                     >
                         <h2>{funcion.titulo}</h2>
 

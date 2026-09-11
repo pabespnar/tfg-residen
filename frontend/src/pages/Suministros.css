@@ -112,11 +112,11 @@
     align-items: center;
     justify-content: space-between;
 
+    gap: 15px;
+
     border-bottom: 1px solid #eeeeee;
 
     background-color: #fafafa;
-
-    cursor: pointer;
 
     transition: background-color 0.2s ease;
 }
@@ -129,6 +129,18 @@
     background-color: #f1f1f1;
 }
 
+.suministro-item-informacion {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-width: 0;
+
+    cursor: pointer;
+}
+
 .suministro-nombre {
     color: #333;
     font-size: 14px;
@@ -138,6 +150,37 @@
     color: #555;
     font-size: 13px;
     font-weight: 500;
+}
+
+.suministro-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+.suministro-acciones button {
+    padding: 7px 12px;
+
+    border-radius: 6px;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    transition: opacity 0.2s ease;
+}
+
+.suministro-editar {
+    border: 1px solid #1b5e20;
+
+    background-color: white;
+    color: #1b5e20;
+}
+
+.suministro-acciones button:hover {
+    opacity: 0.75;
 }
 
 .suministros-sin-elementos {
@@ -297,6 +340,133 @@
 }
 
 .crear-categoria-botones button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* EDITAR SUMINISTRO */
+
+.editar-suministro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.editar-suministro-confirmacion {
+    width: 450px;
+
+    padding: 30px;
+
+    background-color: white;
+
+    border-radius: 10px;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.editar-suministro-confirmacion h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+
+    color: #1b5e20;
+    font-size: 22px;
+}
+
+.editar-suministro-campo {
+    display: flex;
+    flex-direction: column;
+
+    margin-bottom: 20px;
+}
+
+.editar-suministro-campo label {
+    margin-bottom: 7px;
+
+    color: #333;
+    font-weight: 600;
+}
+
+.editar-suministro-campo input,
+.editar-suministro-campo select,
+.editar-suministro-campo textarea {
+    padding: 10px 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.editar-suministro-campo input:focus,
+.editar-suministro-campo select:focus,
+.editar-suministro-campo textarea:focus {
+    border-color: #1b5e20;
+}
+
+.editar-suministro-campo textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.editar-suministro-error {
+    margin: 7px 0 0 0;
+
+    color: #b71c1c;
+    font-size: 13px;
+}
+
+.editar-suministro-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+.editar-suministro-botones button {
+    padding: 10px 18px;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.editar-suministro-botones button:first-child {
+    border: none;
+
+    background-color: #1b5e20;
+    color: white;
+}
+
+.editar-suministro-botones button:last-child {
+    border: 1px solid #ccc;
+
+    background-color: white;
+    color: #555;
+}
+
+.editar-suministro-botones button:hover {
+    opacity: 0.9;
+}
+
+.editar-suministro-botones button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }

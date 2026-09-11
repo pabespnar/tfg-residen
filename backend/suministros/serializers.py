@@ -5,6 +5,19 @@ from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 
 class SuministroSerializer(serializers.ModelSerializer):
 
+    categoria = serializers.PrimaryKeyRelatedField(
+        queryset=Categoria.objects.all(),
+        allow_null=True,
+        required=False
+    )
+
+    categoria_nombre = serializers.CharField(
+        source='categoria.nombre',
+        read_only=True
+    )
+
+    packs = serializers.SerializerMethodField()
+
     class Meta:
         model = Suministro
 
@@ -15,10 +28,31 @@ class SuministroSerializer(serializers.ModelSerializer):
             'stock',
             'unidad',
             'stock_minimo',
+            'categoria',
+            'categoria_nombre',
+            'f_alta',
+            'packs',
         ]
 
         read_only_fields = [
             'id',
+            'categoria_nombre',
+            'f_alta',
+            'packs',
+        ]
+
+    def get_packs(self, obj):
+        contenidos = ContenidoPack.objects.filter(
+            suministro=obj
+        ).select_related('pack')
+
+        return [
+            {
+                'id': contenido.pack.id,
+                'nombre': contenido.pack.nombre,
+                'cantidad': contenido.cantidad,
+            }
+            for contenido in contenidos
         ]
 
     def validate_nombre(self, value):
@@ -56,7 +90,6 @@ class SuministroSerializer(serializers.ModelSerializer):
             )
 
         return value
-
 
 class CategoriaSerializer(serializers.ModelSerializer):
 

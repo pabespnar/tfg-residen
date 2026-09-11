@@ -20,7 +20,10 @@ import DashboardResidentes from "./pages/DashboardResidentes";
 import Suministros from "./pages/Suministros";
 import Packs from "./pages/Packs";
 import AsignarPack from "./pages/AsignarPack";
+import Almacen from './pages/Almacen';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import BajasAlmacen from './pages/BajasAlmacen';
+import VerSuministro from './pages/VerSuministro';
 
 function tokenValido() {
 
@@ -291,6 +294,11 @@ function App() {
                                 />
 
                                 <Route
+                                    path="/suministros/:id"
+                                    element={<VerSuministro />}
+                                />
+
+                                <Route
                                     path="/packs"
                                     element={<Packs />}
                                 />
@@ -298,6 +306,16 @@ function App() {
                                 <Route
                                     path="/packs/asignar/:packId"
                                     element={<AsignarPack />}
+                                />
+
+                                <Route
+                                    path="/almacen"
+                                    element={<Almacen />}
+                                />
+
+                                <Route
+                                    path="/almacen/bajas"
+                                    element={<BajasAlmacen />}
                                 />
                             </>
                         )}

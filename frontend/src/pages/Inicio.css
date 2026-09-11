@@ -44,3 +44,8 @@
     font-size: 14px;
     line-height: 1.6;
 }
+
+.inicio-funcion:hover {
+    border-color: #1B5E20;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}

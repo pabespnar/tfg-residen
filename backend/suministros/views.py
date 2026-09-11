@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 from residentes.models import Residente
+from almacen.models import BajaAlmacen
 from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
 from django.db import transaction
@@ -60,6 +61,9 @@ class EditarSuministroView(APIView):
 
         if 'stock_minimo' in request.data:
             datos['stock_minimo'] = request.data['stock_minimo']
+                
+        if 'categoria' in request.data:
+            datos['categoria'] = request.data['categoria']
 
         if not datos:
             return Response(
@@ -277,6 +281,12 @@ class CrearEntregaPackView(APIView):
                     status=400
                 )
 
+        observaciones = (
+            f'Baja causada por la asignación de '
+            f'"{pack.nombre}" a {numero_residentes} '
+            f'{"residente" if numero_residentes == 1 else "residentes"}.'
+        )
+
         with transaction.atomic():
 
             for contenido in contenidos:
@@ -289,6 +299,14 @@ class CrearEntregaPackView(APIView):
 
                 suministro.stock -= cantidad_necesaria
                 suministro.save(update_fields=['stock'])
+
+                BajaAlmacen.objects.create(
+                    suministro=suministro,
+                    cantidad=cantidad_necesaria,
+                    stock_tras_baja=suministro.stock,
+                    tipo=BajaAlmacen.TipoBaja.PACK,
+                    observaciones=observaciones
+                )
 
             entregas = []
 
@@ -309,7 +327,9 @@ class CrearEntregaPackView(APIView):
                         status=400
                     )
 
-                entregas.append(serializer.save())
+                entrega = serializer.save()
+
+                entregas.append(entrega)
 
         serializer = EntregaPackSerializer(
             entregas,
