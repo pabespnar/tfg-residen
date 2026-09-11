@@ -37,6 +37,38 @@ function Inicio({ rol }) {
                 },
             ],
         },
+
+        almacen: {
+            titulo: 'Gestión de almacén',
+            descripcion:
+                'Desde este apartado podrás gestionar los suministros, packs y movimientos de almacén del centro.',
+            funciones: [
+                {
+                    titulo: 'Suministros',
+                    descripcion:
+                        'Consulta y gestiona los suministros disponibles en el almacén, organizados por categorías.',
+                    ruta: '/suministros',
+                },
+                {
+                    titulo: 'Packs',
+                    descripcion:
+                        'Gestiona los packs de suministros y su asignación a los residentes.',
+                    ruta: '/packs',
+                },
+                {
+                    titulo: 'Almacén',
+                    descripcion:
+                        'Gestiona las entradas y salidas de suministros del almacén.',
+                    ruta: '/almacen',
+                },
+                {
+                    titulo: 'Dashboard',
+                    descripcion:
+                        'Consulta información y estadísticas relacionadas con el almacén y sus suministros.',
+                    ruta: '/dashboard_almacen',
+                },
+            ],
+        },
     }
 
     const datos = contenido[rol]
