@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import "./Suministros.css";
 
 const Suministros = () => {
+    const navigate = useNavigate();
+
     const [categorias, setCategorias] = useState([]);
     const [categoriasAbiertas, setCategoriasAbiertas] = useState({});
     const [error, setError] = useState(null);
@@ -216,6 +219,11 @@ const Suministros = () => {
                                                 <div
                                                     className="suministro-item"
                                                     key={suministro.id}
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/suministros/${suministro.id}`
+                                                        )
+                                                    }
                                                 >
                                                     <span className="suministro-nombre">
                                                         {suministro.nombre}

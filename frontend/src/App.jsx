@@ -23,6 +23,7 @@ import AsignarPack from "./pages/AsignarPack";
 import Almacen from './pages/Almacen';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import BajasAlmacen from './pages/BajasAlmacen';
+import VerSuministro from './pages/VerSuministro';
 
 function tokenValido() {
 
@@ -290,6 +291,11 @@ function App() {
                                 <Route
                                     path="/suministros"
                                     element={<Suministros />}
+                                />
+
+                                <Route
+                                    path="/suministros/:id"
+                                    element={<VerSuministro />}
                                 />
 
                                 <Route
