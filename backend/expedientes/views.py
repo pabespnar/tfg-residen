@@ -2,9 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+from .permissions import EsGestorAdministracion
+
 from .models import Expediente
 from .serializers import ExpedienteSerializer
-from usuarios.permissions import EsGestorAdministracion
 
 
 class ListaExpedientesView(APIView):
