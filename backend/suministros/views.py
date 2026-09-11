@@ -61,6 +61,9 @@ class EditarSuministroView(APIView):
 
         if 'stock_minimo' in request.data:
             datos['stock_minimo'] = request.data['stock_minimo']
+                
+        if 'categoria' in request.data:
+            datos['categoria'] = request.data['categoria']
 
         if not datos:
             return Response(

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FaPencilAlt } from "react-icons/fa";
 
 import "./Suministros.css";
 
@@ -16,6 +17,16 @@ const Suministros = () => {
     const [descripcionCategoria, setDescripcionCategoria] = useState("");
     const [errorCrearCategoria, setErrorCrearCategoria] = useState(null);
     const [creandoCategoria, setCreandoCategoria] = useState(false);
+
+    const [mostrarEditarSuministro, setMostrarEditarSuministro] =
+        useState(false);
+    const [suministroEditando, setSuministroEditando] = useState(null);
+
+    const [categoriaEditar, setCategoriaEditar] = useState("");
+    const [stockMinimoEditar, setStockMinimoEditar] = useState("");
+    const [detallesEditar, setDetallesEditar] = useState("");
+    const [errorEditarSuministro, setErrorEditarSuministro] = useState(null);
+    const [editandoSuministro, setEditandoSuministro] = useState(false);
 
     useEffect(() => {
         const obtenerCategorias = async () => {
@@ -77,6 +88,157 @@ const Suministros = () => {
         setNombreCategoria("");
         setDescripcionCategoria("");
         setErrorCrearCategoria(null);
+    };
+
+    const abrirEditarSuministro = (suministro, categoria) => {
+        setSuministroEditando(suministro);
+
+        setCategoriaEditar(
+            categoria.id
+        );
+
+        setStockMinimoEditar(
+            suministro.stock_minimo ?? ""
+        );
+
+        setDetallesEditar(
+            suministro.detalles || ""
+        );
+
+        setErrorEditarSuministro(null);
+        setMostrarEditarSuministro(true);
+    };
+
+    const cerrarEditarSuministro = () => {
+        if (editandoSuministro) {
+            return;
+        }
+
+        setMostrarEditarSuministro(false);
+        setSuministroEditando(null);
+
+        setCategoriaEditar("");
+        setStockMinimoEditar("");
+        setDetallesEditar("");
+        setErrorEditarSuministro(null);
+    };
+
+    const editarSuministro = async (evento) => {
+        evento.preventDefault();
+
+        setErrorEditarSuministro(null);
+
+        const stockMinimo = Number(stockMinimoEditar);
+
+        if (
+            !Number.isInteger(stockMinimo) ||
+            stockMinimo < 0
+        ) {
+            setErrorEditarSuministro(
+                "El stock mínimo debe ser un número entero igual o superior a 0."
+            );
+            return;
+        }
+
+        if (
+            detallesEditar &&
+            !detallesEditar.trim()
+        ) {
+            setErrorEditarSuministro(
+                "Los detalles no pueden estar formados únicamente por espacios."
+            );
+            return;
+        }
+
+        try {
+            setEditandoSuministro(true);
+
+            const token = localStorage.getItem("access");
+
+            const respuesta = await axios.patch(
+                `http://127.0.0.1:8000/api/suministros/${suministroEditando.id}/editar/`,
+                {
+                    categoria: categoriaEditar
+                        ? Number(categoriaEditar)
+                        : null,
+                    stock_minimo: stockMinimo,
+                    detalles: detallesEditar.trim(),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setCategorias((categoriasAnteriores) =>
+                categoriasAnteriores.map((categoria) => ({
+                    ...categoria,
+                    suministros: categoria.suministros.map(
+                        (suministro) =>
+                            suministro.id === respuesta.data.id
+                                ? {
+                                      ...suministro,
+                                      ...respuesta.data,
+                                  }
+                                : suministro
+                    ),
+                }))
+            );
+
+            setMostrarEditarSuministro(false);
+            setSuministroEditando(null);
+
+            setCategoriaEditar("");
+            setStockMinimoEditar("");
+            setDetallesEditar("");
+            setErrorEditarSuministro(null);
+
+        } catch (error) {
+            console.error(
+                "Error al editar el suministro:",
+                error
+            );
+
+            if (error.response?.data) {
+                const errores = error.response.data;
+
+                if (errores.stock_minimo) {
+                    setErrorEditarSuministro(
+                        Array.isArray(errores.stock_minimo)
+                            ? errores.stock_minimo[0]
+                            : errores.stock_minimo
+                    );
+                } else if (errores.detalles) {
+                    setErrorEditarSuministro(
+                        Array.isArray(errores.detalles)
+                            ? errores.detalles[0]
+                            : errores.detalles
+                    );
+                } else if (errores.categoria) {
+                    setErrorEditarSuministro(
+                        Array.isArray(errores.categoria)
+                            ? errores.categoria[0]
+                            : errores.categoria
+                    );
+                } else if (errores.error) {
+                    setErrorEditarSuministro(
+                        errores.error
+                    );
+                } else {
+                    setErrorEditarSuministro(
+                        "No se ha podido editar el suministro."
+                    );
+                }
+            } else {
+                setErrorEditarSuministro(
+                    "No se ha podido editar el suministro."
+                );
+            }
+
+        } finally {
+            setEditandoSuministro(false);
+        }
     };
 
     const crearCategoria = async (evento) => {
@@ -219,20 +381,40 @@ const Suministros = () => {
                                                 <div
                                                     className="suministro-item"
                                                     key={suministro.id}
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `/suministros/${suministro.id}`
-                                                        )
-                                                    }
                                                 >
-                                                    <span className="suministro-nombre">
-                                                        {suministro.nombre}
-                                                    </span>
+                                                    <div
+                                                        className="suministro-item-informacion"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/suministros/${suministro.id}`
+                                                            )
+                                                        }
+                                                    >
+                                                        <span className="suministro-nombre">
+                                                            {suministro.nombre}
+                                                        </span>
 
-                                                    <span className="suministro-stock">
-                                                        {suministro.stock}{" "}
-                                                        {suministro.unidad}
-                                                    </span>
+                                                        <span className="suministro-stock">
+                                                            {suministro.stock}{" "}
+                                                            {suministro.unidad}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="suministro-acciones">
+                                                        <button
+                                                            className="suministro-editar"
+                                                            onClick={(evento) => {
+                                                                evento.stopPropagation();
+                                                                abrirEditarSuministro(
+                                                                    suministro,
+                                                                    categoria
+                                                                );
+                                                            }}
+                                                            disabled={editandoSuministro}
+                                                        >
+                                                            <FaPencilAlt />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             )
                                         )
@@ -310,6 +492,107 @@ const Suministros = () => {
                                     type="button"
                                     onClick={cerrarModalCrearCategoria}
                                     disabled={creandoCategoria}
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {mostrarEditarSuministro && suministroEditando && (
+                <div className="editar-suministro-overlay">
+                    <div className="editar-suministro-confirmacion">
+                        <h2>Editar suministro</h2>
+
+                        <form onSubmit={editarSuministro}>
+                            <div className="editar-suministro-campo">
+                                <label htmlFor="categoria-suministro">
+                                    Categoría
+                                </label>
+
+                                <select
+                                    id="categoria-suministro"
+                                    value={categoriaEditar}
+                                    onChange={(evento) =>
+                                        setCategoriaEditar(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={editandoSuministro}
+                                >
+                                    <option value="">
+                                        Sin categoría
+                                    </option>
+
+                                    {categorias.map((categoria) => (
+                                        <option
+                                            key={categoria.id}
+                                            value={categoria.id}
+                                        >
+                                            {categoria.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="editar-suministro-campo">
+                                <label htmlFor="stock-minimo-suministro">
+                                    Stock mínimo
+                                </label>
+
+                                <input
+                                    id="stock-minimo-suministro"
+                                    type="number"
+                                    min="0"
+                                    value={stockMinimoEditar}
+                                    onChange={(evento) =>
+                                        setStockMinimoEditar(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={editandoSuministro}
+                                />
+                            </div>
+
+                            <div className="editar-suministro-campo">
+                                <label htmlFor="detalles-suministro">
+                                    Detalles
+                                </label>
+
+                                <textarea
+                                    id="detalles-suministro"
+                                    value={detallesEditar}
+                                    onChange={(evento) =>
+                                        setDetallesEditar(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={editandoSuministro}
+                                />
+                            </div>
+
+                            {errorEditarSuministro && (
+                                <p className="editar-suministro-error">
+                                    {errorEditarSuministro}
+                                </p>
+                            )}
+
+                            <div className="editar-suministro-botones">
+                                <button
+                                    type="submit"
+                                    disabled={editandoSuministro}
+                                >
+                                    {editandoSuministro
+                                        ? "Guardando..."
+                                        : "Editar suministro"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={cerrarEditarSuministro}
+                                    disabled={editandoSuministro}
                                 >
                                     Cancelar
                                 </button>

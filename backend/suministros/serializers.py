@@ -5,6 +5,12 @@ from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 
 class SuministroSerializer(serializers.ModelSerializer):
 
+    categoria = serializers.PrimaryKeyRelatedField(
+        queryset=Categoria.objects.all(),
+        allow_null=True,
+        required=False
+    )
+
     categoria_nombre = serializers.CharField(
         source='categoria.nombre',
         read_only=True
@@ -22,6 +28,7 @@ class SuministroSerializer(serializers.ModelSerializer):
             'stock',
             'unidad',
             'stock_minimo',
+            'categoria',
             'categoria_nombre',
             'f_alta',
             'packs',
