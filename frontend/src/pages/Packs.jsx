@@ -366,7 +366,7 @@ function Packs() {
                 <div>
                     <h1>Packs</h1>
                     <p>
-                        Gestiona los packs de suministros disponibles
+                        Gestiona los packs de suministros disponibles para los residentes
                     </p>
                 </div>
 
