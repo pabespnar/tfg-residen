@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BajaAlmacen
+from .models import AltaAlmacen, BajaAlmacen
 
 
 class BajaAlmacenSerializer(serializers.ModelSerializer):
@@ -37,11 +37,11 @@ class BajaAlmacenSerializer(serializers.ModelSerializer):
             'stock_tras_baja',
         ]
 
-    def validate(self, data):
-        tipo = data.get('tipo')
-        entrega_pack = data.get('entrega_pack')
-        observaciones = data.get('observaciones')
-        servicio = data.get('servicio')
+    def validate(self, value):
+        tipo = value.get('tipo')
+        entrega_pack = value.get('entrega_pack')
+        observaciones = value.get('observaciones')
+        servicio = value.get('servicio')
 
         if tipo == BajaAlmacen.TipoBaja.PACK:
             if not entrega_pack:
@@ -72,4 +72,51 @@ class BajaAlmacenSerializer(serializers.ModelSerializer):
                     'Una baja de servicio no puede estar asociada a una entrega de pack.'
                 })
 
-        return data
+        return value
+
+
+class AltaAlmacenSerializer(serializers.ModelSerializer):
+
+    pedido_tipo = serializers.CharField(source='pedido.tipo', read_only=True)
+    suministro_nombre = serializers.CharField(source='suministro.nombre', read_only=True)
+    suministro_unidad = serializers.CharField(source='suministro.unidad', read_only=True)
+
+    class Meta:
+        model = AltaAlmacen
+        fields = [
+            'id',
+            'pedido',
+            'pedido_tipo',
+            'suministro',
+            'suministro_nombre',
+            'suministro_unidad',
+            'cantidad',
+            'precio_unidad',
+            'fecha',
+            'factura_albaran',
+            'stock_tras_alta',
+        ]
+        read_only_fields = [
+            'id',
+            'pedido_tipo',
+            'suministro_nombre',
+            'suministro_unidad',
+            'fecha',
+            'stock_tras_alta',
+        ]
+
+    def validate_cantidad(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "La cantidad debe ser un número positivo."
+            )
+
+        return value
+
+    def validate_precio_unidad(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "El precio por unidad no puede ser negativo."
+            )
+
+        return value

@@ -179,6 +179,7 @@ class PedidoSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'nombre',
+            'tipo',
             'expediente',
             'expediente_nombre',
             'fecha',
@@ -199,6 +200,26 @@ class PedidoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El nombre no puede superar los 50 caracteres."
             )
+
+        return value
+
+    def validate(self, value):
+        tipo = value.get('tipo')
+        expediente = value.get('expediente')
+
+        if tipo == Pedido.TipoPedido.EXPEDIENTE:
+            if not expediente:
+                raise serializers.ValidationError({
+                    'expediente':
+                    'Un pedido con expediente debe estar asociado a un expediente.'
+                })
+
+        if tipo == Pedido.TipoPedido.GENERAL:
+            if expediente:
+                raise serializers.ValidationError({
+                    'expediente':
+                    'Un gasto general no puede estar asociado a un expediente.'
+                })
 
         return value
 
