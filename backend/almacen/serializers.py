@@ -77,15 +77,32 @@ class BajaAlmacenSerializer(serializers.ModelSerializer):
 
 class AltaAlmacenSerializer(serializers.ModelSerializer):
 
-    pedido_tipo = serializers.CharField(source='pedido.tipo', read_only=True)
-    suministro_nombre = serializers.CharField(source='suministro.nombre', read_only=True)
-    suministro_unidad = serializers.CharField(source='suministro.unidad', read_only=True)
+    pedido_tipo = serializers.CharField(
+        source='pedido.tipo_pedido',
+        read_only=True
+    )
+
+    pedido_nombre = serializers.CharField(
+        source='pedido.nombre',
+        read_only=True
+    )
+
+    suministro_nombre = serializers.CharField(
+        source='suministro.nombre',
+        read_only=True
+    )
+
+    suministro_unidad = serializers.CharField(
+        source='suministro.unidad',
+        read_only=True
+    )
 
     class Meta:
         model = AltaAlmacen
         fields = [
             'id',
             'pedido',
+            'pedido_nombre',
             'pedido_tipo',
             'suministro',
             'suministro_nombre',
@@ -99,6 +116,7 @@ class AltaAlmacenSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'id',
+            'pedido_nombre',
             'pedido_tipo',
             'suministro_nombre',
             'suministro_unidad',

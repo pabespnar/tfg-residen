@@ -45,7 +45,8 @@ class Pedido(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     expediente = models.ForeignKey(Expediente, on_delete=models.PROTECT, related_name='pedidos', null=True, blank=True)
     fecha = models.DateField(auto_now_add=True)
-    tipo = models.CharField(max_length=20, choices=TipoPedido.choices)
+    tipo_pedido = models.CharField(max_length=20, choices=TipoPedido.choices)
+    recibido = models.BooleanField(default=False)
 
 
     def __str__(self):

@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
-from backend.expedientes.models import Pedido
+from expedientes.models import Pedido
 from suministros.models import Suministro, EntregaPack
 
 

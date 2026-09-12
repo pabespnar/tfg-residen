@@ -179,10 +179,11 @@ class PedidoSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'nombre',
-            'tipo',
+            'tipo_pedido',
             'expediente',
             'expediente_nombre',
             'fecha',
+            'recibido',
         ]
 
         read_only_fields = [
