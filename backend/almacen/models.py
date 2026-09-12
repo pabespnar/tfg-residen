@@ -8,8 +8,7 @@ class BajaAlmacen(models.Model):
 
     class TipoBaja(models.TextChoices):
         PACK = 'PACK', 'Pack'
-        EXTRAORDINARIA = 'EXTRAORDINARIA', 'Extraordinaria'
-
+        SERVICIO = 'SERVICIO', 'Servicio'
 
     class Servicio(models.TextChoices):
         LIMPIEZA = 'LIMPIEZA', 'Limpieza'

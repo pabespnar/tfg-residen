@@ -55,21 +55,21 @@ class BajaAlmacenSerializer(serializers.ModelSerializer):
                     'Una baja de tipo pack no puede tener un servicio asociado.'
                 })
 
-        if tipo == BajaAlmacen.TipoBaja.EXTRAORDINARIA:
+        if tipo == BajaAlmacen.TipoBaja.SERVICIO:
             if not servicio:
                 raise serializers.ValidationError({
                     'servicio':
-                    'Una baja extraordinaria debe tener un servicio asociado.'
+                    'Una baja de servicio debe tener un servicio asociado.'
                 })
             if not observaciones or not observaciones.strip():
                 raise serializers.ValidationError({
                     'observaciones':
-                    'Las bajas extraordinarias requieren observaciones.'
+                    'Las bajas de servicio requieren observaciones.'
                 })
             if entrega_pack:
                 raise serializers.ValidationError({
                     'entrega_pack':
-                    'Una baja extraordinaria no puede estar asociada a una entrega de pack.'
+                    'Una baja de servicio no puede estar asociada a una entrega de pack.'
                 })
 
         return data

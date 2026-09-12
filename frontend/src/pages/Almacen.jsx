@@ -149,7 +149,7 @@ function Almacen() {
 
         if (!observaciones.trim()) {
             nuevosErrores.observaciones =
-                'Las bajas extraordinarias requieren observaciones.'
+                'Las bajas de servicio requieren observaciones.'
         }
 
         if (Object.keys(nuevosErrores).length > 0) {
@@ -164,7 +164,7 @@ function Almacen() {
             const token = localStorage.getItem('access')
 
             await axios.post(
-                'http://127.0.0.1:8000/api/almacen/crearbajaextraordinaria/',
+                'http://127.0.0.1:8000/api/almacen/crearbajaservicio/',
                 {
                     suministro: Number(suministro),
                     cantidad: Number(cantidad),
@@ -227,7 +227,7 @@ function Almacen() {
                         </span>
 
                         <span className="almacen-boton-descripcion">
-                            Registrar una salida extraordinaria de almacén
+                            Registrar una salida de servicio de almacén
                         </span>
                     </button>
 

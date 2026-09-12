@@ -21,13 +21,13 @@ class ListaBajasAlmacenView(APIView):
         return Response(serializer.data)
 
 
-class CrearBajaExtraordinariaView(APIView):
+class CrearBajaServicioView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
     def post(self, request):
         datos = request.data.copy()
 
-        datos['tipo'] = BajaAlmacen.TipoBaja.EXTRAORDINARIA
+        datos['tipo'] = BajaAlmacen.TipoBaja.SERVICIO
 
         serializer = BajaAlmacenSerializer(
             data=datos
