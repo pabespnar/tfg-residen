@@ -37,6 +37,7 @@ class AltaAlmacen(models.Model):
     cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     precio_unidad = models.DecimalField(max_digits=10,decimal_places=2,validators=[MinValueValidator(0)])
     fecha = models.DateField(auto_now_add=True)
+    observaciones = models.TextField(blank=True, null=True)
     factura_albaran = models.FileField(upload_to='facturas_albaranes/', null=True, blank=True)
     stock_tras_alta = models.PositiveIntegerField()
 

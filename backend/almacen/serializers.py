@@ -93,6 +93,7 @@ class AltaAlmacenSerializer(serializers.ModelSerializer):
             'cantidad',
             'precio_unidad',
             'fecha',
+            'observaciones',
             'factura_albaran',
             'stock_tras_alta',
         ]
