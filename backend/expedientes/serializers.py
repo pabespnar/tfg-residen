@@ -73,11 +73,14 @@ class ExpedienteSerializer(serializers.ModelSerializer):
             'contrato',
             'proveedor',
             'proveedor_nombre',
+            'presupuesto',
+            'presupuesto_restante',
         ]
 
         read_only_fields = [
             'id',
             'proveedor_nombre',
+            'presupuesto_restante',
         ]
 
     def validate_nombre(self, value):
@@ -107,11 +110,18 @@ class ExpedienteSerializer(serializers.ModelSerializer):
     def validate(self, data):
         fecha_inicio = data.get('fecha_inicio')
         fecha_final = data.get('fecha_final')
+        presupuesto = data.get('presupuesto')
 
         if fecha_inicio and fecha_final and fecha_final < fecha_inicio:
             raise serializers.ValidationError({
                 'fecha_final':
                     'La fecha final no puede ser anterior a la fecha de inicio.'
+            })
+
+        if presupuesto is not None and presupuesto < 0:
+            raise serializers.ValidationError({
+                'presupuesto':
+                    'El presupuesto no puede ser negativo.'
             })
 
         return data
@@ -138,7 +148,6 @@ class DetalleExpedienteSerializer(serializers.ModelSerializer):
             'suministro',
             'suministro_nombre',
             'suministro_unidad',
-            'cantidad_maxima',
             'precio_unidad',
         ]
 
@@ -147,14 +156,6 @@ class DetalleExpedienteSerializer(serializers.ModelSerializer):
             'suministro_nombre',
             'suministro_unidad',
         ]
-
-    def validate_cantidad_maxima(self, value):
-        if value <= 0:
-            raise serializers.ValidationError(
-                "La cantidad máxima debe ser un número positivo."
-            )
-
-        return value
 
     def validate_precio_unidad(self, value):
         if value < 0:
@@ -224,6 +225,7 @@ class DetallePedidoSerializer(serializers.ModelSerializer):
             'suministro_nombre',
             'suministro_unidad',
             'cantidad',
+            'precio_unidad',
         ]
 
         read_only_fields = [
@@ -236,6 +238,14 @@ class DetallePedidoSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError(
                 "La cantidad debe ser un número positivo."
+            )
+
+        return value
+
+    def validate_precio_unidad(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "El precio por unidad no puede ser negativo."
             )
 
         return value

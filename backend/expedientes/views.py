@@ -33,7 +33,9 @@ class CrearExpedienteView(APIView):
         )
 
         if serializer.is_valid():
-            expediente = serializer.save()
+            expediente = serializer.save(
+                presupuesto_restante=serializer.validated_data['presupuesto']
+            )
 
             return Response(
                 ExpedienteSerializer(expediente).data,
