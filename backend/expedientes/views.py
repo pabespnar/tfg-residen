@@ -6,7 +6,7 @@ from .permissions import EsGestorAdministracion
 from suministros.permissions import EsGestorAlmacen
 
 from .models import Expediente, Pedido, DetallePedido
-from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer
+from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer
 
 
 class ListaExpedientesView(APIView):
@@ -143,3 +143,45 @@ class CrearDetallePedidoView(APIView):
             serializer.errors,
             status=400
         )
+class VerExpedienteView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def get(self, request, pk):
+        try:
+            expediente = Expediente.objects.select_related(
+                'proveedor'
+            ).prefetch_related(
+                'detalles_expediente__suministro',
+                'pedidos'
+            ).get(
+                pk=pk
+            )
+
+        except Expediente.DoesNotExist:
+            return Response(
+                {"error": "El expediente no existe."},
+                status=404
+            )
+
+        expediente_serializer = ExpedienteSerializer(
+            expediente
+        )
+
+        detalles_serializer = DetalleExpedienteSerializer(
+            expediente.detalles_expediente.all().order_by('id'),
+            many=True
+        )
+
+        pedidos_serializer = PedidoSerializer(
+            expediente.pedidos.all().order_by(
+                '-fecha',
+                '-id'
+            ),
+            many=True
+        )
+
+        return Response({
+            'expediente': expediente_serializer.data,
+            'detalles': detalles_serializer.data,
+            'pedidos': pedidos_serializer.data,
+        })

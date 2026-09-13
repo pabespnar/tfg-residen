@@ -47,7 +47,8 @@
     border: 1px solid #ddd;
     border-radius: 10px;
     padding: 22px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
 }
 
 .expediente-card-header {

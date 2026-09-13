@@ -27,6 +27,7 @@ import AltasAlmacen from './pages/AltasAlmacen';
 import VerSuministro from './pages/VerSuministro';
 import DashboardAlmacen from "./pages/DashboardAlmacen";
 import Expedientes from "./pages/Expedientes";
+import VerExpediente from "./pages/VerExpediente";
 
 
 function tokenValido() {
@@ -338,6 +339,10 @@ function App() {
                                 <Route
                                     path="/expedientes"
                                     element={<Expedientes />}
+                                />
+                                <Route
+                                    path="/expedientes/:id"
+                                    element={<VerExpediente />}
                                 />
                             </>
                         )}

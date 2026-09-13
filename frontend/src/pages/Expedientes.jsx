@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import './Expedientes.css';
 
@@ -9,6 +10,8 @@ function Expedientes() {
     const [expedientes, setExpedientes] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -108,6 +111,7 @@ function Expedientes() {
                         <div
                             className="expediente-card"
                             key={expediente.id}
+                            onClick={() => navigate(`/expedientes/${expediente.id}`)}
                         >
 
                             <div className="expediente-card-header">

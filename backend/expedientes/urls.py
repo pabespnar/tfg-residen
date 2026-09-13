@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import ListaExpedientesView, CrearExpedienteView, ListaPedidosView, ListaPedidosRecibidosView, CrearPedidoView, ListaDetallesPedidoView, CrearDetallePedidoView
+from .views import ListaExpedientesView, CrearExpedienteView, ListaPedidosView, ListaPedidosRecibidosView, CrearPedidoView, ListaDetallesPedidoView, CrearDetallePedidoView, VerExpedienteView
 
 
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
     path('crearpedido/', CrearPedidoView.as_view()),
     path('pedidos/<int:pedido_id>/detalles/', ListaDetallesPedidoView.as_view()),
     path('creardetallepedido/', CrearDetallePedidoView.as_view()),
+    path('expedientes/<int:pk>/', VerExpedienteView.as_view()),
 ]
