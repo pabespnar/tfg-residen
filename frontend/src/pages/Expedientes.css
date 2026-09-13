@@ -1,0 +1,141 @@
+.expedientes-container {
+    padding: 30px;
+}
+
+.expedientes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.expedientes-header h1 {
+    margin: 0 0 8px 0;
+    color: #1B5E20;
+}
+
+.expedientes-header p {
+    margin: 0;
+    color: #666;
+}
+
+.expedientes-boton-anadir {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background-color: #1B5E20;
+    color: white;
+    font-size: 28px;
+    line-height: 42px;
+    cursor: pointer;
+}
+
+.expedientes-boton-anadir:hover {
+    background-color: #144817;
+}
+
+.expedientes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.expediente-card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 22px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.expediente-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.expediente-card-header h2 {
+    margin: 0 0 6px 0;
+    color: #333;
+    font-size: 21px;
+}
+
+.expediente-card-header span {
+    color: #666;
+    font-size: 14px;
+}
+
+.expediente-estado {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px !important;
+    font-weight: 600;
+}
+
+.expediente-estado.activo {
+    background-color: #e8f5e9;
+    color: #1B5E20 !important;
+}
+
+.expediente-estado.finalizado {
+    background-color: #eeeeee;
+    color: #666 !important;
+}
+
+.expediente-card-fechas {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    color: #555;
+    font-size: 14px;
+}
+
+.expediente-card-economia {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #eee;
+}
+
+.expediente-card-economia div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.expediente-card-economia span {
+    color: #777;
+    font-size: 13px;
+}
+
+.expediente-card-economia strong {
+    color: #333;
+    font-size: 17px;
+}
+
+.expedientes-vacio {
+    padding: 40px;
+    text-align: center;
+    color: #777;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.expedientes-cargando {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+}
+
+.expedientes-error {
+    padding: 30px;
+    text-align: center;
+    color: #b71c1c;
+}
