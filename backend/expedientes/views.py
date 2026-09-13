@@ -72,7 +72,7 @@ class ListaPedidosRecibidosView(APIView):
         pedidos = Pedido.objects.select_related(
             'expediente'
         ).filter(
-            recibido=True
+            recibido=False
         ).order_by('-fecha', '-id')
 
         serializer = PedidoSerializer(

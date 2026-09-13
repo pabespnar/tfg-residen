@@ -205,17 +205,17 @@ class PedidoSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, value):
-        tipo = value.get('tipo')
+        tipo_pedido = value.get('tipo_pedido')
         expediente = value.get('expediente')
 
-        if tipo == Pedido.TipoPedido.EXPEDIENTE:
+        if tipo_pedido == Pedido.TipoPedido.EXPEDIENTE:
             if not expediente:
                 raise serializers.ValidationError({
                     'expediente':
                     'Un pedido con expediente debe estar asociado a un expediente.'
                 })
 
-        if tipo == Pedido.TipoPedido.GENERAL:
+        if tipo_pedido == Pedido.TipoPedido.GENERAL:
             if expediente:
                 raise serializers.ValidationError({
                     'expediente':

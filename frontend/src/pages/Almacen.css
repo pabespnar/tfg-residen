@@ -166,3 +166,31 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+.alta-suministro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 12px;
+}
+
+.alta-suministro-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.alta-suministro-info strong {
+    min-width: 150px;
+}
+
+.alta-suministro-info span {
+    color: #666;
+}
+
+.alta-suministro input {
+    width: 120px;
+    flex-shrink: 0;
+}
