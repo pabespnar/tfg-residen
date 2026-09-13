@@ -81,6 +81,15 @@ function Sidebar({ setAutenticado, rol }) {
                             >   
                                 Almacén                  
                             </li>
+                                                        <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/dashboard_almacen')
+                                }
+                            >   
+                                Dashboard                  
+                            </li>
+
                         </>
                     )}
                 </ul>

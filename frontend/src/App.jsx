@@ -25,6 +25,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import BajasAlmacen from './pages/BajasAlmacen';
 import AltasAlmacen from './pages/AltasAlmacen';
 import VerSuministro from './pages/VerSuministro';
+import DashboardAlmacen from "./pages/DashboardAlmacen";
+
 
 function tokenValido() {
 
@@ -322,6 +324,10 @@ function App() {
                                 <Route
                                     path="/almacen/altas"
                                     element={<AltasAlmacen />}
+                                />
+                                <Route
+                                    path="/dashboard_almacen"
+                                    element={<DashboardAlmacen />}
                                 />
                             </>
                         )}
