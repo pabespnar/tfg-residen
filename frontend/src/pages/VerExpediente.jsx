@@ -284,7 +284,7 @@ function VerExpediente() {
                         >
                             {expediente.activo
                                 ? 'Activo'
-                                : 'Finalizado'}
+                                : 'Inactivo'}
                         </span>
 
                     </div>
@@ -492,13 +492,17 @@ function VerExpediente() {
 
                         </div>
 
-                        <button
-                            className="ver-expediente-anadir-icono"
-                            onClick={() => setMostrarModalPedido(true)}
-                            title="Crear pedido"
-                        >
-                            +
-                        </button>
+                        {expediente.activo && (
+
+                            <button
+                                className="ver-expediente-anadir-icono"
+                                onClick={() => setMostrarModalPedido(true)}
+                                title="Crear pedido"
+                            >
+                                +
+                            </button>
+
+                        )}
 
                     </div>
 

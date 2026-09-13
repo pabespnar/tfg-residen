@@ -82,8 +82,8 @@
 }
 
 .expediente-estado.finalizado {
-    background-color: #eeeeee;
-    color: #666 !important;
+    background-color: #fdeaea;
+    color: #b71c1c !important;
 }
 
 .expediente-card-fechas {

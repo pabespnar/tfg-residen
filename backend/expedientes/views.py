@@ -180,6 +180,12 @@ class CrearPedidoExpedienteView(APIView):
                 status=404
             )
 
+        if not expediente.activo:
+            return Response(
+                {"error": "No se pueden realizar pedidos en un expediente inactivo."},
+                status=400
+            )
+
         nombre = request.data.get('nombre')
         cantidades = request.data.get('cantidades', {})
 

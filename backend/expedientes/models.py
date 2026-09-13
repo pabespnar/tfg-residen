@@ -15,7 +15,6 @@ class Proveedor(models.Model):
 class Expediente(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     detalles = models.CharField(max_length=200)
-    activo = models.BooleanField(default=True)
     fecha_inicio = models.DateField()
     fecha_final = models.DateField()
     contrato = models.FileField(upload_to='contratos/', null=True, blank=True)

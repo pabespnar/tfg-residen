@@ -138,7 +138,7 @@ function Expedientes() {
                                 >
                                     {expediente.activo
                                         ? 'Activo'
-                                        : 'Finalizado'}
+                                        : 'Inactivo'}
                                 </span>
 
                             </div>

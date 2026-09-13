@@ -49,8 +49,8 @@
     font-weight: 500;
 }
 .ver-expediente-estado.activo {
-    background-color: #1B5E20;
-    color: white;
+    background-color: #e8f5e9;
+    color: #1B5E20;
 }
 .ver-expediente-estado.finalizado {
     background-color: #fdeaea;
