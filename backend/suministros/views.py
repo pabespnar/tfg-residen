@@ -371,3 +371,22 @@ class EliminarPackView(APIView):
             {"mensaje": "Pack eliminado correctamente."},
             status=200
         )
+class EliminarCategoriaView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+
+    def delete(self, request, id):
+
+        try:
+            categoria = Categoria.objects.get(id=id)
+        except Categoria.DoesNotExist:
+            return Response(
+                {"error": "La categoría no existe."},
+                status=404
+            )
+
+        categoria.delete()
+
+        return Response(
+            {"mensaje": "Categoría eliminada correctamente."},
+            status=200
+        )

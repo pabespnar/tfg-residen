@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaPencilAlt } from "react-icons/fa";
+import { FaPencilAlt, FaTrash } from "react-icons/fa";
 
 import "./Suministros.css";
 
@@ -18,6 +18,12 @@ const Suministros = () => {
     const [errorCrearCategoria, setErrorCrearCategoria] = useState(null);
     const [creandoCategoria, setCreandoCategoria] = useState(false);
 
+    const [mostrarEliminarCategoria, setMostrarEliminarCategoria] =
+        useState(false);
+    const [categoriaEliminando, setCategoriaEliminando] = useState(null);
+    const [errorEliminarCategoria, setErrorEliminarCategoria] = useState(null);
+    const [eliminandoCategoria, setEliminandoCategoria] = useState(false);
+
     const [mostrarEditarSuministro, setMostrarEditarSuministro] =
         useState(false);
     const [suministroEditando, setSuministroEditando] = useState(null);
@@ -28,40 +34,40 @@ const Suministros = () => {
     const [errorEditarSuministro, setErrorEditarSuministro] = useState(null);
     const [editandoSuministro, setEditandoSuministro] = useState(false);
 
-    useEffect(() => {
-        const obtenerCategorias = async () => {
-            try {
-                const token = localStorage.getItem("access");
+    const obtenerCategorias = async () => {
+        try {
+            const token = localStorage.getItem("access");
 
-                const respuesta = await axios.get(
-                    "http://127.0.0.1:8000/api/suministros/categorias/",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-
-                if (Array.isArray(respuesta.data)) {
-                    setCategorias(respuesta.data);
-                    setError(null);
-                } else {
-                    setError(
-                        "La respuesta del servidor no tiene un formato válido."
-                    );
+            const respuesta = await axios.get(
+                "http://127.0.0.1:8000/api/suministros/categorias/",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
-            } catch (error) {
-                console.error(
-                    "Error al obtener las categorías:",
-                    error
-                );
+            );
 
+            if (Array.isArray(respuesta.data)) {
+                setCategorias(respuesta.data);
+                setError(null);
+            } else {
                 setError(
-                    "No se han podido cargar las categorías."
+                    "La respuesta del servidor no tiene un formato válido."
                 );
             }
-        };
+        } catch (error) {
+            console.error(
+                "Error al obtener las categorías:",
+                error
+            );
 
+            setError(
+                "No se han podido cargar las categorías."
+            );
+        }
+    };
+
+    useEffect(() => {
         obtenerCategorias();
     }, []);
 
@@ -90,11 +96,72 @@ const Suministros = () => {
         setErrorCrearCategoria(null);
     };
 
+    const abrirEliminarCategoria = (categoria) => {
+        setCategoriaEliminando(categoria);
+        setErrorEliminarCategoria(null);
+        setMostrarEliminarCategoria(true);
+    };
+
+    const cerrarEliminarCategoria = () => {
+        if (eliminandoCategoria) {
+            return;
+        }
+
+        setMostrarEliminarCategoria(false);
+        setCategoriaEliminando(null);
+        setErrorEliminarCategoria(null);
+    };
+
+    const eliminarCategoria = async () => {
+        try {
+            setEliminandoCategoria(true);
+            setErrorEliminarCategoria(null);
+
+            const token = localStorage.getItem("access");
+
+            await axios.delete(
+                `http://127.0.0.1:8000/api/suministros/categorias/${categoriaEliminando.id}/eliminar/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            await obtenerCategorias();
+
+            setMostrarEliminarCategoria(false);
+            setCategoriaEliminando(null);
+            setErrorEliminarCategoria(null);
+
+        } catch (error) {
+            console.error(
+                "Error al eliminar la categoría:",
+                error
+            );
+
+            if (error.response?.data?.error) {
+                setErrorEliminarCategoria(
+                    error.response.data.error
+                );
+            } else {
+                setErrorEliminarCategoria(
+                    "No se ha podido eliminar la categoría."
+                );
+            }
+
+        } finally {
+            setEliminandoCategoria(false);
+        }
+    };
+
     const abrirEditarSuministro = (suministro, categoria) => {
         setSuministroEditando(suministro);
 
         setCategoriaEditar(
-            categoria.id
+            categoria.id === "sin-asignar"
+                ? ""
+                : categoria.id
         );
 
         setStockMinimoEditar(
@@ -155,7 +222,7 @@ const Suministros = () => {
 
             const token = localStorage.getItem("access");
 
-            const respuesta = await axios.patch(
+            await axios.patch(
                 `http://127.0.0.1:8000/api/suministros/${suministroEditando.id}/editar/`,
                 {
                     categoria: categoriaEditar
@@ -171,20 +238,7 @@ const Suministros = () => {
                 }
             );
 
-            setCategorias((categoriasAnteriores) =>
-                categoriasAnteriores.map((categoria) => ({
-                    ...categoria,
-                    suministros: categoria.suministros.map(
-                        (suministro) =>
-                            suministro.id === respuesta.data.id
-                                ? {
-                                      ...suministro,
-                                      ...respuesta.data,
-                                  }
-                                : suministro
-                    ),
-                }))
-            );
+            await obtenerCategorias();
 
             setMostrarEditarSuministro(false);
             setSuministroEditando(null);
@@ -353,20 +407,38 @@ const Suministros = () => {
                             className="suministro-categoria-card"
                             key={categoria.id}
                         >
-                            <button
-                                className="suministro-categoria-boton"
-                                onClick={() =>
-                                    alternarCategoria(categoria.id)
-                                }
-                            >
-                                <span>
-                                    {categoria.nombre}
-                                </span>
+                            <div className="suministro-categoria-cabecera">
 
-                                <span>
-                                    {abierta ? "▼" : "▶"}
-                                </span>
-                            </button>
+                                <button
+                                    className="suministro-categoria-boton"
+                                    onClick={() =>
+                                        alternarCategoria(categoria.id)
+                                    }
+                                >
+                                    <span>
+                                        {categoria.nombre}
+                                    </span>
+
+                                    <span>
+                                        {abierta ? "▼" : "▶"}
+                                    </span>
+                                </button>
+
+                                {categoria.id !== "sin-asignar" && (
+                                    <div className="suministro-categoria-acciones">
+                                        <button
+                                            className="suministro-categoria-eliminar"
+                                            onClick={() =>
+                                                abrirEliminarCategoria(categoria)
+                                            }
+                                            disabled={eliminandoCategoria}
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                    </div>
+                                )}
+
+                            </div>
 
                             {abierta && (
                                 <div className="suministros-categoria-listado">
@@ -501,6 +573,59 @@ const Suministros = () => {
                 </div>
             )}
 
+            {mostrarEliminarCategoria && categoriaEliminando && (
+                <div className="eliminar-categoria-overlay">
+                    <div className="eliminar-categoria-confirmacion">
+
+                        <h2>
+                            Eliminar categoría
+                        </h2>
+
+                        <p>
+                            ¿Seguro que quieres eliminar la categoría{" "}
+                            <strong>
+                                "{categoriaEliminando.nombre}"
+                            </strong>
+                            ?
+                        </p>
+
+                        <p>
+                            Los suministros de esta categoría pasarán a
+                            "Sin asignar".
+                        </p>
+
+                        {errorEliminarCategoria && (
+                            <p className="eliminar-categoria-error">
+                                {errorEliminarCategoria}
+                            </p>
+                        )}
+
+                        <div className="eliminar-categoria-botones">
+
+                            <button
+                                type="button"
+                                onClick={eliminarCategoria}
+                                disabled={eliminandoCategoria}
+                            >
+                                {eliminandoCategoria
+                                    ? "Eliminando..."
+                                    : "Eliminar"}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={cerrarEliminarCategoria}
+                                disabled={eliminandoCategoria}
+                            >
+                                Cancelar
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
             {mostrarEditarSuministro && suministroEditando && (
                 <div className="editar-suministro-overlay">
                     <div className="editar-suministro-confirmacion">
@@ -526,14 +651,19 @@ const Suministros = () => {
                                         Sin categoría
                                     </option>
 
-                                    {categorias.map((categoria) => (
-                                        <option
-                                            key={categoria.id}
-                                            value={categoria.id}
-                                        >
-                                            {categoria.nombre}
-                                        </option>
-                                    ))}
+                                    {categorias
+                                        .filter(
+                                            (categoria) =>
+                                                categoria.id !== "sin-asignar"
+                                        )
+                                        .map((categoria) => (
+                                            <option
+                                                key={categoria.id}
+                                                value={categoria.id}
+                                            >
+                                                {categoria.nombre}
+                                            </option>
+                                        ))}
                                 </select>
                             </div>
 
