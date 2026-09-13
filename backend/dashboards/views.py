@@ -11,6 +11,7 @@ from modulos.models import Habitacion
 from modulos.permissions import EsGestorResidentes
 from suministros.models import Suministro, Categoria, Pack, EntregaPack
 from almacen.models import AltaAlmacen, BajaAlmacen
+from expedientes.models import Pedido
 from suministros.permissions import EsGestorAlmacen
 
 
@@ -183,6 +184,7 @@ class DashboardAlmacenView(APIView):
         ).count()
 
         suministros_bajo_minimo = suministros.filter(
+            stock__gt=0,
             stock__lt=F('stock_minimo')
         ).count()
 
@@ -204,6 +206,48 @@ class DashboardAlmacenView(APIView):
             fecha_entrega__gte=hace_30_dias,
             fecha_entrega__lte=hoy
         ).count()
+
+        pedidos_pendientes_alta = Pedido.objects.filter(
+            recibido=True,
+            altas__isnull=True
+        ).distinct().count()
+
+        pedidos_recibidos = Pedido.objects.filter(
+            recibido=True,
+            fecha__gte=hace_30_dias,
+            fecha__lte=hoy,
+            altas__isnull=False
+        ).distinct()
+
+        pedidos_correctos = 0
+        pedidos_incorrectos = 0
+
+        for pedido in pedidos_recibidos:
+            cantidades_solicitadas = {}
+
+            for detalle in pedido.detalles_pedido.all():
+                cantidades_solicitadas[detalle.suministro_id] = (
+                    cantidades_solicitadas.get(
+                        detalle.suministro_id,
+                        0
+                    ) + detalle.cantidad
+                )
+
+            cantidades_recibidas = {}
+
+            altas = pedido.altas.values(
+                'suministro_id'
+            ).annotate(
+                total=Sum('cantidad')
+            )
+
+            for alta in altas:
+                cantidades_recibidas[alta['suministro_id']] = alta['total']
+
+            if cantidades_solicitadas == cantidades_recibidas:
+                pedidos_correctos += 1
+            else:
+                pedidos_incorrectos += 1
 
         bajas_por_servicio = {
             servicio[0]: 0
@@ -233,10 +277,12 @@ class DashboardAlmacenView(APIView):
         ).count()
 
         stock_correcto = suministros.filter(
+            stock__gt=0,
             stock__gte=F('stock_minimo')
         ).count()
 
         suministros_bajo_stock = suministros.filter(
+            stock__gt=0,
             stock__lt=F('stock_minimo')
         ).order_by(
             'stock'
@@ -246,6 +292,21 @@ class DashboardAlmacenView(APIView):
 
         for suministro in suministros_bajo_stock:
             suministros_bajo_minimo_lista.append({
+                'id': suministro.id,
+                'nombre': suministro.nombre,
+                'stock': suministro.stock,
+                'stock_minimo': suministro.stock_minimo,
+                'unidad': suministro.unidad,
+            })
+
+        suministros_sin_stock_lista = []
+
+        for suministro in suministros.filter(
+            stock=0
+        ).order_by(
+            'nombre'
+        ):
+            suministros_sin_stock_lista.append({
                 'id': suministro.id,
                 'nombre': suministro.nombre,
                 'stock': suministro.stock,
@@ -276,6 +337,7 @@ class DashboardAlmacenView(APIView):
                 'categorias_totales': categorias_totales,
                 'suministros_sin_stock': suministros_sin_stock,
                 'suministros_bajo_minimo': suministros_bajo_minimo,
+                'packs_totales': packs_totales,
             },
 
             'actividad': {
@@ -289,6 +351,13 @@ class DashboardAlmacenView(APIView):
                 'bajo_minimo': stock_bajo_minimo,
                 'correcto': stock_correcto,
                 'suministros_bajo_minimo': suministros_bajo_minimo_lista,
+                'suministros_sin_stock': suministros_sin_stock_lista,
+            },
+
+            'entradas': {
+                'pedidos_pendientes_alta': pedidos_pendientes_alta,
+                'pedidos_correctos': pedidos_correctos,
+                'pedidos_incorrectos': pedidos_incorrectos,
             },
 
             'bajas': {

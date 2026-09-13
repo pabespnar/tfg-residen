@@ -94,6 +94,7 @@ function DashboardAlmacen() {
         resumen,
         actividad,
         stock,
+        entradas,
         bajas,
         packs,
     } = dashboard;
@@ -131,6 +132,18 @@ function DashboardAlmacen() {
     ];
 
 
+    const datosPedidos = [
+        {
+            nombre: 'Correctos',
+            cantidad: entradas.pedidos_correctos,
+        },
+        {
+            nombre: 'Incorrectos',
+            cantidad: entradas.pedidos_incorrectos,
+        },
+    ];
+
+
     const datosServicios = Object.entries(
         bajas.por_servicio
     ).map(([servicio, cantidad]) => ({
@@ -161,11 +174,15 @@ function DashboardAlmacen() {
             <div className="dashboard-header">
 
                 <div>
-                    <h1>Dashboard</h1>
+
+                    <h1>
+                        Dashboard
+                    </h1>
 
                     <p>
                         Resumen de la situación actual del almacén
                     </p>
+
                 </div>
 
             </div>
@@ -185,7 +202,7 @@ function DashboardAlmacen() {
                 <div className="dashboard-card">
 
                     <span className="dashboard-card-titulo">
-                        Tipos de suministros
+                        Suministros
                     </span>
 
                     <strong className="dashboard-card-valor">
@@ -198,11 +215,11 @@ function DashboardAlmacen() {
                 <div className="dashboard-card">
 
                     <span className="dashboard-card-titulo">
-                        Categorías de clasificación
+                        Suministros sin stock
                     </span>
 
                     <strong className="dashboard-card-valor">
-                        {resumen.categorias_totales}
+                        {resumen.suministros_sin_stock}
                     </strong>
 
                 </div>
@@ -220,18 +237,18 @@ function DashboardAlmacen() {
 
                 </div>
 
+
                 <div className="dashboard-card">
 
                     <span className="dashboard-card-titulo">
-                        Suministros sin stock
+                        Packs disponibles
                     </span>
 
                     <strong className="dashboard-card-valor">
-                        {resumen.suministros_sin_stock}
+                        {resumen.packs_totales}
                     </strong>
 
                 </div>
-
 
             </section>
 
@@ -258,7 +275,7 @@ function DashboardAlmacen() {
                         <div className="dashboard-grafico-header">
 
                             <h2>
-                                Movimientos
+                                Actividad
                             </h2>
 
                         </div>
@@ -435,6 +452,12 @@ function DashboardAlmacen() {
                                             {suministro.unidad}
                                         </strong>
 
+                                        <small>
+                                            Mínimo: {suministro.stock_minimo}
+                                            {' '}
+                                            {suministro.unidad}
+                                        </small>
+
                                     </div>
 
                                 )
@@ -452,6 +475,170 @@ function DashboardAlmacen() {
 
                 </div>
 
+                <div className="dashboard-grafico-card">
+                    <div className="dashboard-grafico-header">
+                        <h2>Suministros sin stock</h2>
+                    </div>
+                    <div className="dashboard-estadisticas-almacen">
+                        {stock.suministros_sin_stock.length > 0 ? (
+                            stock.suministros_sin_stock.map(
+                                suministro => (
+                                    <div
+                                        className="dashboard-estadistica"
+                                        key={suministro.id}
+                                    >
+                                        <span>{suministro.nombre}</span>
+                                        <strong>
+                                            {suministro.stock}
+                                            {' '}
+                                            {suministro.unidad}
+                                        </strong>
+                                        <small>
+                                            Mínimo: {suministro.stock_minimo}
+                                            {' '}
+                                            {suministro.unidad}
+                                        </small>
+                                    </div>
+                                )
+                            )
+                        ) : (
+                            <div className="dashboard-grafico-vacio">
+                                No hay suministros sin stock.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </section>
+
+
+            <div className="dashboard-seccion-header">
+
+                <h2>
+                    Entradas
+                </h2>
+
+                <span>
+                    Pedidos recibidos
+                </span>
+
+            </div>
+
+
+            <section className="dashboard-graficos">
+
+                <div className="dashboard-grafico-card">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Pedidos pendientes de alta
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-estadisticas-almacen">
+
+                        <div className="dashboard-estadistica">
+
+                            <span>
+                                Pedidos recibidos sin alta
+                            </span>
+
+                            <strong>
+                                {entradas.pedidos_pendientes_alta}
+                            </strong>
+
+                            <small>
+                                Pendientes de registrar en almacén
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div className="dashboard-grafico-card">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Pedidos correctos / incorrectos
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        <ResponsiveContainer
+                            width="100%"
+                            height={300}
+                        >
+
+                            <BarChart
+                                data={datosPedidos}
+                                margin={{
+                                    top: 10,
+                                    right: 20,
+                                    left: 0,
+                                    bottom: 10,
+                                }}
+                            >
+
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
+
+                                <XAxis
+                                    dataKey="nombre"
+                                />
+
+                                <YAxis
+                                    allowDecimals={false}
+                                />
+
+                                <Tooltip />
+
+                                <Bar
+                                    dataKey="cantidad"
+                                    name="Pedidos"
+                                    fill="#1B5E20"
+                                    radius={[
+                                        5,
+                                        5,
+                                        0,
+                                        0,
+                                    ]}
+                                />
+
+                            </BarChart>
+
+                        </ResponsiveContainer>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div className="dashboard-seccion-header">
+
+                <h2>
+                    Consumo
+                </h2>
+
+                <span>
+                    Últimos 30 días
+                </span>
+
+            </div>
+
+
+            <section className="dashboard-graficos">
 
                 <div className="dashboard-grafico-card">
 
@@ -525,10 +712,6 @@ function DashboardAlmacen() {
 
                 </div>
 
-            </section>
-
-
-            <section className="dashboard-graficos">
 
                 <div className="dashboard-grafico-card">
 
@@ -537,10 +720,6 @@ function DashboardAlmacen() {
                         <h2>
                             Packs más entregados
                         </h2>
-
-                        <span>
-                            Últimos 30 días
-                        </span>
 
                     </div>
 
