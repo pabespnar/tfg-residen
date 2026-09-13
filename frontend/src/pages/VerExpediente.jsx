@@ -8,7 +8,19 @@ function VerExpediente() {
     const [expediente, setExpediente] = useState(null)
     const [detalles, setDetalles] = useState([])
     const [pedidos, setPedidos] = useState([])
+
     const [error, setError] = useState('')
+
+    const [mostrarModalPedido, setMostrarModalPedido] = useState(false)
+
+    const [nombrePedido, setNombrePedido] = useState('')
+    const [cantidades, setCantidades] = useState({})
+
+    const [errorNombrePedido, setErrorNombrePedido] = useState('')
+    const [erroresCantidad, setErroresCantidad] = useState({})
+    const [errorSuministros, setErrorSuministros] = useState('')
+    const [errorPresupuesto, setErrorPresupuesto] = useState('')
+
 
     const navigate = useNavigate()
     const { id } = useParams()
@@ -57,6 +69,157 @@ function VerExpediente() {
 
     }, [id])
 
+    const validarPedido = () => {
+
+        setErrorNombrePedido('')
+        setErroresCantidad({})
+        setErrorSuministros('')
+        setErrorPresupuesto('')
+
+        let valido = true
+
+        if (!nombrePedido.trim()) {
+            setErrorNombrePedido(
+                'El nombre del pedido no puede estar vacío.'
+            )
+            valido = false
+        }
+
+        const nuevosErroresCantidad = {}
+
+        detalles.forEach((detalle) => {
+            const cantidad = cantidades[detalle.suministro]
+
+            if (
+                cantidad !== '' &&
+                Number(cantidad) < 0
+            ) {
+                nuevosErroresCantidad[detalle.suministro] =
+                    'La cantidad no puede ser negativa.'
+                valido = false
+            }
+        })
+
+        setErroresCantidad(nuevosErroresCantidad)
+
+        const haySuministro = detalles.some(
+            (detalle) =>
+                Number(
+                    cantidades[detalle.suministro] || 0
+                ) > 0
+        )
+
+        if (!haySuministro) {
+            setErrorSuministros(
+                'Debes indicar al menos un suministro.'
+            )
+            valido = false
+        }
+
+        const total = calcularTotal()
+
+        if (
+            total > Number(expediente.presupuesto_restante)
+        ) {
+            setErrorPresupuesto(
+                'El importe del pedido supera el presupuesto restante del expediente.'
+            )
+            valido = false
+        }
+
+        return valido
+    }
+
+    const crearPedido = () => {
+
+        const valido = validarPedido()
+
+        if (!valido) {
+            return
+        }
+
+        const token = localStorage.getItem('access')
+
+        axios.post(
+            `http://127.0.0.1:8000/api/expedientes/expedientes/${id}/crearpedidoexpediente/`,
+            {
+                nombre: nombrePedido,
+                cantidades: cantidades
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
+        .then(() => {
+
+            cerrarModalPedido()
+
+            axios.get(
+                `http://127.0.0.1:8000/api/expedientes/expedientes/${id}/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+            .then((response) => {
+
+                setExpediente(response.data.expediente)
+                setDetalles(response.data.detalles)
+                setPedidos(response.data.pedidos)
+
+            })
+
+        })
+        .catch((error) => {
+
+            console.error(
+                'Error al crear el pedido:',
+                error
+            )
+
+        })
+    }
+
+    const cerrarModalPedido = () => {
+
+        setMostrarModalPedido(false)
+
+        setNombrePedido('')
+
+        setCantidades({})
+
+        setErrorNombrePedido('')
+
+        setErroresCantidad({})
+
+        setErrorSuministros('')
+
+        setErrorPresupuesto('')
+
+    }
+
+    const calcularTotal = () => {
+
+        let total = 0
+
+        detalles.forEach((detalle) => {
+
+            const cantidad = Number(
+                cantidades[detalle.suministro] || 0
+            )
+
+            total += cantidad * Number(
+                detalle.precio_unidad
+            )
+
+        })
+
+        return total
+    }
+
 
     if (error) {
 
@@ -92,7 +255,7 @@ function VerExpediente() {
                 </h1>
 
             </div>
-
+            
         )
 
     }
@@ -329,14 +492,9 @@ function VerExpediente() {
 
                         </div>
 
-
                         <button
                             className="ver-expediente-anadir-icono"
-                            onClick={() =>
-                                navigate(
-                                    `/expedientes/${id}/crear-pedido`
-                                )
-                            }
+                            onClick={() => setMostrarModalPedido(true)}
                             title="Crear pedido"
                         >
                             +
@@ -461,8 +619,212 @@ function VerExpediente() {
 
             </div>
 
-        </div>
+            {mostrarModalPedido && (
 
+                <div className="ver-expediente-modal-fondo">
+
+                    <div className="ver-expediente-modal">
+
+                        <div className="ver-expediente-modal-cabecera">
+
+                            <h2>
+                                Crear pedido
+                            </h2>
+
+                            <button
+                                className="ver-expediente-modal-cerrar"
+                                onClick={cerrarModalPedido}
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                        <div className="ver-expediente-modal-contenido">
+
+                            <div className="ver-expediente-modal-campo">
+
+                                <h3>
+                                    Nombre del pedido
+                                </h3>
+
+                                <input
+                                    type="text"
+                                    placeholder="Nombre del pedido"
+                                    value={nombrePedido}
+                                    onChange={(e) => {
+
+                                        setNombrePedido(e.target.value)
+
+                                        setErrorNombrePedido('')
+
+                                    }}
+                                />
+
+                                {errorNombrePedido && (
+
+                                    <span className="ver-expediente-modal-error">
+                                        {errorNombrePedido}
+                                    </span>
+
+                                )}
+
+                            </div>
+
+                            <h3>
+                                Suministros
+                            </h3>
+
+                            {errorSuministros && (
+
+                                <span className="ver-expediente-modal-error">
+                                    {errorSuministros}
+                                </span>
+
+                            )}
+
+                            {detalles.map((detalle) => (
+
+                                <div
+                                    className="ver-expediente-modal-suministro"
+                                    key={detalle.id}
+                                >
+
+                                    <div>
+
+                                        <span className="ver-expediente-label">
+                                            Suministro
+                                        </span>
+
+                                        <span className="ver-expediente-valor">
+                                            {detalle.suministro_nombre}
+                                        </span>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span className="ver-expediente-label">
+                                            Precio por unidad
+                                        </span>
+
+                                        <span className="ver-expediente-valor">
+                                            {Number(
+                                                detalle.precio_unidad
+                                            ).toFixed(2)}
+                                            {' €'}
+                                        </span>
+
+                                    </div>
+
+                                    <div>
+
+                                        <label>
+                                            Cantidad ({detalle.suministro_unidad})
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            value={
+                                                cantidades[detalle.suministro] ?? 0
+                                            }
+                                            onChange={(e) => {
+
+                                                setCantidades({
+                                                    ...cantidades,
+                                                    [detalle.suministro]: e.target.value
+                                                })
+
+                                                setErroresCantidad({
+                                                    ...erroresCantidad,
+                                                    [detalle.suministro]: ''
+                                                })
+
+                                                setErrorSuministros('')
+                                                setErrorPresupuesto('')
+
+                                            }}
+                                        />
+
+                                        {erroresCantidad[detalle.suministro] && (
+
+                                            <span className="ver-expediente-modal-error">
+                                                {erroresCantidad[detalle.suministro]}
+                                            </span>
+
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+                            ))}
+
+                            <div className="ver-expediente-modal-resumen">
+
+                                <p>
+                                    Presupuesto restante:{' '}
+                                    {Number(
+                                        expediente.presupuesto_restante
+                                    ).toFixed(2)}
+                                    {' €'}
+                                </p>
+
+                                <p>
+                                    Coste total del pedido:{' '}
+                                    {calcularTotal().toFixed(2)}
+                                    {' €'}
+                                </p>
+
+                                <p>
+                                    Presupuesto después del pedido:{' '}
+                                    {(
+                                        Number(
+                                            expediente.presupuesto_restante
+                                        ) -
+                                        calcularTotal()
+                                    ).toFixed(2)}
+                                    {' €'}
+                                </p>
+
+                                {errorPresupuesto && (
+
+                                    <span className="ver-expediente-modal-error">
+                                        {errorPresupuesto}
+                                    </span>
+
+                                )}
+
+                            </div>
+
+                        </div>
+
+                        <div className="ver-expediente-modal-botones">
+
+                            <button
+                                className="ver-expediente-modal-cancelar"
+                                onClick={cerrarModalPedido}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                className="ver-expediente-modal-crear"
+                                onClick={crearPedido}
+                            >
+                                Crear pedido
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+        </div>
+        
     )
 }
 
