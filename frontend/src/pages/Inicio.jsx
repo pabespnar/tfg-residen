@@ -69,6 +69,38 @@ function Inicio({ rol }) {
                 },
             ],
         },
+
+        administracion: {
+            titulo: 'Gestión de administración',
+            descripcion:
+                'Desde este apartado podrás gestionar los expedientes, pedidos y proveedores del centro.',
+            funciones: [
+                {
+                    titulo: 'Expedientes',
+                    descripcion:
+                        'Consulta y gestiona los expedientes del centro, sus proveedores, suministros y presupuesto.',
+                    ruta: '/expedientes',
+                },
+                {
+                    titulo: 'Pedidos',
+                    descripcion:
+                        'Consulta y gestiona los pedidos realizados, su estado y los expedientes asociados.',
+                    ruta: '/pedidos',
+                },
+                {
+                    titulo: 'Proveedores',
+                    descripcion:
+                        'Consulta y gestiona los proveedores con los que trabaja el centro.',
+                    ruta: '/proveedores',
+                },
+                {
+                    titulo: 'Dashboard',
+                    descripcion:
+                        'Consulta información y estadísticas relacionadas con la administración del centro.',
+                    ruta: '/dashboard_administracion',
+                },
+            ],
+        },
     }
 
     const datos = contenido[rol]

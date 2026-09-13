@@ -43,6 +43,7 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Histórico
                             </li>
+
                             <li
                                 className="sideItem"
                                 onClick={() =>
@@ -52,7 +53,6 @@ function Sidebar({ setAutenticado, rol }) {
                                 Dashboard
                             </li>
                         </>
-                        
                     )}
 
                     {rol === "almacen" && (
@@ -65,6 +65,7 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Suministros
                             </li>
+
                             <li
                                 className="sideItem"
                                 onClick={() =>
@@ -73,30 +74,70 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Packs
                             </li>
+
                             <li
                                 className="sideItem"
                                 onClick={() =>
                                     navigate('/almacen')
                                 }
-                            >   
-                                Almacén                  
+                            >
+                                Almacén
                             </li>
-                                                        <li
+
+                            <li
                                 className="sideItem"
                                 onClick={() =>
                                     navigate('/dashboard_almacen')
                                 }
-                            >   
-                                Dashboard                  
+                            >
+                                Dashboard
                             </li>
+                        </>
+                    )}
 
+                    {rol === "administracion" && (
+                        <>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/expedientes')
+                                }
+                            >
+                                Expedientes
+                            </li>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/pedidos')
+                                }
+                            >
+                                Pedidos
+                            </li>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/proveedores')
+                                }
+                            >
+                                Proveedores
+                            </li>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/dashboard_administracion')
+                                }
+                            >
+                                Dashboard
+                            </li>
                         </>
                     )}
                 </ul>
             </nav>
+
             <div className="logout" onClick={() => setLogOut(true)}>
                 Cerrar sesión
             </div>
+
             {logOut && (
                 <div className="logout-overlay">
                     <div className="logout-confirmacion">

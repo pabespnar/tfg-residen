@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 
 from .models import Proveedor, Expediente, DetalleExpediente, Pedido, DetallePedido
 
@@ -60,6 +61,8 @@ class ExpedienteSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    activo = serializers.SerializerMethodField()
+
     class Meta:
         model = Expediente
 
@@ -82,6 +85,11 @@ class ExpedienteSerializer(serializers.ModelSerializer):
             'proveedor_nombre',
             'presupuesto_restante',
         ]
+
+    def get_activo(self, obj):
+        hoy = timezone.now().date()
+
+        return obj.fecha_inicio <= hoy <= obj.fecha_final
 
     def validate_nombre(self, value):
         if not value.strip():
