@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
+from expedientes.models import Pedido
 from suministros.models import Suministro, EntregaPack
 
 
@@ -8,8 +9,7 @@ class BajaAlmacen(models.Model):
 
     class TipoBaja(models.TextChoices):
         PACK = 'PACK', 'Pack'
-        EXTRAORDINARIA = 'EXTRAORDINARIA', 'Extraordinaria'
-
+        SERVICIO = 'SERVICIO', 'Servicio'
 
     class Servicio(models.TextChoices):
         LIMPIEZA = 'LIMPIEZA', 'Limpieza'
@@ -30,3 +30,16 @@ class BajaAlmacen(models.Model):
     servicio = models.CharField(max_length=20, choices=Servicio.choices, null=True)
     stock_tras_baja = models.PositiveIntegerField()
 
+
+class AltaAlmacen(models.Model):
+    pedido = models.ForeignKey(Pedido, on_delete=models.PROTECT, related_name='altas')
+    suministro = models.ForeignKey('suministros.Suministro', on_delete=models.PROTECT, related_name='altas')
+    cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    precio_unidad = models.DecimalField(max_digits=10,decimal_places=2,validators=[MinValueValidator(0)])
+    fecha = models.DateField(auto_now_add=True)
+    observaciones = models.TextField(blank=True, null=True)
+    factura_albaran = models.FileField(upload_to='facturas_albaranes/', null=True, blank=True)
+    stock_tras_alta = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f'{self.suministro.nombre} - {self.cantidad}'

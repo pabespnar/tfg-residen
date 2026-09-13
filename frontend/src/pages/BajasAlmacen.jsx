@@ -150,7 +150,7 @@ function BajasAlmacen() {
                                     <td>
                                         {baja.tipo === 'PACK'
                                             ? 'Pack'
-                                            : 'Extraordinaria'}
+                                            : 'Servicio'}
                                     </td>
 
                                     <td>

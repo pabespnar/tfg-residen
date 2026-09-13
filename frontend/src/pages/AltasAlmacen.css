@@ -1,0 +1,134 @@
+.altas-container {
+    padding: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.altas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.altas-header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #1B5E20;
+}
+
+.altas-header p {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 15px;
+}
+
+.tabla-altas-container {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tabla-altas {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-altas thead {
+    background-color: #1B5E20;
+    color: white;
+}
+
+.tabla-altas th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tabla-altas td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e5e5;
+    color: #333;
+    font-size: 14px;
+}
+
+.tabla-altas tbody tr {
+    cursor: default;
+}
+
+.tabla-altas tbody tr:hover {
+    background-color: #f5f7f6;
+}
+
+.altas-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    margin-top: 30px;
+    padding-top: 25px;
+
+    border-top: 1px solid #e5e5e5;
+}
+
+.altas-volver {
+    padding: 10px 18px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    background-color: white;
+    color: #555;
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.altas-volver:hover {
+    background-color: #f5f5f5;
+}
+
+.altas-vacio {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    color: #666;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.altas-vacio p {
+    margin: 0;
+}
+
+.altas-error {
+    color: #c62828;
+    background-color: #ffebee;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.albaran-imagen {
+    display: block;
+    width: 100%;
+    max-width: 700px;
+    max-height: 500px;
+    object-fit: contain;
+    margin: 0 auto;
+}
+
+.albaran-boton {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background-color: #1b5e20;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.albaran-boton:hover {
+    opacity: 0.9;
+}
