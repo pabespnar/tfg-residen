@@ -77,15 +77,15 @@
 }
 
 .expediente-estado.activo {
-    background-color: #e8f5e9;
+    background-color: #e8f5e9 !important;
     color: #1B5E20 !important;
 }
 
 .expediente-estado.finalizado {
-    background-color: #fdeaea;
+    background-color: #fdeaea !important;
     color: #b71c1c !important;
 }
-
+     
 .expediente-card-fechas {
     display: flex;
     align-items: center;

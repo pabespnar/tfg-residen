@@ -531,7 +531,7 @@ function Pedidos() {
                     className="pedidos-crear"
                     onClick={abrirModalPedido}
                 >
-                    Crear pedido
+                    Crear pedido general
                 </button>
 
             </div>

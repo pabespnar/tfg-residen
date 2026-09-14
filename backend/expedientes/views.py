@@ -3,12 +3,14 @@ from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
 from decimal import Decimal, InvalidOperation
 
-from .models import Expediente, Pedido, DetallePedido
-from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer
+from .models import Expediente, Pedido, DetallePedido, Proveedor
+from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer, ProveedorSerializer
 from django.utils import timezone
 from suministros.models import Suministro
 from suministros.serializers import SuministroSerializer
@@ -517,4 +519,103 @@ class CrearPedidoGeneralView(APIView):
                 'total': total,
             },
             status=201
+        )
+class ListaProveedoresView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def get(self, request):
+
+        proveedores = Proveedor.objects.prefetch_related(
+            'expedientes'
+        ).all().order_by('nombre')
+
+        serializer = ProveedorSerializer(
+            proveedores,
+            many=True
+        )
+
+        return Response(serializer.data)
+
+class EditarProveedorView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def patch(self, request, pk):
+
+        try:
+            proveedor = Proveedor.objects.get(pk=pk)
+        except Proveedor.DoesNotExist:
+            return Response(
+                {'error': 'El proveedor no existe.'},
+                status=404
+            )
+
+        serializer = ProveedorSerializer(
+            proveedor,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                ProveedorSerializer(proveedor).data
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+class EliminarProveedorView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def delete(self, request, pk):
+
+        try:
+            proveedor = Proveedor.objects.get(pk=pk)
+        except Proveedor.DoesNotExist:
+            return Response(
+                {"error": "El proveedor no existe."},
+                status=404
+            )
+
+        if Expediente.objects.filter(proveedor=proveedor).exists():
+            return Response(
+                {
+                    "error": (
+                        "No se puede eliminar un proveedor que ya tiene "
+                        "expedientes asociados."
+                    )
+                },
+                status=400
+            )
+
+        proveedor.delete()
+
+        return Response(
+            {"mensaje": "Proveedor eliminado correctamente."},
+            status=200
+        )
+class CrearProveedorView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+
+        serializer = ProveedorSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            proveedor = serializer.save()
+
+            return Response(
+                ProveedorSerializer(proveedor).data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
         )

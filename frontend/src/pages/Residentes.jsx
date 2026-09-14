@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Residentes.css'
-import { FiEdit2 } from 'react-icons/fi'
+import { FaPencilAlt } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
 function Residentes() {
@@ -174,7 +174,7 @@ function Residentes() {
                                             }}
                                             title="Editar residente"
                                         >
-                                            <FiEdit2 />
+                                            <FaPencilAlt />
                                         </button>
 
                                     </td>
