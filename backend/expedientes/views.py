@@ -206,7 +206,8 @@ class ListaPedidosView(APIView):
 
     def get(self, request):
         pedidos = Pedido.objects.select_related(
-            'expediente'
+            'expediente',
+            'proveedor'
         ).all().order_by('-fecha', '-id')
 
         serializer = PedidoSerializer(
@@ -222,7 +223,8 @@ class ListaPedidosRecibidosView(APIView):
 
     def get(self, request):
         pedidos = Pedido.objects.select_related(
-            'expediente'
+            'expediente',
+            'proveedor'
         ).filter(
             recibido=False
         ).order_by('-fecha', '-id')
@@ -254,26 +256,6 @@ class ListaDetallesPedidoView(APIView):
         return Response(serializer.data)
 
 
-class CrearDetallePedidoView(APIView):
-    permission_classes = [IsAuthenticated, EsGestorAdministracion]
-
-    def post(self, request):
-        serializer = DetallePedidoSerializer(
-            data=request.data
-        )
-
-        if serializer.is_valid():
-            detalle = serializer.save()
-
-            return Response(
-                DetallePedidoSerializer(detalle).data,
-                status=201
-            )
-
-        return Response(
-            serializer.errors,
-            status=400
-        )
 class VerExpedienteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
 
@@ -322,7 +304,11 @@ class CrearPedidoExpedienteView(APIView):
     def post(self, request, pk):
 
         try:
-            expediente = Expediente.objects.get(pk=pk)
+            expediente = Expediente.objects.select_related(
+                'proveedor'
+            ).get(
+                pk=pk
+            )
         except Expediente.DoesNotExist:
             return Response(
                 {"error": "El expediente no existe."},
@@ -434,6 +420,7 @@ class CrearPedidoExpedienteView(APIView):
             pedido = Pedido.objects.create(
                 nombre=nombre.strip(),
                 expediente=expediente,
+                proveedor=expediente.proveedor,
                 tipo_pedido=Pedido.TipoPedido.EXPEDIENTE,
                 recibido=False
             )
@@ -489,7 +476,8 @@ class VerPedidoView(APIView):
     def get(self, request, pk):
         try:
             pedido = Pedido.objects.select_related(
-                'expediente'
+                'expediente',
+                'proveedor'
             ).prefetch_related(
                 'detalles_pedido__suministro'
             ).get(
@@ -545,6 +533,7 @@ class CrearPedidoGeneralView(APIView):
     def post(self, request):
 
         nombre = request.data.get('nombre')
+        proveedor_id = request.data.get('proveedor')
         suministros = request.data.get('suministros', {})
 
         if not nombre or not nombre.strip():
@@ -556,6 +545,30 @@ class CrearPedidoGeneralView(APIView):
         if len(nombre.strip()) > 50:
             return Response(
                 {"error": "El nombre del pedido no puede superar los 50 caracteres."},
+                status=400
+            )
+
+        if not proveedor_id:
+            return Response(
+                {"error": "Debes seleccionar un proveedor."},
+                status=400
+            )
+
+        try:
+            proveedor_id = int(proveedor_id)
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "El proveedor seleccionado no es válido."},
+                status=400
+            )
+
+        try:
+            proveedor = Proveedor.objects.get(
+                id=proveedor_id
+            )
+        except Proveedor.DoesNotExist:
+            return Response(
+                {"error": "El proveedor seleccionado no existe."},
                 status=400
             )
 
@@ -649,6 +662,7 @@ class CrearPedidoGeneralView(APIView):
             pedido = Pedido.objects.create(
                 nombre=nombre.strip(),
                 expediente=None,
+                proveedor=proveedor,
                 tipo_pedido=Pedido.TipoPedido.GENERAL,
                 recibido=False
             )
@@ -735,6 +749,17 @@ class EliminarProveedorView(APIView):
                     "error": (
                         "No se puede eliminar un proveedor que ya tiene "
                         "expedientes asociados."
+                    )
+                },
+                status=400
+            )
+
+        if Pedido.objects.filter(proveedor=proveedor).exists():
+            return Response(
+                {
+                    "error": (
+                        "No se puede eliminar un proveedor que ya tiene "
+                        "pedidos asociados."
                     )
                 },
                 status=400

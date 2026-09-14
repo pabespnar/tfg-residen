@@ -190,6 +190,11 @@ class PedidoSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    proveedor_nombre = serializers.CharField(
+        source='proveedor.nombre',
+        read_only=True
+    )
+
     correcto = serializers.SerializerMethodField()
 
     class Meta:
@@ -201,6 +206,8 @@ class PedidoSerializer(serializers.ModelSerializer):
             'tipo_pedido',
             'expediente',
             'expediente_nombre',
+            'proveedor',
+            'proveedor_nombre',
             'fecha',
             'recibido',
             'correcto',
@@ -210,6 +217,7 @@ class PedidoSerializer(serializers.ModelSerializer):
             'id',
             'fecha',
             'expediente_nombre',
+            'proveedor_nombre',
         ]
 
     def get_correcto(self, obj):

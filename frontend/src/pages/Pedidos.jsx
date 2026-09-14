@@ -15,7 +15,11 @@ function Pedidos() {
     const [suministrosDisponibles, setSuministrosDisponibles] = useState([]);
     const [cargandoSuministros, setCargandoSuministros] = useState(false);
 
+    const [proveedores, setProveedores] = useState([]);
+    const [cargandoProveedores, setCargandoProveedores] = useState(false);
+
     const [nombrePedido, setNombrePedido] = useState('');
+    const [proveedor, setProveedor] = useState('');
 
     const [suministrosSeleccionados, setSuministrosSeleccionados] = useState([
         {
@@ -27,6 +31,7 @@ function Pedidos() {
     ]);
 
     const [errorNombrePedido, setErrorNombrePedido] = useState('');
+    const [errorProveedor, setErrorProveedor] = useState('');
     const [erroresSuministros, setErroresSuministros] = useState({});
     const [errorSuministros, setErrorSuministros] = useState('');
     const [errorGeneral, setErrorGeneral] = useState('');
@@ -81,9 +86,11 @@ function Pedidos() {
         setErrorGeneral('');
         setErrorSuministros('');
         setErrorNombrePedido('');
+        setErrorProveedor('');
         setErroresSuministros({});
 
         setNombrePedido('');
+        setProveedor('');
 
         setSuministrosSeleccionados([
             {
@@ -95,13 +102,14 @@ function Pedidos() {
         ]);
 
         setCargandoSuministros(true);
+        setCargandoProveedores(true);
         setMostrarModalPedido(true);
 
         try {
 
             const token = localStorage.getItem('access');
 
-            const respuesta = await axios.get(
+            const respuestaSuministros = await axios.get(
                 'http://127.0.0.1:8000/api/expedientes/suministrosdisponibles/',
                 {
                     headers: {
@@ -110,24 +118,52 @@ function Pedidos() {
                 }
             );
 
+            const respuestaProveedores = await axios.get(
+                'http://127.0.0.1:8000/api/expedientes/proveedores/',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
             setSuministrosDisponibles(
-                respuesta.data
+                respuestaSuministros.data
+            );
+
+            setProveedores(
+                respuestaProveedores.data
             );
 
         } catch (error) {
 
             console.error(
-                'Error al obtener los suministros disponibles:',
+                'Error al obtener los datos del pedido general:',
                 error
             );
 
-            setErrorSuministros(
-                'No se han podido cargar los suministros disponibles.'
-            );
+            if (
+                error.config?.url?.includes(
+                    '/suministrosdisponibles/'
+                )
+            ) {
+
+                setErrorSuministros(
+                    'No se han podido cargar los suministros disponibles.'
+                );
+
+            } else {
+
+                setErrorGeneral(
+                    'No se han podido cargar los proveedores.'
+                );
+
+            }
 
         } finally {
 
             setCargandoSuministros(false);
+            setCargandoProveedores(false);
 
         }
     };
@@ -138,6 +174,7 @@ function Pedidos() {
         setMostrarModalPedido(false);
 
         setNombrePedido('');
+        setProveedor('');
 
         setSuministrosSeleccionados([
             {
@@ -149,9 +186,19 @@ function Pedidos() {
         ]);
 
         setErrorNombrePedido('');
+        setErrorProveedor('');
         setErroresSuministros({});
         setErrorSuministros('');
         setErrorGeneral('');
+
+    };
+
+
+    const cambiarProveedor = (valor) => {
+
+        setProveedor(valor);
+
+        setErrorProveedor('');
 
     };
 
@@ -307,6 +354,7 @@ function Pedidos() {
 
         setErrorGeneral('');
         setErrorNombrePedido('');
+        setErrorProveedor('');
         setErrorSuministros('');
         setErroresSuministros({});
 
@@ -325,6 +373,17 @@ function Pedidos() {
 
             setErrorNombrePedido(
                 'El nombre del pedido no puede superar los 50 caracteres.'
+            );
+
+            hayErrores = true;
+
+        }
+
+
+        if (!proveedor) {
+
+            setErrorProveedor(
+                'Debes seleccionar un proveedor.'
             );
 
             hayErrores = true;
@@ -455,6 +514,7 @@ function Pedidos() {
                 'http://127.0.0.1:8000/api/expedientes/crearpedidogeneral/',
                 {
                     nombre: nombrePedido.trim(),
+                    proveedor: Number(proveedor),
                     suministros: suministros
                 },
                 {
@@ -570,21 +630,21 @@ function Pedidos() {
                                 </div>
 
 
-                            <span
-                                className={
-                                    !pedido.recibido
-                                        ? 'pedido-estado pendiente'
+                                <span
+                                    className={
+                                        !pedido.recibido
+                                            ? 'pedido-estado pendiente'
+                                            : pedido.correcto
+                                                ? 'pedido-estado correcto'
+                                                : 'pedido-estado incorrecto'
+                                    }
+                                >
+                                    {!pedido.recibido
+                                        ? 'Pendiente'
                                         : pedido.correcto
-                                            ? 'pedido-estado correcto'
-                                            : 'pedido-estado incorrecto'
-                                }
-                            >
-                                {!pedido.recibido
-                                    ? 'Pendiente'
-                                    : pedido.correcto
-                                        ? '✓ Recibido correctamente'
-                                        : '✕ Recibido con diferencias'}
-                            </span>
+                                            ? '✓ Recibido correctamente'
+                                            : '✕ Recibido con diferencias'}
+                                </span>
 
                             </div>
 
@@ -669,6 +729,58 @@ function Pedidos() {
                             </div>
 
 
+                            <div className="pedidos-proveedor">
+
+                                <label>
+                                    Proveedor
+                                </label>
+
+                                <select
+                                    value={proveedor}
+                                    onChange={(e) =>
+                                        cambiarProveedor(
+                                            e.target.value
+                                        )
+                                    }
+                                    disabled={
+                                        cargandoProveedores
+                                    }
+                                >
+
+                                    <option value="">
+                                        {cargandoProveedores
+                                            ? 'Cargando proveedores...'
+                                            : 'Seleccionar proveedor'}
+                                    </option>
+
+                                    {proveedores.map(
+                                        (proveedor) => (
+                                            <option
+                                                key={
+                                                    proveedor.id
+                                                }
+                                                value={
+                                                    proveedor.id
+                                                }
+                                            >
+                                                {
+                                                    proveedor.nombre
+                                                }
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+                                {errorProveedor && (
+                                    <p className="pedidos-proveedor-error">
+                                        {errorProveedor}
+                                    </p>
+                                )}
+
+                            </div>
+
+
                             <div className="ver-expediente-modal-titulo-suministros">
 
                                 <h3>
@@ -681,6 +793,7 @@ function Pedidos() {
                                     onClick={añadirSuministro}
                                     disabled={
                                         cargandoSuministros ||
+                                        cargandoProveedores ||
                                         suministrosDisponibles.length ===
                                             suministrosSeleccionados.length
                                     }
@@ -691,10 +804,10 @@ function Pedidos() {
                             </div>
 
 
-                            {cargandoSuministros ? (
+                            {cargandoSuministros || cargandoProveedores ? (
 
                                 <p>
-                                    Cargando suministros...
+                                    Cargando suministros y proveedores...
                                 </p>
 
                             ) : suministrosDisponibles.length === 0 ? (
@@ -1030,6 +1143,7 @@ function Pedidos() {
                                 onClick={crearPedido}
                                 disabled={
                                     cargandoSuministros ||
+                                    cargandoProveedores ||
                                     suministrosDisponibles.length === 0
                                 }
                             >
