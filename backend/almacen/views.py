@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import AltaAlmacen, BajaAlmacen
+from suministros.models import Suministro
 from .serializers import AltaAlmacenSerializer, BajaAlmacenSerializer
 from expedientes.models import Pedido, DetallePedido
 from suministros.permissions import EsGestorAlmacen
@@ -28,48 +29,138 @@ class CrearBajaServicioView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
     def post(self, request):
-        datos = request.data.copy()
+        suministros = request.data.get('suministros')
+        servicio = request.data.get('servicio')
+        observaciones = request.data.get('observaciones')
 
-        datos['tipo'] = BajaAlmacen.TipoBaja.SERVICIO
+        if not suministros:
+            return Response(
+                {
+                    'suministros':
+                    'Debes indicar al menos un suministro.'
+                },
+                status=400
+            )
 
-        serializer = BajaAlmacenSerializer(
-            data=datos
-        )
+        if not servicio:
+            return Response(
+                {
+                    'servicio':
+                    'Debes seleccionar un servicio.'
+                },
+                status=400
+            )
 
-        if serializer.is_valid():
+        if not observaciones or not observaciones.strip():
+            return Response(
+                {
+                    'observaciones':
+                    'Las bajas de servicio requieren observaciones.'
+                },
+                status=400
+            )
 
-            suministro = serializer.validated_data['suministro']
-            cantidad = serializer.validated_data['cantidad']
+        if not isinstance(suministros, list):
+            return Response(
+                {
+                    'suministros':
+                    'Los suministros no tienen un formato válido.'
+                },
+                status=400
+            )
+
+        suministros_procesados = []
+
+        for datos_suministro in suministros:
+
+            suministro_id = datos_suministro.get('suministro')
+            cantidad = datos_suministro.get('cantidad')
+
+            try:
+                suministro_id = int(suministro_id)
+                cantidad = int(cantidad)
+            except (TypeError, ValueError):
+                return Response(
+                    {
+                        'suministros':
+                        'Los suministros y las cantidades deben ser válidos.'
+                    },
+                    status=400
+                )
+
+            if cantidad <= 0:
+                return Response(
+                    {
+                        'cantidad':
+                        'La cantidad debe ser mayor que 0.'
+                    },
+                    status=400
+                )
+
+            try:
+                suministro = Suministro.objects.get(
+                    id=suministro_id
+                )
+            except Suministro.DoesNotExist:
+                return Response(
+                    {
+                        'suministro':
+                        'Uno de los suministros no existe.'
+                    },
+                    status=404
+                )
 
             if suministro.stock < cantidad:
                 return Response(
                     {
                         'cantidad':
-                        'No hay stock suficiente para realizar la baja.'
+                        f'No hay stock suficiente de {suministro.nombre} '
+                        f'para realizar la baja.'
                     },
                     status=400
                 )
 
-            suministro.stock -= cantidad
-            suministro.save(update_fields=['stock'])
-
-            datos_baja = serializer.validated_data.copy()
-            datos_baja['stock_tras_baja'] = suministro.stock
-
-            baja = BajaAlmacen.objects.create(
-                **datos_baja
+            suministros_procesados.append(
+                {
+                    'suministro': suministro,
+                    'cantidad': cantidad
+                }
             )
 
-            serializer = BajaAlmacenSerializer(baja)
+        with transaction.atomic():
 
-            return Response(
-                serializer.data,
-                status=201
-            )
+            bajas_creadas = []
+
+            for datos_suministro in suministros_procesados:
+
+                suministro = datos_suministro['suministro']
+                cantidad = datos_suministro['cantidad']
+
+                suministro.stock -= cantidad
+
+                suministro.save(
+                    update_fields=['stock']
+                )
+
+                baja = BajaAlmacen.objects.create(
+                    suministro=suministro,
+                    cantidad=cantidad,
+                    servicio=servicio,
+                    stock_tras_baja=suministro.stock,
+                    tipo=BajaAlmacen.TipoBaja.SERVICIO,
+                    observaciones=observaciones.strip()
+                )
+
+                bajas_creadas.append(baja)
+
+        serializer = BajaAlmacenSerializer(
+            bajas_creadas,
+            many=True
+        )
 
         return Response(
-            serializer.errors,
-            status=400
+            serializer.data,
+            status=201
         )
 
 
@@ -227,6 +318,7 @@ class CrearAltaAlmacenView(APIView):
             pedido.save(
                 update_fields=['recibido']
             )
+
         serializer = AltaAlmacenSerializer(
             altas_creadas,
             many=True
