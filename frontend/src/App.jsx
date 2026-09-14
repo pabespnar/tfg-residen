@@ -28,7 +28,8 @@ import VerSuministro from './pages/VerSuministro';
 import DashboardAlmacen from "./pages/DashboardAlmacen";
 import Expedientes from "./pages/Expedientes";
 import VerExpediente from "./pages/VerExpediente";
-
+import Pedidos from "./pages/Pedidos"
+import VerPedido from "./pages/VerPedido"
 
 function tokenValido() {
 
@@ -343,6 +344,14 @@ function App() {
                                 <Route
                                     path="/expedientes/:id"
                                     element={<VerExpediente />}
+                                />
+                                <Route
+                                    path="/pedidos"
+                                    element={<Pedidos />}
+                                />
+                                <Route
+                                    path="/pedidos/:id"
+                                    element={<VerPedido />}
                                 />
                             </>
                         )}

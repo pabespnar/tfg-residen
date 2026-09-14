@@ -1,0 +1,119 @@
+.pedidos-container {
+    padding: 30px;
+}
+
+.pedidos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.pedidos-header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #1B5E20;
+}
+
+.pedidos-header p {
+    margin-top: 8px;
+    color: #666;
+    font-size: 15px;
+}
+
+.pedidos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pedido-card {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 22px 24px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pedido-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.pedido-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.pedido-card-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 19px;
+    color: #333;
+}
+
+.pedido-card-header span {
+    color: #666;
+    font-size: 14px;
+}
+
+.pedido-estado {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px !important;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pedido-estado.recibido {
+    background-color: #e8f5e9;
+    color: #1B5E20 !important;
+}
+
+.pedido-estado.pendiente {
+    background-color: #fff3e0;
+    color: #e65100 !important;
+}
+
+.pedido-card-fecha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #eeeeee;
+}
+
+.pedido-card-fecha span {
+    color: #777;
+    font-size: 13px;
+}
+
+.pedido-card-fecha strong {
+    color: #333;
+    font-size: 14px;
+}
+
+.pedidos-vacio {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    color: #666;
+}
+
+.pedidos-cargando {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+}
+
+.pedidos-error {
+    padding: 20px;
+    text-align: center;
+    color: #b71c1c;
+    background-color: #fdeaea;
+    border-radius: 8px;
+}
