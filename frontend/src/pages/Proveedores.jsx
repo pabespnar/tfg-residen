@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import './Proveedores.css'
 import { FaPencilAlt, FaTrash } from "react-icons/fa";
 
 function Proveedores() {
+
+    const navigate = useNavigate()
 
     const [proveedores, setProveedores] = useState([])
     const [proveedoresAbiertos, setProveedoresAbiertos] = useState({})
@@ -607,10 +610,11 @@ function Proveedores() {
                                                 {proveedor.expedientes.map(
                                                     (expediente) => (
 
-                                                        <div
-                                                            key={expediente.id}
-                                                            className="expediente-card"
-                                                        >
+                                                            <div
+                                                                key={expediente.id}
+                                                                className="expediente-card"
+                                                                onClick={() => navigate(`/expedientes/${expediente.id}`)}
+                                                            >
 
                                                             <div>
                                                                 <h4>
