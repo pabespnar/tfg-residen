@@ -4,8 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .permissions import EsGestorAdministracion
-from suministros.permissions import EsGestorAlmacen
+from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
 
 from .models import Expediente, Pedido, DetallePedido
 from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer
@@ -69,7 +68,7 @@ class ListaPedidosView(APIView):
 
 
 class ListaPedidosRecibidosView(APIView):
-    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+    permission_classes = [IsAuthenticated, EsGestorAlmacenOAdministracion]
 
     def get(self, request):
         pedidos = Pedido.objects.select_related(
@@ -88,7 +87,7 @@ class ListaPedidosRecibidosView(APIView):
 
 
 class ListaDetallesPedidoView(APIView):
-    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+    permission_classes = [IsAuthenticated, EsGestorAlmacenOAdministracion]
 
     def get(self, request, pedido_id):
         detalles = DetallePedido.objects.select_related(
@@ -329,3 +328,36 @@ class CrearPedidoExpedienteView(APIView):
             },
             status=201
         )
+
+class VerPedidoView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAlmacenOAdministracion]
+
+    def get(self, request, pk):
+        try:
+            pedido = Pedido.objects.select_related(
+                'expediente'
+            ).prefetch_related(
+                'detalles_pedido__suministro'
+            ).get(
+                pk=pk
+            )
+
+        except Pedido.DoesNotExist:
+            return Response(
+                {"error": "El pedido no existe."},
+                status=404
+            )
+
+        pedido_serializer = PedidoSerializer(
+            pedido
+        )
+
+        detalles_serializer = DetallePedidoSerializer(
+            pedido.detalles_pedido.all().order_by('id'),
+            many=True
+        )
+
+        return Response({
+            'pedido': pedido_serializer.data,
+            'detalles': detalles_serializer.data,
+        })
