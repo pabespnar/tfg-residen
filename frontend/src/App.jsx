@@ -30,7 +30,9 @@ import Expedientes from "./pages/Expedientes";
 import VerExpediente from "./pages/VerExpediente";
 import Pedidos from "./pages/Pedidos"
 import VerPedido from "./pages/VerPedido"
-import Probeedores from "./pages/Proveedores"
+import Proveedores from "./pages/Proveedores"
+import CrearExpediente from "./pages/CrearExpediente"
+
 
 function tokenValido() {
 
@@ -356,8 +358,12 @@ function App() {
                                 />
                                 <Route
                                     path="/proveedores"
-                                    element={<Probeedores />}
+                                    element={<Proveedores />}
                                 />
+                                <Route
+                                    path="/expedientes/nuevo"
+                                    element={<CrearExpediente />}
+                                />                                
                             </>
                         )}
 
