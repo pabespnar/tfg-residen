@@ -208,9 +208,8 @@ class DashboardAlmacenView(APIView):
         ).count()
 
         pedidos_pendientes_alta = Pedido.objects.filter(
-            recibido=True,
-            altas__isnull=True
-        ).distinct().count()
+            recibido=False
+        ).count()
 
         pedidos_recibidos = Pedido.objects.filter(
             recibido=True,

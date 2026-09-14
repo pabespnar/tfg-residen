@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
+from django.db.models import Sum
 
 from .models import Proveedor, Expediente, DetalleExpediente, Pedido, DetallePedido
 
@@ -181,6 +182,8 @@ class PedidoSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    correcto = serializers.SerializerMethodField()
+
     class Meta:
         model = Pedido
 
@@ -192,6 +195,7 @@ class PedidoSerializer(serializers.ModelSerializer):
             'expediente_nombre',
             'fecha',
             'recibido',
+            'correcto',
         ]
 
         read_only_fields = [
@@ -199,6 +203,34 @@ class PedidoSerializer(serializers.ModelSerializer):
             'fecha',
             'expediente_nombre',
         ]
+
+    def get_correcto(self, obj):
+
+        if not obj.recibido:
+            return None
+
+        cantidades_solicitadas = {}
+
+        for detalle in obj.detalles_pedido.all():
+            cantidades_solicitadas[detalle.suministro_id] = (
+                cantidades_solicitadas.get(
+                    detalle.suministro_id,
+                    0
+                ) + detalle.cantidad
+            )
+
+        cantidades_recibidas = {}
+
+        altas = obj.altas.values(
+            'suministro_id'
+        ).annotate(
+            total=Sum('cantidad')
+        )
+
+        for alta in altas:
+            cantidades_recibidas[alta['suministro_id']] = alta['total']
+
+        return cantidades_solicitadas == cantidades_recibidas
 
     def validate_nombre(self, value):
         if not value.strip():

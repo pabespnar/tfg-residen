@@ -13,9 +13,14 @@ function Almacen() {
     const [suministros, setSuministros] = useState([])
     const [categorias, setCategorias] = useState([])
 
-    const [categoria, setCategoria] = useState('')
-    const [suministro, setSuministro] = useState('')
-    const [cantidad, setCantidad] = useState('')
+    const [suministrosSeleccionados, setSuministrosSeleccionados] = useState([
+        {
+            categoria: '',
+            suministro: '',
+            cantidad: ''
+        }
+    ])
+
     const [servicio, setServicio] = useState('')
     const [observaciones, setObservaciones] = useState('')
 
@@ -33,6 +38,17 @@ function Almacen() {
     const abrirNuevaBaja = async () => {
         setMostrarNuevaBaja(true)
         setErroresBaja({})
+
+        setSuministrosSeleccionados([
+            {
+                categoria: '',
+                suministro: '',
+                cantidad: ''
+            }
+        ])
+
+        setServicio('')
+        setObservaciones('')
 
         try {
             const token = localStorage.getItem('access')
@@ -76,22 +92,83 @@ function Almacen() {
 
     const cerrarNuevaBaja = () => {
         setMostrarNuevaBaja(false)
-        setCategoria('')
-        setSuministro('')
-        setCantidad('')
+
+        setSuministrosSeleccionados([
+            {
+                categoria: '',
+                suministro: '',
+                cantidad: ''
+            }
+        ])
+
         setServicio('')
         setObservaciones('')
         setErroresBaja({})
         setCreandoBaja(false)
     }
 
-    const cambiarCategoria = (valor) => {
-        setCategoria(valor)
-        setSuministro('')
+    const cambiarCategoria = (index, valor) => {
+
+        const nuevosSuministros = [
+            ...suministrosSeleccionados
+        ]
+
+        nuevosSuministros[index] = {
+            ...nuevosSuministros[index],
+            categoria: valor,
+            suministro: ''
+        }
+
+        setSuministrosSeleccionados(
+            nuevosSuministros
+        )
 
         setErroresBaja((erroresActuales) => ({
             ...erroresActuales,
-            suministro: ''
+            [`suministro_${index}`]: ''
+        }))
+    }
+
+    const cambiarSuministro = (index, valor) => {
+
+        const nuevosSuministros = [
+            ...suministrosSeleccionados
+        ]
+
+        nuevosSuministros[index] = {
+            ...nuevosSuministros[index],
+            suministro: valor
+        }
+
+        setSuministrosSeleccionados(
+            nuevosSuministros
+        )
+
+        setErroresBaja((erroresActuales) => ({
+            ...erroresActuales,
+            [`suministro_${index}`]: ''
+        }))
+    }
+
+    const cambiarCantidad = (index, valor) => {
+
+        const nuevosSuministros = [
+            ...suministrosSeleccionados
+        ]
+
+        nuevosSuministros[index] = {
+            ...nuevosSuministros[index],
+            cantidad: valor
+        }
+
+        setSuministrosSeleccionados(
+            nuevosSuministros
+        )
+
+        setErroresBaja((erroresActuales) => ({
+            ...erroresActuales,
+            [`cantidad_${index}`]: '',
+            cantidad: ''
         }))
     }
 
@@ -99,6 +176,13 @@ function Almacen() {
 
         if (!categoriaId) {
             return suministros
+        }
+
+        if (categoriaId === 'sin-asignar') {
+            return suministros.filter(
+                (suministro) =>
+                    suministro.categoria === null
+            )
         }
 
         const categoriaSeleccionada = categorias.find(
@@ -113,6 +197,43 @@ function Almacen() {
         return categoriaSeleccionada.suministros || []
     }
 
+    const añadirSuministro = () => {
+
+        setSuministrosSeleccionados([
+            ...suministrosSeleccionados,
+            {
+                categoria: '',
+                suministro: '',
+                cantidad: ''
+            }
+        ])
+    }
+
+    const eliminarSuministro = (index) => {
+
+        if (suministrosSeleccionados.length === 1) {
+            return
+        }
+
+        setSuministrosSeleccionados(
+            suministrosSeleccionados.filter(
+                (_, i) => i !== index
+            )
+        )
+
+        setErroresBaja((erroresActuales) => {
+
+            const nuevosErrores = {
+                ...erroresActuales
+            }
+
+            delete nuevosErrores[`suministro_${index}`]
+            delete nuevosErrores[`cantidad_${index}`]
+
+            return nuevosErrores
+        })
+    }
+
     const crearBaja = async (e) => {
 
         e.preventDefault()
@@ -121,15 +242,55 @@ function Almacen() {
 
         const nuevosErrores = {}
 
-        if (!suministro) {
-            nuevosErrores.suministro =
-                'Debes seleccionar un suministro.'
-        }
+        const suministrosUsados = []
 
-        if (!cantidad || Number(cantidad) <= 0) {
-            nuevosErrores.cantidad =
-                'La cantidad debe ser mayor que 0.'
-        }
+        suministrosSeleccionados.forEach(
+            (suministroSeleccionado, index) => {
+
+                if (!suministroSeleccionado.categoria) {
+
+                    nuevosErrores[`suministro_${index}`] =
+                        'Debes seleccionar una categoría.'
+
+                    return
+                }
+
+                if (!suministroSeleccionado.suministro) {
+
+                    nuevosErrores[`suministro_${index}`] =
+                        'Debes seleccionar un suministro.'
+
+                    return
+                }
+
+                if (
+                    suministrosUsados.includes(
+                        suministroSeleccionado.suministro
+                    )
+                ) {
+
+                    nuevosErrores[`suministro_${index}`] =
+                        'Este suministro ya está seleccionado.'
+
+                    return
+                }
+
+                suministrosUsados.push(
+                    suministroSeleccionado.suministro
+                )
+
+                if (
+                    !suministroSeleccionado.cantidad ||
+                    Number(
+                        suministroSeleccionado.cantidad
+                    ) <= 0
+                ) {
+
+                    nuevosErrores[`cantidad_${index}`] =
+                        'La cantidad debe ser mayor que 0.'
+                }
+            }
+        )
 
         if (!servicio) {
             nuevosErrores.servicio =
@@ -142,7 +303,9 @@ function Almacen() {
         }
 
         if (Object.keys(nuevosErrores).length > 0) {
+
             setErroresBaja(nuevosErrores)
+
             return
         }
 
@@ -152,11 +315,22 @@ function Almacen() {
 
             const token = localStorage.getItem('access')
 
+            const datosSuministros =
+                suministrosSeleccionados.map(
+                    (suministroSeleccionado) => ({
+                        suministro: Number(
+                            suministroSeleccionado.suministro
+                        ),
+                        cantidad: Number(
+                            suministroSeleccionado.cantidad
+                        )
+                    })
+                )
+
             await axios.post(
                 'http://127.0.0.1:8000/api/almacen/crearbajaservicio/',
                 {
-                    suministro: Number(suministro),
-                    cantidad: Number(cantidad),
+                    suministros: datosSuministros,
                     servicio: servicio,
                     observaciones: observaciones.trim(),
                 },
@@ -459,7 +633,15 @@ function Almacen() {
     return (
         <div className="almacen-container">
 
-            <h1>Gestión de almacén</h1>
+            <div className="almacen-cabecera">
+
+                <h1>Gestión de almacén</h1>
+
+                <p>
+                    Gestiona las entradas y salidas de suministros del almacén.
+                </p>
+
+            </div>
 
             <div className="almacen-seccion">
 
@@ -536,126 +718,221 @@ function Almacen() {
 
                         <form onSubmit={crearBaja}>
 
-                            <div className="crear-modulo-campo">
+                            <div className="baja-suministros-titulo">
 
-                                <label>Categoría</label>
+                                <label>
+                                    Suministros
+                                </label>
 
-                                <select
-                                    value={categoria}
-                                    onChange={(e) =>
-                                        cambiarCategoria(
-                                            e.target.value
-                                        )
-                                    }
+                                <button
+                                    type="button"
+                                    className="baja-suministros-anadir"
+                                    onClick={añadirSuministro}
                                 >
-
-                                    <option value="">
-                                        Todas las categorías
-                                    </option>
-
-                                    {categorias.map(
-                                        (categoriaItem) => (
-
-                                            <option
-                                                key={
-                                                    categoriaItem.id
-                                                }
-                                                value={
-                                                    categoriaItem.id
-                                                }
-                                            >
-                                                {
-                                                    categoriaItem.nombre
-                                                }
-                                            </option>
-
-                                        )
-                                    )}
-
-                                </select>
+                                    +
+                                </button>
 
                             </div>
 
-                            <div className="crear-modulo-campo">
+                            {suministrosSeleccionados.map(
+                                (suministroSeleccionado, index) => {
 
-                                <label>Suministro</label>
+                                    const suministrosUsados =
+                                        suministrosSeleccionados
+                                            .filter(
+                                                (_, i) =>
+                                                    i !== index
+                                            )
+                                            .map(
+                                                (suministro) =>
+                                                    String(
+                                                        suministro.suministro
+                                                    )
+                                            )
 
-                                <select
-                                    value={suministro}
-                                    onChange={(e) => {
-
-                                        setSuministro(
-                                            e.target.value
+                                    const opcionesDisponibles =
+                                        obtenerSuministrosCategoria(
+                                            suministroSeleccionado.categoria
+                                        ).filter(
+                                            (suministroItem) =>
+                                                !suministrosUsados.includes(
+                                                    String(
+                                                        suministroItem.id
+                                                    )
+                                                )
                                         )
 
-                                        setErroresBaja({
-                                            ...erroresBaja,
-                                            suministro: ''
-                                        })
-                                    }}
-                                >
+                                    return (
 
-                                    <option value="">
-                                        Selecciona un suministro
-                                    </option>
+                                        <div
+                                            key={index}
+                                            className="baja-suministro"
+                                        >
 
-                                    {obtenerSuministrosCategoria(
-                                        categoria
-                                    ).map(
-                                        (suministroItem) => (
+                                            <div className="crear-modulo-campo">
 
-                                            <option
-                                                key={
-                                                    suministroItem.id
-                                                }
-                                                value={
-                                                    suministroItem.id
-                                                }
-                                            >
-                                                {
-                                                    suministroItem.nombre
-                                                }
-                                            </option>
+                                                <label>
+                                                    Categoría
+                                                </label>
 
-                                        )
-                                    )}
+                                                <select
+                                                    value={
+                                                        suministroSeleccionado.categoria
+                                                    }
+                                                    onChange={(e) =>
+                                                        cambiarCategoria(
+                                                            index,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                >
 
-                                </select>
+                                                    <option value="">
+                                                        Todas las categorías
+                                                    </option>
 
-                                {erroresBaja.suministro && (
-                                    <span className="crear-modulo-error">
-                                        {
-                                            erroresBaja.suministro
-                                        }
-                                    </span>
-                                )}
+                                                    {categorias.map(
+                                                        (categoriaItem) => (
 
-                            </div>
+                                                            <option
+                                                                key={
+                                                                    categoriaItem.id
+                                                                }
+                                                                value={
+                                                                    categoriaItem.id
+                                                                }
+                                                            >
+                                                                {
+                                                                    categoriaItem.nombre
+                                                                }
+                                                            </option>
 
-                            <div className="crear-modulo-campo">
+                                                        )
+                                                    )}
 
-                                <label>Cantidad</label>
+                                                </select>
 
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={cantidad}
-                                    onChange={(e) =>
-                                        setCantidad(
-                                            e.target.value
-                                        )
-                                    }
-                                />
+                                            </div>
 
-                                {erroresBaja.cantidad && (
-                                    <span className="crear-modulo-error">
-                                        {
-                                            erroresBaja.cantidad
-                                        }
-                                    </span>
-                                )}
+                                            <div className="crear-modulo-campo">
 
-                            </div>
+                                                <label>
+                                                    Suministro
+                                                </label>
+
+                                                <select
+                                                    value={
+                                                        suministroSeleccionado.suministro
+                                                    }
+                                                    onChange={(e) =>
+                                                        cambiarSuministro(
+                                                            index,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                >
+
+                                                    <option value="">
+                                                        Selecciona un suministro
+                                                    </option>
+
+                                                    {opcionesDisponibles.map(
+                                                        (suministroItem) => (
+
+                                                            <option
+                                                                key={
+                                                                    suministroItem.id
+                                                                }
+                                                                value={
+                                                                    suministroItem.id
+                                                                }
+                                                            >
+                                                                {
+                                                                    suministroItem.nombre
+                                                                }
+                                                            </option>
+
+                                                        )
+                                                    )}
+
+                                                </select>
+
+                                                {erroresBaja[
+                                                    `suministro_${index}`
+                                                ] && (
+                                                    <span className="crear-modulo-error">
+                                                        {
+                                                            erroresBaja[
+                                                                `suministro_${index}`
+                                                            ]
+                                                        }
+                                                    </span>
+                                                )}
+
+                                            </div>
+
+                                            <div className="crear-modulo-campo">
+
+                                                <label>
+                                                    Cantidad
+                                                </label>
+
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={
+                                                        suministroSeleccionado.cantidad
+                                                    }
+                                                    onChange={(e) =>
+                                                        cambiarCantidad(
+                                                            index,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+
+                                                {erroresBaja[
+                                                    `cantidad_${index}`
+                                                ] && (
+                                                    <span className="crear-modulo-error">
+                                                        {
+                                                            erroresBaja[
+                                                                `cantidad_${index}`
+                                                            ]
+                                                        }
+                                                    </span>
+                                                )}
+
+                                                {erroresBaja.cantidad && (
+                                                    <span className="crear-modulo-error">
+                                                        {erroresBaja.cantidad}
+                                                    </span>
+                                                )}
+
+                                            </div>
+
+                                            {suministrosSeleccionados.length >
+                                                1 && (
+
+                                                <button
+                                                    type="button"
+                                                    className="baja-suministro-eliminar"
+                                                    onClick={() =>
+                                                        eliminarSuministro(
+                                                            index
+                                                        )
+                                                    }
+                                                >
+                                                    −
+                                                </button>
+
+                                            )}
+
+                                        </div>
+
+                                    )
+                                }
+                            )}
 
                             <div className="crear-modulo-campo">
 

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 
@@ -17,7 +18,7 @@ class SuministroSerializer(serializers.ModelSerializer):
     )
 
     packs = serializers.SerializerMethodField()
-
+    expediente_activo = serializers.SerializerMethodField()
     class Meta:
         model = Suministro
 
@@ -32,6 +33,7 @@ class SuministroSerializer(serializers.ModelSerializer):
             'categoria_nombre',
             'f_alta',
             'packs',
+            'expediente_activo',
         ]
 
         read_only_fields = [
@@ -39,6 +41,7 @@ class SuministroSerializer(serializers.ModelSerializer):
             'categoria_nombre',
             'f_alta',
             'packs',
+            'expediente_activo',
         ]
 
     def get_packs(self, obj):
@@ -54,6 +57,26 @@ class SuministroSerializer(serializers.ModelSerializer):
             }
             for contenido in contenidos
         ]
+
+    def get_expediente_activo(self, obj):
+        hoy = timezone.now().date()
+
+        detalle = obj.detalles_expediente.filter(
+            expediente__fecha_inicio__lte=hoy,
+            expediente__fecha_final__gte=hoy
+        ).select_related(
+            'expediente',
+            'expediente__proveedor'
+        ).first()
+
+        if not detalle:
+            return None
+
+        return {
+            'id': detalle.expediente.id,
+            'nombre': detalle.expediente.nombre,
+            'proveedor_nombre': detalle.expediente.proveedor.nombre,
+        }
 
     def validate_nombre(self, value):
         if not value.strip():
