@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
 from decimal import Decimal, InvalidOperation
 
-from .models import Expediente, Pedido, DetallePedido
-from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer
+from .models import Expediente, Pedido, DetallePedido, Proveedor
+from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer, ProveedorSerializer
 from django.utils import timezone
 from suministros.models import Suministro
 from suministros.serializers import SuministroSerializer
@@ -518,3 +518,18 @@ class CrearPedidoGeneralView(APIView):
             },
             status=201
         )
+class ListaProveedoresView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def get(self, request):
+
+        proveedores = Proveedor.objects.prefetch_related(
+            'expedientes'
+        ).all().order_by('nombre')
+
+        serializer = ProveedorSerializer(
+            proveedores,
+            many=True
+        )
+
+        return Response(serializer.data)

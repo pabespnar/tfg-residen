@@ -5,56 +5,6 @@ from django.db.models import Sum
 from .models import Proveedor, Expediente, DetalleExpediente, Pedido, DetallePedido
 
 
-class ProveedorSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Proveedor
-
-        fields = [
-            'id',
-            'nombre',
-            'cif',
-            'correo',
-            'foto',
-        ]
-
-        read_only_fields = [
-            'id',
-        ]
-
-    def validate_nombre(self, value):
-        if not value.strip():
-            raise serializers.ValidationError(
-                "El nombre no puede estar vacío."
-            )
-        if len(value) > 100:
-            raise serializers.ValidationError(
-                "El nombre no puede superar los 100 caracteres."
-            )
-
-        return value
-
-    def validate_cif(self, value):
-        if not value.strip():
-            raise serializers.ValidationError(
-                "El CIF no puede estar vacío."
-            )
-        if len(value) != 9:
-            raise serializers.ValidationError(
-                "El CIF debe tener 9 caracteres."
-            )
-
-        return value
-
-    def validate_correo(self, value):
-        if not value.strip():
-            raise serializers.ValidationError(
-                "El correo no puede estar vacío."
-            )
-
-        return value
-
-
 class ExpedienteSerializer(serializers.ModelSerializer):
 
     proveedor_nombre = serializers.CharField(
@@ -134,6 +84,64 @@ class ExpedienteSerializer(serializers.ModelSerializer):
             })
 
         return data
+
+
+class ProveedorSerializer(serializers.ModelSerializer):
+
+    expedientes = ExpedienteSerializer(
+        many=True,
+        read_only=True
+    )
+    class Meta:
+        model = Proveedor
+
+        fields = [
+            'id',
+            'nombre',
+            'cif',
+            'correo',
+            'foto',
+            'expedientes'
+        ]
+
+        read_only_fields = [
+            'id',
+            'expedientes',
+        ]
+
+    def validate_nombre(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "El nombre no puede estar vacío."
+            )
+        if len(value) > 100:
+            raise serializers.ValidationError(
+                "El nombre no puede superar los 100 caracteres."
+            )
+
+        return value
+
+    def validate_cif(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "El CIF no puede estar vacío."
+            )
+        if len(value) != 9:
+            raise serializers.ValidationError(
+                "El CIF debe tener 9 caracteres."
+            )
+
+        return value
+
+    def validate_correo(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "El correo no puede estar vacío."
+            )
+
+        return value
+
+
 
 
 class DetalleExpedienteSerializer(serializers.ModelSerializer):
