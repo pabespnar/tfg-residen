@@ -2,6 +2,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from expedientes.permissions import EsGestorAlmacenOAdministracion, EsGestorAdministracion
+
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 from residentes.models import Residente
 from almacen.models import BajaAlmacen
@@ -10,7 +12,7 @@ from .permissions import EsGestorAlmacen
 from django.db import transaction
 
 class ListaSuministrosView(APIView):
-    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+    permission_classes = [IsAuthenticated, EsGestorAlmacenOAdministracion]
 
     def get(self, request):
         suministros = Suministro.objects.all()
@@ -388,5 +390,71 @@ class EliminarCategoriaView(APIView):
 
         return Response(
             {"mensaje": "Categoría eliminada correctamente."},
+            status=200
+        )
+
+class CrearSuministroView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def post(self, request):
+
+        datos = {
+            'nombre': request.data.get('nombre'),
+            'unidad': request.data.get('unidad'),
+        }
+
+        serializer = SuministroSerializer(
+            data=datos
+        )
+
+        if serializer.is_valid():
+            suministro = serializer.save()
+
+            return Response(
+                serializer.data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+class EliminarSuministroView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def delete(self, request, id):
+
+        try:
+            suministro = Suministro.objects.get(id=id)
+        except Suministro.DoesNotExist:
+            return Response(
+                {
+                    'error': 'El suministro no existe.'
+                },
+                status=404
+            )
+
+        if suministro.detalles_expediente.exists():
+            return Response(
+                {
+                    'error': 'No se puede eliminar el suministro porque está asociado a un expediente.'
+                },
+                status=400
+            )
+
+        if suministro.detalles_pedido.exists():
+            return Response(
+                {
+                    'error': 'No se puede eliminar el suministro porque está asociado a un pedido.'
+                },
+                status=400
+            )
+
+        suministro.delete()
+
+        return Response(
+            {
+                'mensaje': 'Suministro eliminado correctamente.'
+            },
             status=200
         )

@@ -19,6 +19,8 @@ class SuministroSerializer(serializers.ModelSerializer):
 
     packs = serializers.SerializerMethodField()
     expediente_activo = serializers.SerializerMethodField()
+    expedientes = serializers.SerializerMethodField()
+
     class Meta:
         model = Suministro
 
@@ -34,6 +36,7 @@ class SuministroSerializer(serializers.ModelSerializer):
             'f_alta',
             'packs',
             'expediente_activo',
+            'expedientes',
         ]
 
         read_only_fields = [
@@ -42,6 +45,7 @@ class SuministroSerializer(serializers.ModelSerializer):
             'f_alta',
             'packs',
             'expediente_activo',
+            'expedientes',
         ]
 
     def get_packs(self, obj):
@@ -78,6 +82,32 @@ class SuministroSerializer(serializers.ModelSerializer):
             'proveedor_nombre': detalle.expediente.proveedor.nombre,
         }
 
+    def get_expedientes(self, obj):
+        detalles = obj.detalles_expediente.select_related(
+            'expediente',
+            'expediente__proveedor'
+        ).order_by(
+            '-expediente__fecha_inicio'
+        )
+
+        hoy = timezone.now().date()
+
+        return [
+            {
+                'id': detalle.expediente.id,
+                'nombre': detalle.expediente.nombre,
+                'proveedor_nombre': detalle.expediente.proveedor.nombre,
+                'fecha_inicio': detalle.expediente.fecha_inicio,
+                'fecha_final': detalle.expediente.fecha_final,
+                'precio_unidad': detalle.precio_unidad,
+                'activo': (
+                    detalle.expediente.fecha_inicio <= hoy <=
+                    detalle.expediente.fecha_final
+                ),
+            }
+            for detalle in detalles
+        ]
+
     def validate_nombre(self, value):
         if not value.strip():
             raise serializers.ValidationError(
@@ -113,6 +143,7 @@ class SuministroSerializer(serializers.ModelSerializer):
             )
 
         return value
+
 
 class CategoriaSerializer(serializers.ModelSerializer):
 
@@ -275,7 +306,7 @@ class PackSerializer(serializers.ModelSerializer):
     def get_residentes_recibidos(self, pack):
         return pack.entregapack_set.count()
 
-    
+
 class EntregaPackSerializer(serializers.ModelSerializer):
 
     class Meta:
