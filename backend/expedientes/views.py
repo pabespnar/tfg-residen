@@ -5,10 +5,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
+from decimal import Decimal, InvalidOperation
 
 from .models import Expediente, Pedido, DetallePedido
 from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer
-
+from django.utils import timezone
+from suministros.models import Suministro
+from suministros.serializers import SuministroSerializer
 
 
 class ListaExpedientesView(APIView):
@@ -361,3 +364,157 @@ class VerPedidoView(APIView):
             'pedido': pedido_serializer.data,
             'detalles': detalles_serializer.data,
         })
+class ListaSuministrosDisponiblesView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def get(self, request):
+
+        hoy = timezone.now().date()
+
+        suministros_expedientes_activos = Suministro.objects.filter(
+            detalles_expediente__expediente__fecha_inicio__lte=hoy,
+            detalles_expediente__expediente__fecha_final__gte=hoy
+        ).distinct()
+
+        suministros_disponibles = Suministro.objects.exclude(
+            id__in=suministros_expedientes_activos.values('id')
+        ).order_by('nombre')
+
+        serializer = SuministroSerializer(
+            suministros_disponibles,
+            many=True
+        )
+
+        return Response(serializer.data)
+
+
+class CrearPedidoGeneralView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def post(self, request):
+
+        nombre = request.data.get('nombre')
+        suministros = request.data.get('suministros', {})
+
+        if not nombre or not nombre.strip():
+            return Response(
+                {"error": "El nombre del pedido no puede estar vacío."},
+                status=400
+            )
+
+        if len(nombre.strip()) > 50:
+            return Response(
+                {"error": "El nombre del pedido no puede superar los 50 caracteres."},
+                status=400
+            )
+
+        if not suministros:
+            return Response(
+                {"error": "Debes indicar al menos un suministro."},
+                status=400
+            )
+
+        hoy = timezone.now().date()
+
+        suministros_expedientes_activos = Suministro.objects.filter(
+            detalles_expediente__expediente__fecha_inicio__lte=hoy,
+            detalles_expediente__expediente__fecha_final__gte=hoy
+        ).distinct()
+
+        suministros_disponibles = Suministro.objects.exclude(
+            id__in=suministros_expedientes_activos.values('id')
+        )
+
+        suministros_disponibles = {
+            suministro.id: suministro
+            for suministro in suministros_disponibles
+        }
+
+        detalles_pedido = []
+        total = 0
+
+        for suministro_id, datos in suministros.items():
+
+            try:
+                suministro_id = int(suministro_id)
+            except (TypeError, ValueError):
+                return Response(
+                    {"error": "El identificador del suministro no es válido."},
+                    status=400
+                )
+
+            if suministro_id not in suministros_disponibles:
+                return Response(
+                    {
+                        "error":
+                        "Uno de los suministros seleccionados no está disponible para pedidos generales."
+                    },
+                    status=400
+                )
+
+            try:
+                cantidad = int(datos.get('cantidad'))
+                precio_unidad = Decimal(str(datos.get('precio_unidad')))
+            except (TypeError, ValueError, AttributeError, InvalidOperation):
+                return Response(
+                    {
+                        "error":
+                        "La cantidad y el precio deben ser valores numéricos válidos."
+                    },
+                    status=400
+                )
+
+            if cantidad <= 0:
+                return Response(
+                    {"error": "La cantidad debe ser mayor que cero."},
+                    status=400
+                )
+
+            if precio_unidad < 0:
+                return Response(
+                    {"error": "El precio por unidad no puede ser negativo."},
+                    status=400
+                )
+
+            suministro = suministros_disponibles[suministro_id]
+
+            subtotal = cantidad * precio_unidad
+            total += subtotal
+
+            detalles_pedido.append({
+                'suministro': suministro,
+                'cantidad': cantidad,
+                'precio_unidad': precio_unidad,
+            })
+
+        if not detalles_pedido:
+            return Response(
+                {"error": "Debes indicar al menos un suministro."},
+                status=400
+            )
+
+        with transaction.atomic():
+
+            pedido = Pedido.objects.create(
+                nombre=nombre.strip(),
+                expediente=None,
+                tipo_pedido=Pedido.TipoPedido.GENERAL,
+                recibido=False
+            )
+
+            for detalle in detalles_pedido:
+
+                DetallePedido.objects.create(
+                    pedido=pedido,
+                    suministro=detalle['suministro'],
+                    cantidad=detalle['cantidad'],
+                    precio_unidad=detalle['precio_unidad']
+                )
+
+        return Response(
+            {
+                'pedido': PedidoSerializer(pedido).data,
+                'total': total,
+            },
+            status=201
+        )
