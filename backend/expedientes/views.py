@@ -4,12 +4,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+import json
 
 
 from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
 from decimal import Decimal, InvalidOperation
 
-from .models import Expediente, Pedido, DetallePedido, Proveedor
+from .models import Expediente, Pedido, DetallePedido, Proveedor, DetalleExpediente
 from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer, ProveedorSerializer
 from django.utils import timezone
 from suministros.models import Suministro
@@ -34,27 +35,171 @@ class ListaExpedientesView(APIView):
 
 class CrearExpedienteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
+
+        datos_expediente = {
+            'nombre': request.data.get('nombre'),
+            'detalles': request.data.get('detalles'),
+            'fecha_inicio': request.data.get('fecha_inicio'),
+            'fecha_final': request.data.get('fecha_final'),
+            'proveedor': request.data.get('proveedor'),
+            'presupuesto': request.data.get('presupuesto'),
+        }
+
+        if request.data.get('contrato'):
+            datos_expediente['contrato'] = request.data.get('contrato')
+
+        suministros = request.data.get('suministros', '[]')
+
+        try:
+            if isinstance(suministros, str):
+                suministros = json.loads(suministros)
+        except json.JSONDecodeError:
+            return Response(
+                {
+                    'error':
+                        'Los suministros enviados no tienen un formato válido.'
+                },
+                status=400
+            )
+
+        if not isinstance(suministros, list) or not suministros:
+            return Response(
+                {
+                    'error':
+                        'Debes indicar al menos un suministro.'
+                },
+                status=400
+            )
+
         serializer = ExpedienteSerializer(
-            data=request.data
+            data=datos_expediente
         )
 
-        if serializer.is_valid():
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=400
+            )
+
+        suministros_ids = []
+
+        for suministro in suministros:
+
+            if not isinstance(suministro, dict):
+                return Response(
+                    {
+                        'error':
+                            'Los datos de los suministros no son válidos.'
+                    },
+                    status=400
+                )
+
+            suministro_id = suministro.get('suministro')
+            precio_unidad = suministro.get('precio_unidad')
+
+            if not suministro_id:
+                return Response(
+                    {
+                        'error':
+                            'Todos los suministros deben estar seleccionados.'
+                    },
+                    status=400
+                )
+
+            try:
+                suministro_id = int(suministro_id)
+            except (TypeError, ValueError):
+                return Response(
+                    {
+                        'error':
+                            'El identificador del suministro no es válido.'
+                    },
+                    status=400
+                )
+
+            if suministro_id in suministros_ids:
+                return Response(
+                    {
+                        'error':
+                            'No se puede añadir el mismo suministro más de una vez.'
+                    },
+                    status=400
+                )
+
+            suministros_ids.append(suministro_id)
+
+            if precio_unidad is None or precio_unidad == '':
+                return Response(
+                    {
+                        'error':
+                            'Todos los suministros deben tener un precio por unidad.'
+                    },
+                    status=400
+                )
+
+            try:
+                suministro_obj = Suministro.objects.get(
+                    id=suministro_id
+                )
+            except Suministro.DoesNotExist:
+                return Response(
+                    {
+                        'error':
+                            'Uno de los suministros seleccionados no existe.'
+                    },
+                    status=400
+                )
+            hoy = timezone.now().date()
+
+            if DetalleExpediente.objects.filter(
+                suministro=suministro_obj,
+                expediente__fecha_inicio__lte=hoy,
+                expediente__fecha_final__gte=hoy
+            ).exists():
+                return Response(
+                    {
+                        'error':
+                            (
+                                f'El suministro "{suministro_obj.nombre}" '
+                                'ya está asociado a un expediente activo.'
+                            )
+                    },
+                    status=400
+                )
+        with transaction.atomic():
+
             expediente = serializer.save(
                 presupuesto_restante=serializer.validated_data['presupuesto']
             )
 
-            return Response(
-                ExpedienteSerializer(expediente).data,
-                status=201
-            )
+            for suministro in suministros:
+
+                detalle_serializer = DetalleExpedienteSerializer(
+                    data={
+                        'expediente': expediente.id,
+                        'suministro': suministro['suministro'],
+                        'precio_unidad': suministro['precio_unidad'],
+                    }
+                )
+
+                detalle_serializer.is_valid(raise_exception=True)
+                detalle_serializer.save()
 
         return Response(
-            serializer.errors,
-            status=400
+            {
+                'expediente': ExpedienteSerializer(
+                    expediente
+                ).data,
+                'detalles': DetalleExpedienteSerializer(
+                    expediente.detalles_expediente.all().order_by('id'),
+                    many=True
+                ).data,
+            },
+            status=201
         )
-
 
 class ListaPedidosView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
