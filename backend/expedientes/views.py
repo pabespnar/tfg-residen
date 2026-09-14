@@ -533,3 +533,33 @@ class ListaProveedoresView(APIView):
         )
 
         return Response(serializer.data)
+
+class EditarProveedorView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def patch(self, request, pk):
+
+        try:
+            proveedor = Proveedor.objects.get(pk=pk)
+        except Proveedor.DoesNotExist:
+            return Response(
+                {'error': 'El proveedor no existe.'},
+                status=404
+            )
+
+        serializer = ProveedorSerializer(
+            proveedor,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                ProveedorSerializer(proveedor).data
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )

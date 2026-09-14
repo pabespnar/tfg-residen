@@ -45,6 +45,14 @@
 
 .proveedor-cabecera {
     width: 100%;
+
+    display: flex;
+    align-items: center;
+}
+
+.proveedor-cabecera-boton {
+    flex: 1;
+
     padding: 20px;
 
     border: none;
@@ -55,6 +63,8 @@
 
     cursor: pointer;
     text-align: left;
+
+    min-width: 0;
 }
 
 .proveedor-foto {
@@ -93,12 +103,14 @@
 
 .proveedor-informacion h2 {
     margin: 0 0 8px 0;
+
     color: #333;
     font-size: 18px;
 }
 
 .proveedor-informacion p {
     margin: 3px 0;
+
     color: #666;
     font-size: 14px;
 }
@@ -109,21 +121,60 @@
     color: #1b5e20;
     font-size: 28px;
     line-height: 1;
+
+    flex-shrink: 0;
+}
+
+.proveedor-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex-shrink: 0;
+
+    padding-right: 20px;
+}
+
+.proveedor-editar {
+    padding: 7px 12px;
+
+    border: 1px solid #1b5e20;
+    border-radius: 6px;
+
+    background-color: white;
+    color: #1b5e20;
+
+    font-size: 13px;
+    cursor: pointer;
+
+    transition: opacity 0.2s ease;
+}
+
+.proveedor-editar:hover {
+    opacity: 0.75;
+}
+
+.proveedor-editar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .proveedor-expedientes {
     border-top: 1px solid #eee;
+
     padding: 18px 20px 20px 20px;
 }
 
 .proveedor-expedientes h3 {
     margin: 0 0 15px 0;
+
     color: #1b5e20;
     font-size: 16px;
 }
 
 .proveedor-sin-expedientes {
     margin: 0;
+
     color: #777;
     font-size: 14px;
 }
@@ -148,18 +199,21 @@
 
 .expediente-card h4 {
     margin: 0 0 5px 0;
+
     color: #333;
     font-size: 14px;
 }
 
 .expediente-card p {
     margin: 0;
+
     color: #777;
     font-size: 13px;
 }
 
 .expediente-estado {
     padding: 5px 10px;
+
     border-radius: 12px;
 
     font-size: 12px;
@@ -186,4 +240,118 @@
 
 .proveedores-error {
     color: #b71c1c;
+}
+
+
+/* EDITAR PROVEEDOR */
+
+.editar-proveedor-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.editar-proveedor-confirmacion {
+    width: 420px;
+
+    background-color: white;
+    border-radius: 10px;
+
+    padding: 30px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.editar-proveedor-confirmacion h2 {
+    margin: 0 0 25px 0;
+
+    color: #1b5e20;
+    font-size: 22px;
+}
+
+.editar-proveedor-campo {
+    display: flex;
+    flex-direction: column;
+
+    margin-bottom: 18px;
+}
+
+.editar-proveedor-campo label {
+    margin-bottom: 7px;
+
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.editar-proveedor-campo input {
+    padding: 10px 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    font-size: 14px;
+    outline: none;
+}
+
+.editar-proveedor-campo input:focus {
+    border-color: #1b5e20;
+}
+
+.editar-proveedor-error {
+    margin: 0 0 15px 0;
+
+    color: #b71c1c;
+    font-size: 14px;
+}
+
+.editar-proveedor-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+.editar-proveedor-botones button {
+    padding: 9px 16px;
+
+    border: none;
+    border-radius: 6px;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.editar-proveedor-botones button[type="submit"] {
+    background-color: #1b5e20;
+    color: white;
+}
+
+.editar-proveedor-botones button[type="button"] {
+    border: 1px solid #ccc;
+
+    background-color: white;
+    color: #555;
+}
+
+.editar-proveedor-botones button:hover {
+    opacity: 0.9;
+}
+
+.editar-proveedor-botones button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
