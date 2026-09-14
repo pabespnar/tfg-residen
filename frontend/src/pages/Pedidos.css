@@ -74,6 +74,8 @@
 }
 
 .pedido-estado {
+    display: inline-block;
+    width: max-content;
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px !important;
@@ -81,9 +83,14 @@
     white-space: nowrap;
 }
 
-.pedido-estado.recibido {
+.pedido-estado.correcto {
     background-color: #e8f5e9;
     color: #1B5E20 !important;
+}
+
+.pedido-estado.incorrecto {
+    background-color: #fdeaea;
+    color: #b71c1c !important;
 }
 
 .pedido-estado.pendiente {

@@ -570,17 +570,21 @@ function Pedidos() {
                                 </div>
 
 
-                                <span
-                                    className={
-                                        pedido.recibido
-                                            ? 'pedido-estado recibido'
-                                            : 'pedido-estado pendiente'
-                                    }
-                                >
-                                    {pedido.recibido
-                                        ? 'Recibido'
-                                        : 'Pendiente'}
-                                </span>
+                            <span
+                                className={
+                                    !pedido.recibido
+                                        ? 'pedido-estado pendiente'
+                                        : pedido.correcto
+                                            ? 'pedido-estado correcto'
+                                            : 'pedido-estado incorrecto'
+                                }
+                            >
+                                {!pedido.recibido
+                                    ? 'Pendiente'
+                                    : pedido.correcto
+                                        ? '✓ Recibido correctamente'
+                                        : '✕ Recibido con diferencias'}
+                            </span>
 
                             </div>
 
