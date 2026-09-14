@@ -198,3 +198,109 @@
 .suministros-administracion-boton-anadir:hover {
     background-color: #144817;
 }
+
+.suministros-administracion-modal-crear-fondo {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.4);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.suministros-administracion-modal-crear {
+    width: 420px;
+
+    background-color: white;
+    border-radius: 10px;
+
+    padding: 30px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.suministros-administracion-modal-crear h2 {
+    margin: 0 0 25px 0;
+
+    color: #1b5e20;
+    font-size: 22px;
+}
+
+.suministros-administracion-modal-crear-campo {
+    margin-bottom: 18px;
+}
+
+.suministros-administracion-modal-crear-campo label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.suministros-administracion-modal-crear-campo input {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 10px 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    font-size: 14px;
+}
+
+.suministros-administracion-modal-crear-campo input:focus {
+    outline: none;
+    border-color: #1b5e20;
+}
+
+.suministros-administracion-modal-crear-error {
+    margin: 0 0 15px 0;
+
+    color: #b71c1c;
+    font-size: 14px;
+}
+
+.suministros-administracion-modal-crear-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+.suministros-administracion-modal-crear-cancelar,
+.suministros-administracion-modal-crear-confirmar {
+    padding: 9px 18px;
+
+    border: none;
+    border-radius: 6px;
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.suministros-administracion-modal-crear-cancelar {
+    background-color: #eeeeee;
+    color: #555;
+}
+
+.suministros-administracion-modal-crear-confirmar {
+    background-color: #1b5e20;
+    color: white;
+}
+
+.suministros-administracion-modal-crear-confirmar:hover {
+    background-color: #144817;
+}

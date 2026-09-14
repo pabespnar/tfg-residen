@@ -9,6 +9,12 @@ function SuministrosAdministracion() {
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
 
+    const [modalCrearSuministroAbierto, setModalCrearSuministroAbierto] =useState(false)
+    const [nombreCrearSuministro, setNombreCrearSuministro] = useState('')
+    const [unidadCrearSuministro, setUnidadCrearSuministro] = useState('')
+    const [errorCrearSuministro, setErrorCrearSuministro] = useState('')
+    const [creandoSuministro, setCreandoSuministro] = useState(false)
+
     useEffect(() => {
         obtenerSuministros()
     }, [])
@@ -49,6 +55,86 @@ function SuministrosAdministracion() {
         }))
     }
 
+
+    const crearSuministro = async () => {
+
+        setErrorCrearSuministro('')
+
+        if (!nombreCrearSuministro.trim()) {
+            setErrorCrearSuministro(
+                'El nombre no puede estar vacío.'
+            )
+            return
+        }
+
+        if (!unidadCrearSuministro.trim()) {
+            setErrorCrearSuministro(
+                'La unidad no puede estar vacía.'
+            )
+            return
+        }
+
+        try {
+
+            setCreandoSuministro(true)
+
+            const token = localStorage.getItem('access')
+
+            await axios.post(
+                'http://127.0.0.1:8000/api/suministros/crearsuministro/',
+                {
+                    nombre: nombreCrearSuministro,
+                    unidad: unidadCrearSuministro,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setModalCrearSuministroAbierto(false)
+            setNombreCrearSuministro('')
+            setUnidadCrearSuministro('')
+            setErrorCrearSuministro('')
+
+            await obtenerSuministros()
+
+        } catch (error) {
+
+            console.error(error)
+
+            if (error.response?.data) {
+
+                const errores = error.response.data
+
+                if (errores.nombre) {
+                    setErrorCrearSuministro(
+                        errores.nombre[0]
+                    )
+                } else if (errores.unidad) {
+                    setErrorCrearSuministro(
+                        errores.unidad[0]
+                    )
+                } else {
+                    setErrorCrearSuministro(
+                        'No se ha podido crear el suministro.'
+                    )
+                }
+
+            } else {
+
+                setErrorCrearSuministro(
+                    'No se ha podido crear el suministro.'
+                )
+            }
+
+        } finally {
+
+            setCreandoSuministro(false)
+        }
+    }
+
     return (
         <div className="suministros-administracion-container">
 
@@ -67,6 +153,12 @@ function SuministrosAdministracion() {
                 <button
                     type="button"
                     className="suministros-administracion-boton-anadir"
+                    onClick={() => {
+                        setNombreCrearSuministro('')
+                        setUnidadCrearSuministro('')
+                        setErrorCrearSuministro('')
+                        setModalCrearSuministroAbierto(true)
+                    }}
                 >
                     +
                 </button>
@@ -174,7 +266,7 @@ function SuministrosAdministracion() {
                                                                 <p>
                                                                     {expediente.proveedor_nombre}
                                                                     {' '}
-                                                                    {expediente.precio_unidad} €/u
+                                                                    {expediente.precio_unidad} €/{suministro.unidad}
                                                                 </p>
 
                                                             </div>
@@ -208,6 +300,89 @@ function SuministrosAdministracion() {
 
                         )
                     })}
+
+                </div>
+
+            )}
+
+            {modalCrearSuministroAbierto && (
+
+                <div className="suministros-administracion-modal-crear-fondo">
+
+                    <div className="suministros-administracion-modal-crear">
+
+                        <h2>
+                            Crear suministro
+                        </h2>
+
+                        <div className="suministros-administracion-modal-crear-campo">
+
+                            <label>
+                                Nombre
+                            </label>
+
+                            <input
+                                type="text"
+                                value={nombreCrearSuministro}
+                                onChange={(e) =>
+                                    setNombreCrearSuministro(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+                        <div className="suministros-administracion-modal-crear-campo">
+
+                            <label>
+                                Unidad
+                            </label>
+
+                            <input
+                                type="text"
+                                value={unidadCrearSuministro}
+                                onChange={(e) =>
+                                    setUnidadCrearSuministro(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+                        {errorCrearSuministro && (
+                            <p className="suministros-administracion-modal-crear-error">
+                                {errorCrearSuministro}
+                            </p>
+                        )}
+
+                        <div className="suministros-administracion-modal-crear-botones">
+
+                            <button
+                                type="button"
+                                className="suministros-administracion-modal-crear-cancelar"
+                                onClick={() =>
+                                    setModalCrearSuministroAbierto(false)
+                                }
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className="suministros-administracion-modal-crear-confirmar"
+                                onClick={crearSuministro}
+                                disabled={creandoSuministro}
+                            >
+                                {creandoSuministro
+                                    ? 'Creando...'
+                                    : 'Crear'}
+                            </button>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
