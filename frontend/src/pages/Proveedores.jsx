@@ -5,7 +5,7 @@ import './Proveedores.css'
 function Proveedores() {
 
     const [proveedores, setProveedores] = useState([])
-    const [proveedorAbierto, setProveedorAbierto] = useState(null)
+    const [proveedoresAbiertos, setProveedoresAbiertos] = useState({})
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
 
@@ -41,13 +41,12 @@ function Proveedores() {
         }
     }
 
-    const cambiarProveedor = (id) => {
+    const alternarProveedor = (proveedorId) => {
 
-        if (proveedorAbierto === id) {
-            setProveedorAbierto(null)
-        } else {
-            setProveedorAbierto(id)
-        }
+        setProveedoresAbiertos((estadoAnterior) => ({
+            ...estadoAnterior,
+            [proveedorId]: !estadoAnterior[proveedorId],
+        }))
     }
 
     return (
@@ -77,125 +76,129 @@ function Proveedores() {
             {!cargando && !error && (
                 <div className="proveedores-lista">
 
-                    {proveedores.map((proveedor) => (
+                    {proveedores.map((proveedor) => {
 
-                        <div
-                            key={proveedor.id}
-                            className={`proveedor-card ${
-                                proveedorAbierto === proveedor.id
-                                    ? 'proveedor-card-abierto'
-                                    : ''
-                            }`}
-                        >
+                        const abierto =
+                            proveedoresAbiertos[proveedor.id] || false
 
-                            <button
-                                type="button"
-                                className="proveedor-cabecera"
-                                onClick={() =>
-                                    cambiarProveedor(proveedor.id)
-                                }
+                        return (
+                            <div
+                                key={proveedor.id}
+                                className={`proveedor-card ${
+                                    abierto
+                                        ? 'proveedor-card-abierto'
+                                        : ''
+                                }`}
                             >
 
-                                <div className="proveedor-foto">
-                                    {proveedor.foto ? (
-                                        <img
-                                            src={proveedor.foto}
-                                            alt={proveedor.nombre}
-                                        />
-                                    ) : (
-                                        <span>
-                                            {proveedor.nombre?.charAt(0)}
-                                        </span>
-                                    )}
-                                </div>
+                                <button
+                                    type="button"
+                                    className="proveedor-cabecera"
+                                    onClick={() =>
+                                        alternarProveedor(proveedor.id)
+                                    }
+                                >
 
-                                <div className="proveedor-informacion">
+                                    <div className="proveedor-foto">
+                                        {proveedor.foto ? (
+                                            <img
+                                                src={proveedor.foto}
+                                                alt={proveedor.nombre}
+                                            />
+                                        ) : (
+                                            <span>
+                                                {proveedor.nombre?.charAt(0)}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                    <h2>
-                                        {proveedor.nombre}
-                                    </h2>
+                                    <div className="proveedor-informacion">
 
-                                    <p>
-                                        {proveedor.cif}
-                                    </p>
+                                        <h2>
+                                            {proveedor.nombre}
+                                        </h2>
 
-                                    <p>
-                                        {proveedor.correo}
-                                    </p>
-
-                                </div>
-
-                                <span className="proveedor-flecha">
-                                    {proveedorAbierto === proveedor.id
-                                        ? '⌄'
-                                        : '›'}
-                                </span>
-
-                            </button>
-
-                            {proveedorAbierto === proveedor.id && (
-
-                                <div className="proveedor-expedientes">
-
-                                    <h3>
-                                        Expedientes
-                                    </h3>
-
-                                    {proveedor.expedientes.length === 0 ? (
-
-                                        <p className="proveedor-sin-expedientes">
-                                            Este proveedor no tiene expedientes.
+                                        <p>
+                                            {proveedor.cif}
                                         </p>
 
-                                    ) : (
+                                        <p>
+                                            {proveedor.correo}
+                                        </p>
 
-                                        <div className="expedientes-lista">
+                                    </div>
 
-                                            {proveedor.expedientes.map(
-                                                (expediente) => (
+                                    <span className="proveedor-flecha">
+                                        {abierto
+                                            ? '⌄'
+                                            : '›'}
+                                    </span>
 
-                                                    <div
-                                                        key={expediente.id}
-                                                        className="expediente-card"
-                                                    >
+                                </button>
 
-                                                        <div>
-                                                            <h4>
-                                                                {expediente.nombre}
-                                                            </h4>
+                                {abierto && (
 
-                                                            <p>
-                                                                {expediente.fecha_inicio}
-                                                                {' - '}
-                                                                {expediente.fecha_final}
-                                                            </p>
-                                                        </div>
+                                    <div className="proveedor-expedientes">
 
-                                                        <span
-                                                            className={
-                                                                expediente.activo
-                                                                    ? 'expediente-estado activo'
-                                                                    : 'expediente-estado finalizado'
-                                                            }
+                                        <h3>
+                                            Expedientes
+                                        </h3>
+
+                                        {proveedor.expedientes.length === 0 ? (
+
+                                            <p className="proveedor-sin-expedientes">
+                                                Este proveedor no tiene expedientes.
+                                            </p>
+
+                                        ) : (
+
+                                            <div className="expedientes-lista">
+
+                                                {proveedor.expedientes.map(
+                                                    (expediente) => (
+
+                                                        <div
+                                                            key={expediente.id}
+                                                            className="expediente-card"
                                                         >
-                                                            {expediente.activo
-                                                                ? 'Activo'
-                                                                : 'Finalizado'}
-                                                        </span>
 
-                                                    </div>
-                                                )
-                                            )}
+                                                            <div>
+                                                                <h4>
+                                                                    {expediente.nombre}
+                                                                </h4>
 
-                                        </div>
-                                    )}
+                                                                <p>
+                                                                    {expediente.fecha_inicio}
+                                                                    {' - '}
+                                                                    {expediente.fecha_final}
+                                                                </p>
+                                                            </div>
 
-                                </div>
-                            )}
+                                                            <span
+                                                                className={
+                                                                    expediente.activo
+                                                                        ? 'expediente-estado activo'
+                                                                        : 'expediente-estado finalizado'
+                                                                }
+                                                            >
+                                                                {expediente.activo
+                                                                    ? 'Activo'
+                                                                    : 'Finalizado'}
+                                                            </span>
 
-                        </div>
+                                                        </div>
+                                                    )
+                                                )}
 
-                    ))}
+                                            </div>
+                                        )}
+
+                                    </div>
+                                )}
+
+                            </div>
+                        )
+                    })}
 
                 </div>
             )}
