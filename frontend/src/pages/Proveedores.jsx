@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Proveedores.css'
-import { FaPencilAlt } from "react-icons/fa";
+import { FaPencilAlt, FaTrash } from "react-icons/fa";
 
 function Proveedores() {
 
@@ -19,6 +19,12 @@ function Proveedores() {
 
     const [errorEditarProveedor, setErrorEditarProveedor] = useState(null);
     const [editandoProveedor, setEditandoProveedor] = useState(false);
+
+    const [mostrarEliminarProveedor, setMostrarEliminarProveedor] = useState(false);
+    const [proveedorEliminando, setProveedorEliminando] = useState(null);
+
+    const [errorEliminarProveedor, setErrorEliminarProveedor] = useState(null);
+    const [eliminandoProveedor, setEliminandoProveedor] = useState(false);
 
     useEffect(() => {
         obtenerProveedores()
@@ -198,6 +204,85 @@ function Proveedores() {
         }
     };
 
+    const abrirEliminarProveedor = (proveedor) => {
+
+        setProveedorEliminando(proveedor);
+
+        setErrorEliminarProveedor(null);
+        setMostrarEliminarProveedor(true);
+    };
+
+    const cerrarEliminarProveedor = () => {
+
+        if (eliminandoProveedor) {
+            return;
+        }
+
+        setMostrarEliminarProveedor(false);
+        setProveedorEliminando(null);
+
+        setErrorEliminarProveedor(null);
+    };
+
+    const eliminarProveedor = async () => {
+
+        setErrorEliminarProveedor(null);
+
+        try {
+
+            setEliminandoProveedor(true);
+
+            const token = localStorage.getItem("access");
+
+            await axios.delete(
+                `http://127.0.0.1:8000/api/expedientes/proveedores/${proveedorEliminando.id}/eliminar/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            await obtenerProveedores();
+
+            setMostrarEliminarProveedor(false);
+            setProveedorEliminando(null);
+            setErrorEliminarProveedor(null);
+
+        } catch (error) {
+
+            console.error(
+                "Error al eliminar el proveedor:",
+                error
+            );
+
+            if (error.response?.data) {
+
+                const errores = error.response.data;
+
+                if (errores.error) {
+                    setErrorEliminarProveedor(
+                        errores.error
+                    );
+                } else {
+                    setErrorEliminarProveedor(
+                        "No se ha podido eliminar el proveedor."
+                    );
+                }
+
+            } else {
+
+                setErrorEliminarProveedor(
+                    "No se ha podido eliminar el proveedor."
+                );
+            }
+
+        } finally {
+
+            setEliminandoProveedor(false);
+        }
+    };
+
     return (
         <div className="proveedores-container">
 
@@ -301,9 +386,21 @@ function Proveedores() {
                                                 evento.stopPropagation();
                                                 abrirEditarProveedor(proveedor);
                                             }}
-                                            disabled={editandoProveedor}
+                                            disabled={editandoProveedor || eliminandoProveedor}
                                         >
                                             <FaPencilAlt />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="proveedor-eliminar"
+                                            onClick={(evento) => {
+                                                evento.stopPropagation();
+                                                abrirEliminarProveedor(proveedor);
+                                            }}
+                                            disabled={editandoProveedor || eliminandoProveedor}
+                                        >
+                                            <FaTrash />
                                         </button>
 
                                     </div>
@@ -480,6 +577,59 @@ function Proveedores() {
                             </div>
 
                         </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            {mostrarEliminarProveedor && proveedorEliminando && (
+
+                <div className="eliminar-proveedor-overlay">
+
+                    <div className="eliminar-proveedor-confirmacion">
+
+                        <h2>
+                            Eliminar proveedor
+                        </h2>
+
+                        <p>
+                            ¿Estás seguro de que quieres eliminar el proveedor
+                            <strong>
+                                {' '}{proveedorEliminando.nombre}
+                            </strong>?
+                        </p>
+
+                        {errorEliminarProveedor && (
+
+                            <p className="eliminar-proveedor-error">
+                                {errorEliminarProveedor}
+                            </p>
+
+                        )}
+
+                        <div className="eliminar-proveedor-botones">
+
+                            <button
+                                type="button"
+                                onClick={cerrarEliminarProveedor}
+                                disabled={eliminandoProveedor}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={eliminarProveedor}
+                                disabled={eliminandoProveedor}
+                            >
+                                {eliminandoProveedor
+                                    ? "Eliminando..."
+                                    : "Eliminar proveedor"}
+                            </button>
+
+                        </div>
 
                     </div>
 

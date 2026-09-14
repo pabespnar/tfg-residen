@@ -563,3 +563,34 @@ class EditarProveedorView(APIView):
             serializer.errors,
             status=400
         )
+
+class EliminarProveedorView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def delete(self, request, pk):
+
+        try:
+            proveedor = Proveedor.objects.get(pk=pk)
+        except Proveedor.DoesNotExist:
+            return Response(
+                {"error": "El proveedor no existe."},
+                status=404
+            )
+
+        if Expediente.objects.filter(proveedor=proveedor).exists():
+            return Response(
+                {
+                    "error": (
+                        "No se puede eliminar un proveedor que ya tiene "
+                        "expedientes asociados."
+                    )
+                },
+                status=400
+            )
+
+        proveedor.delete()
+
+        return Response(
+            {"mensaje": "Proveedor eliminado correctamente."},
+            status=200
+        )

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import CrearPedidoExpedienteView, CrearPedidoGeneralView, EditarProveedorView, ListaExpedientesView, CrearExpedienteView, ListaPedidosView, ListaPedidosRecibidosView, ListaDetallesPedidoView, CrearDetallePedidoView, ListaProveedoresView, VerExpedienteView, VerPedidoView, ListaSuministrosDisponiblesView
+from .views import CrearPedidoExpedienteView, CrearPedidoGeneralView, EditarProveedorView, EliminarProveedorView, ListaExpedientesView, CrearExpedienteView, ListaPedidosView, ListaPedidosRecibidosView, ListaDetallesPedidoView, CrearDetallePedidoView, ListaProveedoresView, VerExpedienteView, VerPedidoView, ListaSuministrosDisponiblesView
 
 
 urlpatterns = [
@@ -17,4 +17,5 @@ urlpatterns = [
     path('crearpedidogeneral/', CrearPedidoGeneralView.as_view()),
     path('proveedores/', ListaProveedoresView.as_view()),
     path('proveedores/<int:pk>/editar/', EditarProveedorView.as_view()),
+    path('proveedores/<int:pk>/eliminar/', EliminarProveedorView.as_view()),
 ]
