@@ -2,6 +2,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from expedientes.permissions import EsGestorAlmacenOAdministracion
+
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 from residentes.models import Residente
 from almacen.models import BajaAlmacen
@@ -10,7 +12,7 @@ from .permissions import EsGestorAlmacen
 from django.db import transaction
 
 class ListaSuministrosView(APIView):
-    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+    permission_classes = [IsAuthenticated, EsGestorAlmacenOAdministracion]
 
     def get(self, request):
         suministros = Suministro.objects.all()
