@@ -16,6 +16,7 @@ function Proveedores() {
     const [nombreEditar, setNombreEditar] = useState("");
     const [cifEditar, setCifEditar] = useState("");
     const [correoEditar, setCorreoEditar] = useState("");
+    const [fotoEditar, setFotoEditar] = useState(null);
 
     const [errorEditarProveedor, setErrorEditarProveedor] = useState(null);
     const [editandoProveedor, setEditandoProveedor] = useState(false);
@@ -25,6 +26,16 @@ function Proveedores() {
 
     const [errorEliminarProveedor, setErrorEliminarProveedor] = useState(null);
     const [eliminandoProveedor, setEliminandoProveedor] = useState(false);
+
+    const [mostrarCrearProveedor, setMostrarCrearProveedor] = useState(false);
+
+    const [nombreCrear, setNombreCrear] = useState("");
+    const [cifCrear, setCifCrear] = useState("");
+    const [correoCrear, setCorreoCrear] = useState("");
+    const [fotoCrear, setFotoCrear] = useState(null);
+
+    const [errorCrearProveedor, setErrorCrearProveedor] = useState(null);
+    const [creandoProveedor, setCreandoProveedor] = useState(false);
 
     useEffect(() => {
         obtenerProveedores()
@@ -73,6 +84,7 @@ function Proveedores() {
         setNombreEditar(proveedor.nombre || "");
         setCifEditar(proveedor.cif || "");
         setCorreoEditar(proveedor.correo || "");
+        setFotoEditar(null);
 
         setErrorEditarProveedor(null);
         setMostrarEditarProveedor(true);
@@ -90,6 +102,7 @@ function Proveedores() {
         setNombreEditar("");
         setCifEditar("");
         setCorreoEditar("");
+        setFotoEditar(null);
         setErrorEditarProveedor(null);
     };
 
@@ -126,11 +139,15 @@ function Proveedores() {
 
             const token = localStorage.getItem("access");
 
-            const datos = {
-                nombre: nombreEditar.trim(),
-                cif: cifEditar.trim(),
-                correo: correoEditar.trim(),
-            };
+            const datos = new FormData();
+
+            datos.append("nombre", nombreEditar.trim());
+            datos.append("cif", cifEditar.trim());
+            datos.append("correo", correoEditar.trim());
+
+            if (fotoEditar instanceof File) {
+                datos.append("foto", fotoEditar);
+            }
 
             await axios.patch(
                 `http://127.0.0.1:8000/api/expedientes/proveedores/${proveedorEditando.id}/editar/`,
@@ -150,6 +167,7 @@ function Proveedores() {
             setNombreEditar("");
             setCifEditar("");
             setCorreoEditar("");
+            setFotoEditar(null);
             setErrorEditarProveedor(null);
 
         } catch (error) {
@@ -180,6 +198,12 @@ function Proveedores() {
                         Array.isArray(errores.correo)
                             ? errores.correo[0]
                             : errores.correo
+                    );
+                } else if (errores.foto) {
+                    setErrorEditarProveedor(
+                        Array.isArray(errores.foto)
+                            ? errores.foto[0]
+                            : errores.foto
                     );
                 } else if (errores.error) {
                     setErrorEditarProveedor(
@@ -283,6 +307,153 @@ function Proveedores() {
         }
     };
 
+    const abrirCrearProveedor = () => {
+
+        setNombreCrear("");
+        setCifCrear("");
+        setCorreoCrear("");
+        setFotoCrear(null);
+
+        setErrorCrearProveedor(null);
+        setMostrarCrearProveedor(true);
+    };
+
+    const cerrarCrearProveedor = () => {
+
+        if (creandoProveedor) {
+            return;
+        }
+
+        setMostrarCrearProveedor(false);
+
+        setNombreCrear("");
+        setCifCrear("");
+        setCorreoCrear("");
+        setFotoCrear(null);
+        setErrorCrearProveedor(null);
+    };
+
+    const crearProveedor = async (evento) => {
+
+        evento.preventDefault();
+
+        setErrorCrearProveedor(null);
+
+        if (!nombreCrear.trim()) {
+            setErrorCrearProveedor(
+                "El nombre del proveedor es obligatorio."
+            );
+            return;
+        }
+
+        if (!cifCrear.trim()) {
+            setErrorCrearProveedor(
+                "El CIF del proveedor es obligatorio."
+            );
+            return;
+        }
+
+        if (!correoCrear.trim()) {
+            setErrorCrearProveedor(
+                "El correo del proveedor es obligatorio."
+            );
+            return;
+        }
+
+        try {
+
+            setCreandoProveedor(true);
+
+            const token = localStorage.getItem("access");
+
+            const datos = new FormData();
+
+            datos.append("nombre", nombreCrear.trim());
+            datos.append("cif", cifCrear.trim());
+            datos.append("correo", correoCrear.trim());
+
+            if (fotoCrear instanceof File) {
+                datos.append("foto", fotoCrear);
+            }
+
+            await axios.post(
+                'http://127.0.0.1:8000/api/expedientes/proveedores/crear/',
+                datos,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            await obtenerProveedores();
+
+            setMostrarCrearProveedor(false);
+
+            setNombreCrear("");
+            setCifCrear("");
+            setCorreoCrear("");
+            setFotoCrear(null);
+            setErrorCrearProveedor(null);
+
+        } catch (error) {
+
+            console.error(
+                "Error al crear el proveedor:",
+                error
+            );
+
+            if (error.response?.data) {
+
+                const errores = error.response.data;
+
+                if (errores.nombre) {
+                    setErrorCrearProveedor(
+                        Array.isArray(errores.nombre)
+                            ? errores.nombre[0]
+                            : errores.nombre
+                    );
+                } else if (errores.cif) {
+                    setErrorCrearProveedor(
+                        Array.isArray(errores.cif)
+                            ? errores.cif[0]
+                            : errores.cif
+                    );
+                } else if (errores.correo) {
+                    setErrorCrearProveedor(
+                        Array.isArray(errores.correo)
+                            ? errores.correo[0]
+                            : errores.correo
+                    );
+                } else if (errores.foto) {
+                    setErrorCrearProveedor(
+                        Array.isArray(errores.foto)
+                            ? errores.foto[0]
+                            : errores.foto
+                    );
+                } else if (errores.error) {
+                    setErrorCrearProveedor(
+                        errores.error
+                    );
+                } else {
+                    setErrorCrearProveedor(
+                        "No se ha podido crear el proveedor."
+                    );
+                }
+
+            } else {
+
+                setErrorCrearProveedor(
+                    "No se ha podido crear el proveedor."
+                );
+            }
+
+        } finally {
+
+            setCreandoProveedor(false);
+        }
+    };
+
     return (
         <div className="proveedores-container">
 
@@ -297,6 +468,14 @@ function Proveedores() {
                     </p>
 
                 </div>
+
+                <button
+                    type="button"
+                    className="proveedores-boton-anadir"
+                    onClick={abrirCrearProveedor}
+                >
+                    +
+                </button>
 
             </div>
 
@@ -343,7 +522,7 @@ function Proveedores() {
                                         <div className="proveedor-foto">
                                             {proveedor.foto ? (
                                                 <img
-                                                    src={proveedor.foto}
+                                                    src={`http://127.0.0.1:8000${proveedor.foto}`}
                                                     alt={proveedor.nombre}
                                                 />
                                             ) : (
@@ -474,6 +653,136 @@ function Proveedores() {
                 </div>
             )}
 
+            {mostrarCrearProveedor && (
+
+                <div className="crear-proveedor-overlay">
+
+                    <div className="crear-proveedor-confirmacion">
+
+                        <h2>
+                            Crear proveedor
+                        </h2>
+
+                        <form onSubmit={crearProveedor}>
+
+                            <div className="crear-proveedor-campo">
+
+                                <label htmlFor="nombre-crear-proveedor">
+                                    Nombre
+                                </label>
+
+                                <input
+                                    id="nombre-crear-proveedor"
+                                    type="text"
+                                    value={nombreCrear}
+                                    onChange={(evento) =>
+                                        setNombreCrear(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={creandoProveedor}
+                                    autoFocus
+                                />
+
+                            </div>
+
+                            <div className="crear-proveedor-campo">
+
+                                <label htmlFor="cif-crear-proveedor">
+                                    CIF
+                                </label>
+
+                                <input
+                                    id="cif-crear-proveedor"
+                                    type="text"
+                                    value={cifCrear}
+                                    onChange={(evento) =>
+                                        setCifCrear(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={creandoProveedor}
+                                />
+
+                            </div>
+
+                            <div className="crear-proveedor-campo">
+
+                                <label htmlFor="correo-crear-proveedor">
+                                    Correo
+                                </label>
+
+                                <input
+                                    id="correo-crear-proveedor"
+                                    type="email"
+                                    value={correoCrear}
+                                    onChange={(evento) =>
+                                        setCorreoCrear(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={creandoProveedor}
+                                />
+
+                            </div>
+
+                            <div className="crear-proveedor-campo">
+
+                                <label htmlFor="foto-crear-proveedor">
+                                    Foto
+                                </label>
+
+                                <input
+                                    id="foto-crear-proveedor"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={(evento) =>
+                                        setFotoCrear(
+                                            evento.target.files[0] || null
+                                        )
+                                    }
+                                    disabled={creandoProveedor}
+                                />
+
+                            </div>
+
+                            {errorCrearProveedor && (
+
+                                <p className="crear-proveedor-error">
+                                    {errorCrearProveedor}
+                                </p>
+
+                            )}
+
+                            <div className="crear-proveedor-botones">
+
+                                <button
+                                    type="submit"
+                                    disabled={creandoProveedor}
+                                >
+                                    {creandoProveedor
+                                        ? "Creando..."
+                                        : "Crear proveedor"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={cerrarCrearProveedor}
+                                    disabled={creandoProveedor}
+                                >
+                                    Cancelar
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
             {mostrarEditarProveedor && proveedorEditando && (
 
                 <div className="editar-proveedor-overlay">
@@ -540,6 +849,26 @@ function Proveedores() {
                                     onChange={(evento) =>
                                         setCorreoEditar(
                                             evento.target.value
+                                        )
+                                    }
+                                    disabled={editandoProveedor}
+                                />
+
+                            </div>
+
+                            <div className="editar-proveedor-campo">
+
+                                <label htmlFor="foto-proveedor">
+                                    Foto
+                                </label>
+
+                                <input
+                                    id="foto-proveedor"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={(evento) =>
+                                        setFotoEditar(
+                                            evento.target.files[0] || null
                                         )
                                     }
                                     disabled={editandoProveedor}

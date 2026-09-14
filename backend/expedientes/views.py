@@ -3,6 +3,8 @@ from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
 from decimal import Decimal, InvalidOperation
@@ -536,6 +538,7 @@ class ListaProveedoresView(APIView):
 
 class EditarProveedorView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
+    parser_classes = [MultiPartParser, FormParser]
 
     def patch(self, request, pk):
 
@@ -593,4 +596,26 @@ class EliminarProveedorView(APIView):
         return Response(
             {"mensaje": "Proveedor eliminado correctamente."},
             status=200
+        )
+class CrearProveedorView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+
+        serializer = ProveedorSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            proveedor = serializer.save()
+
+            return Response(
+                ProveedorSerializer(proveedor).data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
         )
