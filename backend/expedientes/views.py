@@ -329,7 +329,11 @@ class CrearPedidoExpedienteView(APIView):
                 status=404
             )
 
-        if not expediente.activo:
+        hoy = timezone.now().date()
+
+        if not (
+            expediente.fecha_inicio <= hoy <= expediente.fecha_final
+        ):
             return Response(
                 {"error": "No se pueden realizar pedidos en un expediente inactivo."},
                 status=400
