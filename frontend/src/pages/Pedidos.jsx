@@ -730,14 +730,16 @@ function Pedidos() {
                                                             suministro.id
                                                         )
                                                     ) &&
+                                                    !suministroSeleccionado.categoria ||
                                                     (
-                                                        !suministroSeleccionado.categoria ||
-                                                        String(
-                                                            suministro.categoria
-                                                        ) ===
-                                                            String(
-                                                                suministroSeleccionado.categoria
-                                                            )
+                                                        suministroSeleccionado.categoria === 'sin-asignar'
+                                                            ? suministro.categoria === null
+                                                            : String(
+                                                                suministro.categoria
+                                                            ) ===
+                                                                String(
+                                                                    suministroSeleccionado.categoria
+                                                                )
                                                     )
                                             );
 
@@ -745,8 +747,6 @@ function Pedidos() {
                                         const categoriasDisponibles =
                                             suministrosDisponibles.filter(
                                                 (suministro, indice, array) =>
-                                                    suministro.categoria !== null &&
-                                                    suministro.categoria !== undefined &&
                                                     array.findIndex(
                                                         (otroSuministro) =>
                                                             String(
@@ -792,14 +792,17 @@ function Pedidos() {
                                                             (suministro) => (
                                                                 <option
                                                                     key={
-                                                                        suministro.categoria
+                                                                        suministro.categoria ?? 'sin-asignar'
                                                                     }
                                                                     value={
-                                                                        suministro.categoria
+                                                                        suministro.categoria === null
+                                                                            ? 'sin-asignar'
+                                                                            : suministro.categoria
                                                                     }
                                                                 >
                                                                     {
-                                                                        suministro.categoria_nombre
+                                                                        suministro.categoria_nombre ||
+                                                                        'Sin asignar'
                                                                     }
                                                                 </option>
                                                             )
