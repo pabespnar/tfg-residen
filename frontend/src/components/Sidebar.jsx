@@ -124,6 +124,14 @@ function Sidebar({ setAutenticado, rol }) {
                             <li
                                 className="sideItem"
                                 onClick={() =>
+                                    navigate('/suministrosAdministracion')
+                                }
+                            >
+                                Suministros
+                            </li>
+                            <li
+                                className="sideItem"
+                                onClick={() =>
                                     navigate('/dashboard_administracion')
                                 }
                             >

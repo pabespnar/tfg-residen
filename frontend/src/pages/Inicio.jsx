@@ -94,6 +94,12 @@ function Inicio({ rol }) {
                     ruta: '/proveedores',
                 },
                 {
+                    titulo: 'Suministros',
+                    descripcion:
+                        'Consulta los pedidos registrados en el sistema y a que expedientes pertenecen.',
+                    ruta: '/suministrosAdministracion',
+                },
+                {
                     titulo: 'Dashboard',
                     descripcion:
                         'Consulta información y estadísticas relacionadas con la administración del centro.',

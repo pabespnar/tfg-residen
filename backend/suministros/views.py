@@ -2,7 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from expedientes.permissions import EsGestorAlmacenOAdministracion
+from expedientes.permissions import EsGestorAlmacenOAdministracion, EsGestorAdministracion
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 from residentes.models import Residente
@@ -391,4 +391,31 @@ class EliminarCategoriaView(APIView):
         return Response(
             {"mensaje": "Categoría eliminada correctamente."},
             status=200
+        )
+
+class CrearSuministroView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def post(self, request):
+
+        datos = {
+            'nombre': request.data.get('nombre'),
+            'unidad': request.data.get('unidad'),
+        }
+
+        serializer = SuministroSerializer(
+            data=datos
+        )
+
+        if serializer.is_valid():
+            suministro = serializer.save()
+
+            return Response(
+                serializer.data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
         )

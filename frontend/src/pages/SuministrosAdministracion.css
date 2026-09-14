@@ -1,0 +1,200 @@
+.suministros-administracion-container {
+    min-height: 100vh;
+    background-color: #f2f2f2;
+    padding: 40px;
+}
+
+.suministros-administracion-titulo {
+    max-width: 1000px;
+    margin: 0 auto 30px auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.suministros-administracion-titulo h1 {
+    color: #1b5e20;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.suministros-administracion-titulo p {
+    margin: 0;
+    color: #555;
+    font-size: 15px;
+}
+
+.suministros-administracion-lista {
+    max-width: 1000px;
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+
+    align-items: start;
+}
+
+.suministro-administracion-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.suministro-administracion-cabecera {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+}
+
+.suministro-administracion-cabecera-boton {
+    width: 100%;
+
+    padding: 18px;
+
+    border: none;
+    background: none;
+
+    display: flex;
+    align-items: center;
+
+    cursor: pointer;
+    text-align: left;
+
+    min-width: 0;
+}
+
+.suministro-administracion-informacion {
+    flex: 1;
+    min-width: 0;
+}
+
+.suministro-administracion-informacion h2 {
+    margin: 0 0 8px 0;
+
+    color: #333;
+    font-size: 17px;
+}
+
+.suministro-administracion-informacion p {
+    margin: 3px 0;
+
+    color: #666;
+    font-size: 14px;
+}
+
+.suministro-administracion-flecha {
+    margin-left: 15px;
+
+    color: #1b5e20;
+    font-size: 28px;
+    line-height: 1;
+
+    flex-shrink: 0;
+}
+
+.suministro-administracion-expedientes {
+    border-top: 1px solid #eee;
+
+    padding: 18px;
+}
+
+.suministro-administracion-expedientes h3 {
+    margin: 0 0 15px 0;
+
+    color: #1b5e20;
+    font-size: 16px;
+}
+
+.suministro-administracion-sin-expedientes {
+    margin: 0;
+
+    color: #777;
+    font-size: 14px;
+}
+
+.suministro-administracion-expedientes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.suministro-administracion-expediente {
+    padding: 12px 14px;
+
+    background-color: #f7f7f7;
+    border-radius: 7px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.suministro-administracion-expediente h4 {
+    margin: 0 0 5px 0;
+
+    color: #333;
+    font-size: 14px;
+}
+
+.suministro-administracion-expediente p {
+    margin: 3px 0;
+
+    color: #777;
+    font-size: 13px;
+}
+
+.suministro-administracion-estado {
+    padding: 5px 10px;
+
+    border-radius: 12px;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    white-space: nowrap;
+}
+
+.suministro-administracion-estado.activo {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+}
+
+.suministro-administracion-estado.finalizado {
+    background-color: #fdeaea;
+    color: #b71c1c;
+}
+
+.suministros-administracion-mensaje,
+.suministros-administracion-error {
+    max-width: 1000px;
+    margin: 30px auto;
+}
+
+.suministros-administracion-error {
+    color: #b71c1c;
+}
+
+.suministros-administracion-boton-anadir {
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+
+    background-color: #1b5e20;
+    color: white;
+
+    font-size: 28px;
+    line-height: 42px;
+
+    cursor: pointer;
+}
+
+.suministros-administracion-boton-anadir:hover {
+    background-color: #144817;
+}
