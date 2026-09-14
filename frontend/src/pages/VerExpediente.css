@@ -150,57 +150,31 @@
     background-color: #fafafa;
 }
 .ver-expediente-pedido-info {
-
     display: flex;
-
     flex-direction: column;
-
     gap: 10px;
-
     align-items: flex-start;
-
 }
-
 .pedido-estado {
-
     display: inline-block;
-
     width: max-content;
-
     padding: 6px 12px;
-
     border-radius: 20px;
-
     font-size: 13px;
-
     font-weight: 600;
-
     white-space: nowrap;
-
 }
-
 .pedido-estado.correcto {
-
     background-color: #e8f5e9;
-
     color: #1B5E20;
-
 }
-
 .pedido-estado.incorrecto {
-
     background-color: #fdeaea;
-
     color: #b71c1c;
-
 }
-
 .pedido-estado.pendiente {
-
     background-color: #fff3e0;
-
     color: #e65100;
-
 }
 .ver-expediente-contrato {
     display: flex;

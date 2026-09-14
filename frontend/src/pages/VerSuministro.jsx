@@ -425,12 +425,45 @@ function VerSuministro() {
 
                 <div className="ver-suministro-card">
 
-                    <h2>Expedientes</h2>
+                    <h2>Expediente activo</h2>
 
-                    <p className="ver-suministro-placeholder">
-                        La información de los expedientes estará
-                        disponible cuando se implemente su gestión.
-                    </p>
+                    {suministro.expediente_activo ? (
+
+                        <div className="ver-suministro-informacion">
+
+                            <div className="ver-suministro-campo">
+
+                                <span className="ver-suministro-label">
+                                    Expediente
+                                </span>
+
+                                <span className="ver-suministro-valor">
+                                    {suministro.expediente_activo.nombre}
+                                </span>
+
+                            </div>
+
+                            <div className="ver-suministro-campo">
+
+                                <span className="ver-suministro-label">
+                                    Proveedor
+                                </span>
+
+                                <span className="ver-suministro-valor">
+                                    {suministro.expediente_activo.proveedor_nombre}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    ) : (
+
+                        <p className="ver-suministro-sin-packs">
+                            Este suministro no está asociado a ningún expediente activo.
+                        </p>
+
+                    )}
 
                 </div>
 
