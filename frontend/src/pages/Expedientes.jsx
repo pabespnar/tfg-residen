@@ -95,6 +95,7 @@ function Expedientes() {
 
                 <button
                     className="expedientes-boton-anadir"
+                    onClick={() => navigate('/expedientes/nuevo')}
                 >
                     +
                 </button>
