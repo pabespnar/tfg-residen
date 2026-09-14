@@ -419,3 +419,42 @@ class CrearSuministroView(APIView):
             serializer.errors,
             status=400
         )
+class EliminarSuministroView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def delete(self, request, id):
+
+        try:
+            suministro = Suministro.objects.get(id=id)
+        except Suministro.DoesNotExist:
+            return Response(
+                {
+                    'error': 'El suministro no existe.'
+                },
+                status=404
+            )
+
+        if suministro.detalles_expediente.exists():
+            return Response(
+                {
+                    'error': 'No se puede eliminar el suministro porque está asociado a un expediente.'
+                },
+                status=400
+            )
+
+        if suministro.detalles_pedido.exists():
+            return Response(
+                {
+                    'error': 'No se puede eliminar el suministro porque está asociado a un pedido.'
+                },
+                status=400
+            )
+
+        suministro.delete()
+
+        return Response(
+            {
+                'mensaje': 'Suministro eliminado correctamente.'
+            },
+            status=200
+        )

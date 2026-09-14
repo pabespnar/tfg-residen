@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { FaTrash } from 'react-icons/fa'
 import './SuministrosAdministracion.css'
 
 function SuministrosAdministracion() {
@@ -9,11 +10,20 @@ function SuministrosAdministracion() {
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
 
-    const [modalCrearSuministroAbierto, setModalCrearSuministroAbierto] =useState(false)
+    const [modalCrearSuministroAbierto, setModalCrearSuministroAbierto] =
+        useState(false)
     const [nombreCrearSuministro, setNombreCrearSuministro] = useState('')
     const [unidadCrearSuministro, setUnidadCrearSuministro] = useState('')
     const [errorCrearSuministro, setErrorCrearSuministro] = useState('')
     const [creandoSuministro, setCreandoSuministro] = useState(false)
+
+    const [modalEliminarSuministroAbierto, setModalEliminarSuministroAbierto] =
+        useState(false)
+    const [suministroEliminar, setSuministroEliminar] = useState(null)
+    const [errorEliminarSuministro, setErrorEliminarSuministro] =
+        useState('')
+    const [eliminandoSuministro, setEliminandoSuministro] =
+        useState(false)
 
     useEffect(() => {
         obtenerSuministros()
@@ -54,7 +64,6 @@ function SuministrosAdministracion() {
             [suministroId]: !estadoAnterior[suministroId],
         }))
     }
-
 
     const crearSuministro = async () => {
 
@@ -132,6 +141,67 @@ function SuministrosAdministracion() {
         } finally {
 
             setCreandoSuministro(false)
+        }
+    }
+
+    const abrirModalEliminarSuministro = (suministro) => {
+
+        setSuministroEliminar(suministro)
+        setErrorEliminarSuministro('')
+        setModalEliminarSuministroAbierto(true)
+    }
+
+    const cerrarModalEliminarSuministro = () => {
+
+        setSuministroEliminar(null)
+        setErrorEliminarSuministro('')
+        setModalEliminarSuministroAbierto(false)
+    }
+
+    const eliminarSuministro = async () => {
+
+        setErrorEliminarSuministro('')
+
+        try {
+
+            setEliminandoSuministro(true)
+
+            const token = localStorage.getItem('access')
+
+            await axios.delete(
+                `http://127.0.0.1:8000/api/suministros/${suministroEliminar.id}/eliminar/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setModalEliminarSuministroAbierto(false)
+            setSuministroEliminar(null)
+
+            await obtenerSuministros()
+
+        } catch (error) {
+
+            console.error(error)
+
+            if (error.response?.data?.error) {
+
+                setErrorEliminarSuministro(
+                    error.response.data.error
+                )
+
+            } else {
+
+                setErrorEliminarSuministro(
+                    'No se ha podido eliminar el suministro.'
+                )
+            }
+
+        } finally {
+
+            setEliminandoSuministro(false)
         }
     }
 
@@ -227,6 +297,18 @@ function SuministrosAdministracion() {
                                                 : '›'}
                                         </span>
 
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="suministro-administracion-boton-eliminar"
+                                        onClick={() =>
+                                            abrirModalEliminarSuministro(
+                                                suministro
+                                            )
+                                        }
+                                    >
+                                        <FaTrash />
                                     </button>
 
                                 </div>
@@ -378,6 +460,57 @@ function SuministrosAdministracion() {
                                 {creandoSuministro
                                     ? 'Creando...'
                                     : 'Crear'}
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            {modalEliminarSuministroAbierto && (
+
+                <div className="eliminar-suministro-overlay">
+
+                    <div className="eliminar-suministro-confirmacion">
+
+                        <h2>
+                            ¿Seguro?
+                        </h2>
+
+                        <p>
+                            ¿Quieres eliminar el suministro{' '}
+                            <strong>
+                                {suministroEliminar?.nombre}
+                            </strong>?
+                        </p>
+
+                        {errorEliminarSuministro && (
+                            <p className="eliminar-suministro-error">
+                                {errorEliminarSuministro}
+                            </p>
+                        )}
+
+                        <div className="eliminar-suministro-botones">
+
+                            <button
+                                type="button"
+                                onClick={cerrarModalEliminarSuministro}
+                                disabled={eliminandoSuministro}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={eliminarSuministro}
+                                disabled={eliminandoSuministro}
+                            >
+                                {eliminandoSuministro
+                                    ? 'Eliminando...'
+                                    : 'Eliminar'}
                             </button>
 
                         </div>
