@@ -11,8 +11,10 @@ from modulos.models import Habitacion
 from modulos.permissions import EsGestorResidentes
 from suministros.models import Suministro, Categoria, Pack, EntregaPack
 from almacen.models import AltaAlmacen, BajaAlmacen
-from expedientes.models import Pedido
+from expedientes.models import Expediente, Pedido, Proveedor
 from suministros.permissions import EsGestorAlmacen
+from expedientes.permissions import EsGestorAdministracion
+
 
 
 class DashboardResidentesView(APIView):
@@ -366,5 +368,81 @@ class DashboardAlmacenView(APIView):
             'packs': {
                 'totales': packs_totales,
                 'entregas_por_pack': packs_entregados,
+            },
+        })
+
+
+class DashboardAdministracionView(APIView):
+    permission_classes = [IsAuthenticated, EsGestorAdministracion]
+
+    def get(self, request):
+        hoy = timezone.now().date()
+        hace_30_dias = hoy - timedelta(days=30)
+
+
+        presupuesto_total_expedientes = Expediente.objects.aggregate(
+            total=Sum('presupuesto')
+        )['total'] or 0
+
+        presupuesto_restante_expedientes = Expediente.objects.aggregate(
+            total=Sum('presupuesto_restante')
+        )['total'] or 0
+
+        presupuesto_gastado_expedientes = (
+            presupuesto_total_expedientes -
+            presupuesto_restante_expedientes
+        )
+
+        expedientes_totales = Expediente.objects.count()
+
+        expedientes_activos = Expediente.objects.filter(
+            fecha_inicio__lte=hoy,
+            fecha_final__gte=hoy
+        ).count()
+
+        pedidos_totales = Pedido.objects.count()
+
+        pedidos_expediente = Pedido.objects.filter(
+            tipo_pedido=Pedido.TipoPedido.EXPEDIENTE
+        ).count()
+
+        pedidos_generales = Pedido.objects.filter(
+            tipo_pedido=Pedido.TipoPedido.GENERAL
+        ).count()
+
+
+        pedidos_ultimos_30_dias = Pedido.objects.filter(
+            fecha__gte=hace_30_dias,
+            fecha__lte=hoy
+        ).count()
+
+        pedidos_pendientes = Pedido.objects.filter(
+            recibido=False
+        ).count()
+
+        proveedores_totales = Proveedor.objects.count()
+
+
+        return Response({
+            'resumen': {
+                'presupuesto_total_expedientes': presupuesto_total_expedientes,
+                'presupuesto_gastado_expedientes': presupuesto_gastado_expedientes,
+                'presupuesto_restante_expedientes': presupuesto_restante_expedientes,
+                'expedientes_totales': expedientes_totales,
+                'expedientes_activos': expedientes_activos,
+                'pedidos_totales': pedidos_totales,
+                'proveedores_totales': proveedores_totales,
+            },
+
+            'pedidos': {
+                'totales': pedidos_totales,
+                'con_expediente': pedidos_expediente,
+                'generales': pedidos_generales,
+                'ultimos_30_dias': pedidos_ultimos_30_dias,
+                'pendientes': pedidos_pendientes,
+            },
+
+            'proveedores': {
+                'totales': proveedores_totales,
             },
         })
