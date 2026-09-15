@@ -379,7 +379,6 @@ class DashboardAdministracionView(APIView):
         hoy = timezone.now().date()
         hace_30_dias = hoy - timedelta(days=30)
 
-
         presupuesto_total_expedientes = Expediente.objects.aggregate(
             total=Sum('presupuesto')
         )['total'] or 0
@@ -400,6 +399,17 @@ class DashboardAdministracionView(APIView):
             fecha_final__gte=hoy
         ).count()
 
+        expedientes_inactivos = (
+            expedientes_totales -
+            expedientes_activos
+        )
+
+        from centro.models import Centro
+
+        centro = Centro.get_solo()
+
+        presupuesto_gasto_corriente = centro.presupuesto
+
         pedidos_totales = Pedido.objects.count()
 
         pedidos_expediente = Pedido.objects.filter(
@@ -410,7 +420,6 @@ class DashboardAdministracionView(APIView):
             tipo_pedido=Pedido.TipoPedido.GENERAL
         ).count()
 
-
         pedidos_ultimos_30_dias = Pedido.objects.filter(
             fecha__gte=hace_30_dias,
             fecha__lte=hoy
@@ -420,29 +429,135 @@ class DashboardAdministracionView(APIView):
             recibido=False
         ).count()
 
+        importe_pedidos_generales = (
+            Pedido.objects.filter(
+                tipo_pedido=Pedido.TipoPedido.GENERAL
+            ).aggregate(
+                total=Sum(
+                    F('detalles_pedido__cantidad') *
+                    F('detalles_pedido__precio_unidad')
+                )
+            )['total'] or 0
+        )
+
+        importe_pedidos_generales_pendientes = (
+            Pedido.objects.filter(
+                tipo_pedido=Pedido.TipoPedido.GENERAL,
+                recibido=False
+            ).aggregate(
+                total=Sum(
+                    F('detalles_pedido__cantidad') *
+                    F('detalles_pedido__precio_unidad')
+                )
+            )['total'] or 0
+        )
+
+        pedidos_generales_pendientes = Pedido.objects.filter(
+            tipo_pedido=Pedido.TipoPedido.GENERAL,
+            recibido=False
+        ).count()
+
+        importe_pedidos_generales_30_dias = (
+            Pedido.objects.filter(
+                tipo_pedido=Pedido.TipoPedido.GENERAL,
+                fecha__gte=hace_30_dias,
+                fecha__lte=hoy
+            ).aggregate(
+                total=Sum(
+                    F('detalles_pedido__cantidad') *
+                    F('detalles_pedido__precio_unidad')
+                )
+            )['total'] or 0
+        )
+
         proveedores_totales = Proveedor.objects.count()
 
+        proveedores_por_importe = (
+            Proveedor.objects.filter(
+                pedidos__isnull=False
+            ).values(
+                'id',
+                'nombre'
+            ).annotate(
+                importe=Sum(
+                    F('pedidos__detalles_pedido__cantidad') *
+                    F('pedidos__detalles_pedido__precio_unidad')
+                )
+            ).order_by(
+                '-importe'
+            )[:5]
+        )
+
+        proveedores = []
+
+        for proveedor in proveedores_por_importe:
+            proveedores.append({
+                'id': proveedor['id'],
+                'nombre': proveedor['nombre'],
+                'importe': proveedor['importe'] or 0,
+            })
 
         return Response({
             'resumen': {
-                'presupuesto_total_expedientes': presupuesto_total_expedientes,
-                'presupuesto_gastado_expedientes': presupuesto_gastado_expedientes,
-                'presupuesto_restante_expedientes': presupuesto_restante_expedientes,
-                'expedientes_totales': expedientes_totales,
-                'expedientes_activos': expedientes_activos,
-                'pedidos_totales': pedidos_totales,
-                'proveedores_totales': proveedores_totales,
+                'presupuesto_total_expedientes':
+                    presupuesto_total_expedientes,
+
+                'presupuesto_gastado_expedientes':
+                    presupuesto_gastado_expedientes,
+
+                'presupuesto_restante_expedientes':
+                    presupuesto_restante_expedientes,
+
+                'expedientes_totales':
+                    expedientes_totales,
+
+                'expedientes_activos':
+                    expedientes_activos,
+
+                'pedidos_totales':
+                    pedidos_totales,
+
+                'proveedores_totales':
+                    proveedores_totales,
+
+                'presupuesto_gasto_corriente':
+                    presupuesto_gasto_corriente,
             },
 
             'pedidos': {
-                'totales': pedidos_totales,
-                'con_expediente': pedidos_expediente,
-                'generales': pedidos_generales,
-                'ultimos_30_dias': pedidos_ultimos_30_dias,
-                'pendientes': pedidos_pendientes,
+                'totales':
+                    pedidos_totales,
+
+                'con_expediente':
+                    pedidos_expediente,
+
+                'generales':
+                    pedidos_generales,
+
+                'ultimos_30_dias':
+                    pedidos_ultimos_30_dias,
+
+                'pendientes':
+                    pedidos_pendientes,
+
+                'generales_pendientes':
+                    pedidos_generales_pendientes,
+
+                'importe_generales':
+                    importe_pedidos_generales,
+
+                'importe_generales_pendientes':
+                    importe_pedidos_generales_pendientes,
+
+                'importe_generales_30_dias':
+                    importe_pedidos_generales_30_dias,
             },
 
             'proveedores': {
-                'totales': proveedores_totales,
+                'totales':
+                    proveedores_totales,
+
+                'principales':
+                    proveedores,
             },
         })
