@@ -441,8 +441,8 @@ class CrearPedidoExpedienteView(APIView):
 
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
-            f'Hola {expediente.proveedor.nombre},\n\n'
-            f'Se ha realizado un nuevo pedido asociado al expediente '
+            f'Hola, {expediente.proveedor.nombre}.\n\n'
+            f'Hemos realizado un nuevo pedido asociado al expediente '
             f'{expediente.nombre}.\n\n'
             f'Pedido: {pedido.nombre}\n'
             f'Fecha: {pedido.fecha}\n\n'
@@ -454,7 +454,8 @@ class CrearPedidoExpedienteView(APIView):
                 f'a {detalle["precio_unidad"]:.2f} € por unidad\n'
                 for detalle in detalles_pedido
             )
-            + f'\nCoste del pedido con los precios acordados: {total:.2f} €\n\n'
+            + f'\nEl coste del pedido, con los precios acordados en el expediente, es de {total:.2f} €\n\n'
+            f'Gracias de antemano.\n'
             f'Un saludo.',
             None,
             [expediente.proveedor.correo],
@@ -676,6 +677,27 @@ class CrearPedidoGeneralView(APIView):
                     precio_unidad=detalle['precio_unidad']
                 )
 
+        send_mail(
+            f'Nuevo pedido: {pedido.nombre}',
+            f'Hola, {proveedor.nombre}.\n\n'
+            f'Le realizamos un nuevo pedido.\n\n'
+            f'Pedido: {pedido.nombre}\n'
+            f'Fecha: {pedido.fecha}\n\n'
+            f'Suministros que solicitamos:\n'
+            + ''.join(
+                f'- {detalle["suministro"].nombre}: '
+                f'{detalle["cantidad"]} '
+                f'{detalle["suministro"].unidad} '
+                f'a {detalle["precio_unidad"]:.2f} € por unidad\n'
+                for detalle in detalles_pedido
+            )
+            + f'\nEl coste total del pedido, con los precios que ustedes marcan, es de {total:.2f} €\n\n'
+            f'Gracias de antemano.\n'
+            f'Un saludo.',
+            None,
+            [proveedor.correo],
+        )
+
         return Response(
             {
                 'pedido': PedidoSerializer(pedido).data,
@@ -683,6 +705,7 @@ class CrearPedidoGeneralView(APIView):
             },
             status=201
         )
+
 class ListaProveedoresView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
 
