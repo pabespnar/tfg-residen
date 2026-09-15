@@ -10,6 +10,7 @@ import json
 from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
 from decimal import Decimal, InvalidOperation
 
+from centro.models import Centro
 from .models import Expediente, Pedido, DetallePedido, Proveedor, DetalleExpediente
 from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSerializer, DetalleExpedienteSerializer, ProveedorSerializer
 from django.utils import timezone
@@ -545,7 +546,10 @@ class CrearPedidoGeneralView(APIView):
 
         if len(nombre.strip()) > 50:
             return Response(
-                {"error": "El nombre del pedido no puede superar los 50 caracteres."},
+                {
+                    "error":
+                    "El nombre del pedido no puede superar los 50 caracteres."
+                },
                 status=400
             )
 
@@ -596,7 +600,7 @@ class CrearPedidoGeneralView(APIView):
         }
 
         detalles_pedido = []
-        total = 0
+        total = Decimal('0.00')
 
         for suministro_id, datos in suministros.items():
 
@@ -604,7 +608,10 @@ class CrearPedidoGeneralView(APIView):
                 suministro_id = int(suministro_id)
             except (TypeError, ValueError):
                 return Response(
-                    {"error": "El identificador del suministro no es válido."},
+                    {
+                        "error":
+                        "El identificador del suministro no es válido."
+                    },
                     status=400
                 )
 
@@ -612,32 +619,47 @@ class CrearPedidoGeneralView(APIView):
                 return Response(
                     {
                         "error":
-                        "Uno de los suministros seleccionados no está disponible para pedidos generales."
+                        "Uno de los suministros seleccionados no está "
+                        "disponible para pedidos generales."
                     },
                     status=400
                 )
 
             try:
                 cantidad = int(datos.get('cantidad'))
-                precio_unidad = Decimal(str(datos.get('precio_unidad')))
-            except (TypeError, ValueError, AttributeError, InvalidOperation):
+                precio_unidad = Decimal(
+                    str(datos.get('precio_unidad'))
+                )
+            except (
+                TypeError,
+                ValueError,
+                AttributeError,
+                InvalidOperation
+            ):
                 return Response(
                     {
                         "error":
-                        "La cantidad y el precio deben ser valores numéricos válidos."
+                        "La cantidad y el precio deben ser valores "
+                        "numéricos válidos."
                     },
                     status=400
                 )
 
             if cantidad <= 0:
                 return Response(
-                    {"error": "La cantidad debe ser mayor que cero."},
+                    {
+                        "error":
+                        "La cantidad debe ser mayor que cero."
+                    },
                     status=400
                 )
 
             if precio_unidad < 0:
                 return Response(
-                    {"error": "El precio por unidad no puede ser negativo."},
+                    {
+                        "error":
+                        "El precio por unidad no puede ser negativo."
+                    },
                     status=400
                 )
 
@@ -654,11 +676,38 @@ class CrearPedidoGeneralView(APIView):
 
         if not detalles_pedido:
             return Response(
-                {"error": "Debes indicar al menos un suministro."},
+                {
+                    "error":
+                    "Debes indicar al menos un suministro."
+                },
                 status=400
             )
 
         with transaction.atomic():
+
+            centro = Centro.objects.select_for_update().get(
+                pk=Centro.get_solo().pk
+            )
+            
+            if total > centro.presupuesto:
+                return Response(
+                    {
+                        "error":
+                        "El importe del pedido supera el presupuesto "
+                        "restante del centro.",
+                        "presupuesto_restante":
+                            centro.presupuesto,
+                        "total":
+                            total,
+                        "diferencia":
+                            centro.presupuesto - total,
+                    },
+                    status=400
+                )
+
+            presupuesto_restante = (
+                centro.presupuesto - total
+            )
 
             pedido = Pedido.objects.create(
                 nombre=nombre.strip(),
@@ -677,6 +726,11 @@ class CrearPedidoGeneralView(APIView):
                     precio_unidad=detalle['precio_unidad']
                 )
 
+            centro.presupuesto = presupuesto_restante
+            centro.save(
+                update_fields=['presupuesto']
+            )
+
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
             f'Hola, {proveedor.nombre}.\n\n'
@@ -691,7 +745,8 @@ class CrearPedidoGeneralView(APIView):
                 f'a {detalle["precio_unidad"]:.2f} € por unidad\n'
                 for detalle in detalles_pedido
             )
-            + f'\nEl coste total del pedido, con los precios que ustedes marcan, es de {total:.2f} €\n\n'
+            + f'\nEl coste total del pedido, con los precios que ustedes '
+            f'marcan, es de {total:.2f} €\n\n'
             f'Gracias de antemano.\n'
             f'Un saludo.',
             None,
@@ -702,6 +757,10 @@ class CrearPedidoGeneralView(APIView):
             {
                 'pedido': PedidoSerializer(pedido).data,
                 'total': total,
+                'presupuesto_restante':
+                    presupuesto_restante,
+                'diferencia':
+                    -total,
             },
             status=201
         )

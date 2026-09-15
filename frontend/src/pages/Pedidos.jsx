@@ -11,6 +11,8 @@ function Pedidos() {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
 
+    const [presupuesto, setPresupuesto] = useState(null);
+
     const [mostrarModalPedido, setMostrarModalPedido] = useState(false);
     const [suministrosDisponibles, setSuministrosDisponibles] = useState([]);
     const [cargandoSuministros, setCargandoSuministros] = useState(false);
@@ -41,13 +43,13 @@ function Pedidos() {
 
     useEffect(() => {
 
-        const obtenerPedidos = async () => {
+        const obtenerDatos = async () => {
 
             try {
 
                 const token = localStorage.getItem('access');
 
-                const respuesta = await axios.get(
+                const respuestaPedidos = await axios.get(
                     'http://127.0.0.1:8000/api/expedientes/pedidos/',
                     {
                         headers: {
@@ -56,12 +58,25 @@ function Pedidos() {
                     }
                 );
 
-                setPedidos(respuesta.data);
+                const respuestaCentro = await axios.get(
+                    'http://127.0.0.1:8000/api/centro/',
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                setPedidos(respuestaPedidos.data);
+
+                setPresupuesto(
+                    Number(respuestaCentro.data.presupuesto)
+                );
 
             } catch (error) {
 
                 console.error(
-                    'Error al obtener los pedidos:',
+                    'Error al obtener los datos de los pedidos:',
                     error
                 );
 
@@ -76,7 +91,7 @@ function Pedidos() {
             }
         };
 
-        obtenerPedidos();
+        obtenerDatos();
 
     }, []);
 
@@ -350,6 +365,18 @@ function Pedidos() {
     };
 
 
+    const totalPedido = calcularTotal();
+
+    const diferenciaPresupuesto =
+        presupuesto !== null
+            ? presupuesto - totalPedido
+            : null;
+
+    const superaPresupuesto =
+        presupuesto !== null &&
+        totalPedido > presupuesto;
+
+
     const crearPedido = async () => {
 
         setErrorGeneral('');
@@ -486,6 +513,17 @@ function Pedidos() {
         }
 
 
+        if (superaPresupuesto) {
+
+            setErrorGeneral(
+                'El importe del pedido supera el presupuesto restante del centro.'
+            );
+
+            return;
+
+        }
+
+
         const suministros = {};
 
         suministrosSeleccionados.forEach(
@@ -529,6 +567,24 @@ function Pedidos() {
                 respuesta.data.pedido,
                 ...pedidosActuales
             ]);
+
+            if (
+                respuesta.data.presupuesto_restante !== undefined
+            ) {
+
+                setPresupuesto(
+                    Number(
+                        respuesta.data.presupuesto_restante
+                    )
+                );
+
+            } else {
+
+                setPresupuesto(
+                    diferenciaPresupuesto
+                );
+
+            }
 
             cerrarModalPedido();
 
@@ -586,13 +642,37 @@ function Pedidos() {
 
                 </div>
 
-                <button
-                    type="button"
-                    className="pedidos-crear"
-                    onClick={abrirModalPedido}
-                >
-                    Crear pedido general
-                </button>
+                <div className="pedidos-header-acciones">
+
+                    <div className="pedidos-presupuesto">
+
+                        <span>
+                            Presupuesto restante gasto corriente
+                        </span>
+
+                        <strong>
+                            {presupuesto !== null
+                                ? presupuesto.toLocaleString(
+                                    'es-ES',
+                                    {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    }
+                                )
+                                : 'Cargando...'} €
+                        </strong>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        className="pedidos-crear"
+                        onClick={abrirModalPedido}
+                    >
+                        Crear pedido general
+                    </button>
+
+                </div>
 
             </div>
 
@@ -731,9 +811,9 @@ function Pedidos() {
 
                             <div className="pedidos-proveedor">
 
-                                <label>
+                                <h3>
                                     Proveedor
-                                </label>
+                                </h3>
 
                                 <select
                                     value={proveedor}
@@ -1111,7 +1191,58 @@ function Pedidos() {
 
                                 </div>
 
+                                <div>
+
+                                    <span>
+                                        Presupuesto restante
+                                    </span>
+
+                                    <strong>
+                                        {presupuesto !== null
+                                            ? presupuesto.toLocaleString(
+                                                'es-ES',
+                                                {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                }
+                                            )
+                                            : 'Cargando...'} €
+                                    </strong>
+
+                                </div>
+
+                                <div>
+
+                                    <span>
+                                        Diferencia
+                                    </span>
+
+                                    <strong>
+                                        {diferenciaPresupuesto !== null
+                                            ? diferenciaPresupuesto.toLocaleString(
+                                                'es-ES',
+                                                {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                }
+                                            )
+                                            : 'Cargando...'} €
+                                    </strong>
+
+                                </div>
+
                             </div>
+
+
+                            {superaPresupuesto && (
+
+                                <p className="ver-expediente-modal-error">
+
+                                    El importe del pedido supera el presupuesto restante del centro.
+
+                                </p>
+
+                            )}
 
 
                             {errorGeneral && (
@@ -1144,7 +1275,8 @@ function Pedidos() {
                                 disabled={
                                     cargandoSuministros ||
                                     cargandoProveedores ||
-                                    suministrosDisponibles.length === 0
+                                    suministrosDisponibles.length === 0 ||
+                                    superaPresupuesto
                                 }
                             >
                                 Crear pedido general
