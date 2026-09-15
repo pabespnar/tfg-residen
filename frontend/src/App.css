@@ -105,14 +105,17 @@ main {
 }
 
 .init {
+    display: flex;
+    align-items: center;
+    gap: 9px;
     font-size: 18px;
-    font-weight: 100;
+    font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s ease;
 }
 
 .init:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .init img {
@@ -120,6 +123,12 @@ main {
     width: auto;
     object-fit: contain;
     border-radius: 10px;
+}
+
+.init span {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
 }
 
 .logout-overlay {

@@ -44,6 +44,10 @@ function Navbar() {
                     src={logoSinTexto}
                     alt="Gestión residencial"
                 />
+
+                <span>
+                    Inicio
+                </span>
             </div>
 
             <div className="center-info">
