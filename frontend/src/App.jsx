@@ -33,6 +33,7 @@ import VerPedido from "./pages/VerPedido"
 import Proveedores from "./pages/Proveedores"
 import CrearExpediente from "./pages/CrearExpediente"
 import SuministrosAdministracion from "./pages/SuministrosAdministracion"
+import DashboardAdministracion from './pages/DashboardAdministracion';
 
 
 function tokenValido() {
@@ -368,6 +369,10 @@ function App() {
                                 <Route
                                     path="/suministrosAdministracion"
                                     element={<SuministrosAdministracion />}
+                                />
+                                <Route
+                                    path="/dashboard_administracion"
+                                    element={<DashboardAdministracion />}
                                 />                                    
                             </>
                         )}
