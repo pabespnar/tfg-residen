@@ -8,6 +8,7 @@ import logoSinTexto from '../assets/logoSinTexto.png'
 function Navbar() {
 
     const [usuario, setUsuario] = useState(null)
+    const [centro, setCentro] = useState(null)
 
     useEffect(() => {
         const token = localStorage.getItem('access')
@@ -22,6 +23,18 @@ function Navbar() {
         })
         .catch((error) => {
             console.error('Error al obtener el perfil:', error)
+        })
+
+        axios.get('http://127.0.0.1:8000/api/centro/', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then((response) => {
+            setCentro(response.data)
+        })
+        .catch((error) => {
+            console.error('Error al obtener los datos del centro:', error)
         })
     }, [])
 
@@ -53,14 +66,16 @@ function Navbar() {
             <div className="center-info">
                 <div>
                     <img
-                        src={logocentro}
+                        src={centro?.logo || logoSinTexto}
                         alt="Logo del centro"
                         className="foto"
                     />
                 </div>
 
                 <div>
-                    Nombre del Centro
+                    {centro
+                        ? centro.nombre
+                        : 'Cargando...'}
                 </div>
             </div>
 
