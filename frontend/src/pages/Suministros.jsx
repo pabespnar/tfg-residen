@@ -12,6 +12,8 @@ const Suministros = () => {
     const [categoriasAbiertas, setCategoriasAbiertas] = useState({});
     const [error, setError] = useState(null);
 
+    const [paginaCategorias, setPaginaCategorias] = useState(1);
+
     const [modalCrearCategoria, setModalCrearCategoria] = useState(false);
     const [nombreCategoria, setNombreCategoria] = useState("");
     const [descripcionCategoria, setDescripcionCategoria] = useState("");
@@ -372,6 +374,23 @@ const Suministros = () => {
         }
     };
 
+    const categoriasPorPagina = 9;
+
+    const indiceUltimaCategoria =
+        paginaCategorias * categoriasPorPagina;
+
+    const indicePrimeraCategoria =
+        indiceUltimaCategoria - categoriasPorPagina;
+
+    const categoriasActuales = categorias.slice(
+        indicePrimeraCategoria,
+        indiceUltimaCategoria
+    );
+
+    const totalPaginasCategorias = Math.ceil(
+        categorias.length / categoriasPorPagina
+    );
+
     return (
         <div className="suministros-container">
             <div className="suministros-titulo">
@@ -398,7 +417,7 @@ const Suministros = () => {
             )}
 
             <div className="suministros-listado">
-                {categorias.map((categoria) => {
+                {categoriasActuales.map((categoria) => {
                     const abierta =
                         categoriasAbiertas[categoria.id] || false;
 
@@ -501,6 +520,41 @@ const Suministros = () => {
                     );
                 })}
             </div>
+
+            {totalPaginasCategorias > 1 && (
+                <div className="suministros-paginacion">
+                    <button
+                        type="button"
+                        disabled={paginaCategorias === 1}
+                        onClick={() =>
+                            setPaginaCategorias(
+                                (paginaActual) => paginaActual - 1
+                            )
+                        }
+                    >
+                        Anterior
+                    </button>
+
+                    <span>
+                        Página {paginaCategorias} de{" "}
+                        {totalPaginasCategorias}
+                    </span>
+
+                    <button
+                        type="button"
+                        disabled={
+                            paginaCategorias === totalPaginasCategorias
+                        }
+                        onClick={() =>
+                            setPaginaCategorias(
+                                (paginaActual) => paginaActual + 1
+                            )
+                        }
+                    >
+                        Siguiente
+                    </button>
+                </div>
+            )}
 
             {modalCrearCategoria && (
                 <div className="crear-categoria-overlay">

@@ -10,6 +10,8 @@ function BajasAlmacen() {
     const [error, setError] = useState('')
     const [bajaSeleccionada, setBajaSeleccionada] = useState(null)
 
+    const [paginaBajas, setPaginaBajas] = useState(1)
+
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -56,6 +58,23 @@ function BajasAlmacen() {
     const cerrarModal = () => {
         setBajaSeleccionada(null)
     }
+
+    const bajasPorPagina = 5
+
+    const indiceUltimaBaja =
+        paginaBajas * bajasPorPagina
+
+    const indicePrimeraBaja =
+        indiceUltimaBaja - bajasPorPagina
+
+    const bajasActuales = bajas.slice(
+        indicePrimeraBaja,
+        indiceUltimaBaja
+    )
+
+    const totalPaginasBajas = Math.ceil(
+        bajas.length / bajasPorPagina
+    )
 
     if (loading) {
         return (
@@ -104,74 +123,113 @@ function BajasAlmacen() {
 
             ) : (
 
-                <div className="tabla-bajas-container">
+                <>
+                    <div className="tabla-bajas-container">
 
-                    <table className="tabla-bajas">
+                        <table className="tabla-bajas">
 
-                        <thead>
+                            <thead>
 
-                            <tr>
-                                <th>Suministro</th>
-                                <th>Cantidad</th>
-                                <th>Stock tras baja</th>
-                                <th>Tipo</th>
-                                <th>Servicio</th>
-                                <th>Fecha</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            {bajas.map((baja) => (
-
-                                <tr
-                                    key={baja.id}
-                                    onClick={() => {
-                                        setBajaSeleccionada(baja)
-                                    }}
-                                    style={{
-                                        cursor: 'pointer'
-                                    }}
-                                >
-
-                                    <td>
-                                        {baja.suministro_nombre}
-                                    </td>
-
-                                    <td>
-                                        −{baja.cantidad} {baja.suministro_unidad}
-                                    </td>
-
-                                    <td>
-                                        {baja.stock_tras_baja} {baja.suministro_unidad}
-                                    </td>
-
-                                    <td>
-                                        {baja.tipo === 'PACK'
-                                            ? 'Pack'
-                                            : 'Servicio'}
-                                    </td>
-
-                                    <td>
-                                        {baja.servicio
-                                            ? baja.servicio
-                                            : '—'}
-                                    </td>
-
-                                    <td>
-                                        {baja.fecha}
-                                    </td>
-
+                                <tr>
+                                    <th>Suministro</th>
+                                    <th>Cantidad</th>
+                                    <th>Stock tras baja</th>
+                                    <th>Tipo</th>
+                                    <th>Servicio</th>
+                                    <th>Fecha</th>
                                 </tr>
 
-                            ))}
+                            </thead>
 
-                        </tbody>
+                            <tbody>
 
-                    </table>
+                                {bajasActuales.map((baja) => (
 
-                </div>
+                                    <tr
+                                        key={baja.id}
+                                        onClick={() => {
+                                            setBajaSeleccionada(baja)
+                                        }}
+                                        style={{
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+
+                                        <td>
+                                            {baja.suministro_nombre}
+                                        </td>
+
+                                        <td>
+                                            −{baja.cantidad} {baja.suministro_unidad}
+                                        </td>
+
+                                        <td>
+                                            {baja.stock_tras_baja} {baja.suministro_unidad}
+                                        </td>
+
+                                        <td>
+                                            {baja.tipo === 'PACK'
+                                                ? 'Pack'
+                                                : 'Servicio'}
+                                        </td>
+
+                                        <td>
+                                            {baja.servicio
+                                                ? baja.servicio
+                                                : '—'}
+                                        </td>
+
+                                        <td>
+                                            {baja.fecha}
+                                        </td>
+
+                                    </tr>
+
+                                ))}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    {totalPaginasBajas > 1 && (
+                        <div className="bajas-paginacion">
+
+                            <button
+                                type="button"
+                                disabled={paginaBajas === 1}
+                                onClick={() =>
+                                    setPaginaBajas(
+                                        (paginaActual) => paginaActual - 1
+                                    )
+                                }
+                            >
+                                Anterior
+                            </button>
+
+                            <span>
+                                Página {paginaBajas} de{" "}
+                                {totalPaginasBajas}
+                            </span>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    paginaBajas === totalPaginasBajas
+                                }
+                                onClick={() =>
+                                    setPaginaBajas(
+                                        (paginaActual) => paginaActual + 1
+                                    )
+                                }
+                            >
+                                Siguiente
+                            </button>
+
+                        </div>
+                    )}
+                </>
 
             )}
 

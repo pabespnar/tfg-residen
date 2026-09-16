@@ -10,6 +10,7 @@ function AltasAlmacen() {
     const [error, setError] = useState('')
     const [altaSeleccionada, setAltaSeleccionada] = useState(null)
     const [mostrarAlbaran, setMostrarAlbaran] = useState(false)
+    const [paginaAltas, setPaginaAltas] = useState(1)
 
     const navigate = useNavigate()
 
@@ -70,6 +71,17 @@ function AltasAlmacen() {
             : `http://127.0.0.1:8000${altaSeleccionada.factura_albaran}`
     }
 
+    const altasPorPagina = 5
+    const indiceUltimaAlta = paginaAltas * altasPorPagina
+    const indicePrimeraAlta = indiceUltimaAlta - altasPorPagina
+    const altasActuales = altas.slice(
+        indicePrimeraAlta,
+        indiceUltimaAlta
+    )
+    const totalPaginasAltas = Math.ceil(
+        altas.length / altasPorPagina
+    )
+
     if (loading) {
         return (
             <div className="altas-container">
@@ -107,63 +119,99 @@ function AltasAlmacen() {
                     </p>
                 </div>
             ) : (
-                <div className="tabla-altas-container">
-                    <table className="tabla-altas">
-                        <thead>
-                            <tr>
-                                <th>Suministro</th>
-                                <th>Cantidad</th>
-                                <th>Stock tras alta</th>
-                                <th>Precio unidad</th>
-                                <th>Pedido</th>
-                                <th>Tipo</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {altas.map((alta) => (
-                                <tr
-                                    key={alta.id}
-                                    onClick={() => {
-                                        setAltaSeleccionada(alta)
-                                        setMostrarAlbaran(false)
-                                    }}
-                                    style={{
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <td>{alta.suministro_nombre}</td>
-
-                                    <td>
-                                        +{alta.cantidad} {alta.suministro_unidad}
-                                    </td>
-
-                                    <td>
-                                        {alta.stock_tras_alta} {alta.suministro_unidad}
-                                    </td>
-
-                                    <td>
-                                        {alta.precio_unidad} €
-                                    </td>
-
-                                    <td>
-                                        {alta.pedido_nombre}
-                                    </td>
-
-                                    <td>
-                                        {alta.pedido_tipo === 'EXPEDIENTE'
-                                            ? 'Con expediente'
-                                            : 'Gasto general'}
-                                    </td>
-
-                                    <td>
-                                        {alta.fecha}
-                                    </td>
+                <>
+                    <div className="tabla-altas-container">
+                        <table className="tabla-altas">
+                            <thead>
+                                <tr>
+                                    <th>Suministro</th>
+                                    <th>Cantidad</th>
+                                    <th>Stock tras alta</th>
+                                    <th>Precio unidad</th>
+                                    <th>Pedido</th>
+                                    <th>Tipo</th>
+                                    <th>Fecha</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {altasActuales.map((alta) => (
+                                    <tr
+                                        key={alta.id}
+                                        onClick={() => {
+                                            setAltaSeleccionada(alta)
+                                            setMostrarAlbaran(false)
+                                        }}
+                                        style={{
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <td>{alta.suministro_nombre}</td>
+
+                                        <td>
+                                            +{alta.cantidad} {alta.suministro_unidad}
+                                        </td>
+
+                                        <td>
+                                            {alta.stock_tras_alta} {alta.suministro_unidad}
+                                        </td>
+
+                                        <td>
+                                            {alta.precio_unidad} €
+                                        </td>
+
+                                        <td>
+                                            {alta.pedido_nombre}
+                                        </td>
+
+                                        <td>
+                                            {alta.pedido_tipo === 'EXPEDIENTE'
+                                                ? 'Con expediente'
+                                                : 'Gasto general'}
+                                        </td>
+
+                                        <td>
+                                            {alta.fecha}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {totalPaginasAltas > 1 && (
+                        <div className="altas-paginacion">
+                            <button
+                                type="button"
+                                disabled={paginaAltas === 1}
+                                onClick={() =>
+                                    setPaginaAltas(
+                                        (paginaActual) => paginaActual - 1
+                                    )
+                                }
+                            >
+                                Anterior
+                            </button>
+
+                            <span>
+                                Página {paginaAltas} de {totalPaginasAltas}
+                            </span>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    paginaAltas === totalPaginasAltas
+                                }
+                                onClick={() =>
+                                    setPaginaAltas(
+                                        (paginaActual) => paginaActual + 1
+                                    )
+                                }
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
 
             <div className="altas-botones">

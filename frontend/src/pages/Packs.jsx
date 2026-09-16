@@ -12,6 +12,8 @@ function Packs() {
     const [suministros, setSuministros] = useState([])
     const [categorias, setCategorias] = useState([])
 
+    const [paginaPacks, setPaginaPacks] = useState(1)
+
     const [packSeleccionado, setPackSeleccionado] = useState(null)
     const [mostrarCrearPack, setMostrarCrearPack] = useState(false)
     const [confirmandoEliminacion, setConfirmandoEliminacion] = useState(false)
@@ -359,6 +361,23 @@ function Packs() {
         return categoria.suministros || []
     }
 
+    const packsPorPagina = 9
+
+    const indiceUltimoPack =
+        paginaPacks * packsPorPagina
+
+    const indicePrimerPack =
+        indiceUltimoPack - packsPorPagina
+
+    const packsActuales = packs.slice(
+        indicePrimerPack,
+        indiceUltimoPack
+    )
+
+    const totalPaginasPacks = Math.ceil(
+        packs.length / packsPorPagina
+    )
+
     return (
         <div className="packs-container">
 
@@ -398,27 +417,64 @@ function Packs() {
                     </p>
                 </div>
             ) : (
-                <div className="packs-listado">
-                    {packs.map((pack) => (
-                        <button
-                            type="button"
-                            className="pack-card"
-                            key={pack.id}
-                            onClick={() => abrirDetallePack(pack)}
-                        >
-                            <strong>
-                                {pack.nombre}
-                            </strong>
+                <>
+                    <div className="packs-listado">
+                        {packsActuales.map((pack) => (
+                            <button
+                                type="button"
+                                className="pack-card"
+                                key={pack.id}
+                                onClick={() => abrirDetallePack(pack)}
+                            >
+                                <strong>
+                                    {pack.nombre}
+                                </strong>
+
+                                <span>
+                                    {pack.contenido?.length || 0}{' '}
+                                    {pack.contenido?.length === 1
+                                        ? 'suministro'
+                                        : 'suministros'}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {totalPaginasPacks > 1 && (
+                        <div className="packs-paginacion">
+                            <button
+                                type="button"
+                                disabled={paginaPacks === 1}
+                                onClick={() =>
+                                    setPaginaPacks(
+                                        (paginaActual) => paginaActual - 1
+                                    )
+                                }
+                            >
+                                Anterior
+                            </button>
 
                             <span>
-                                {pack.contenido?.length || 0}{' '}
-                                {pack.contenido?.length === 1
-                                    ? 'suministro'
-                                    : 'suministros'}
+                                Página {paginaPacks} de{" "}
+                                {totalPaginasPacks}
                             </span>
-                        </button>
-                    ))}
-                </div>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    paginaPacks === totalPaginasPacks
+                                }
+                                onClick={() =>
+                                    setPaginaPacks(
+                                        (paginaActual) => paginaActual + 1
+                                    )
+                                }
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
 
             {packSeleccionado && (
