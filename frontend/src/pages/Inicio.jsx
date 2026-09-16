@@ -24,6 +24,12 @@ function Inicio({ rol }) {
                     ruta: '/modulos',
                 },
                 {
+                    titulo: 'Suministros',
+                    descripcion:
+                        'Consulta los suministros que recibieron los distintos residentes.',
+                    ruta: '/historico_residentes',
+                },                
+                {
                     titulo: 'Histórico de residentes',
                     descripcion:
                         'Consulta las estancias finalizadas y el histórico de residentes dados de baja.',

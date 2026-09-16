@@ -1,0 +1,369 @@
+.suministros-residentes-container {
+    min-height: 100vh;
+    background-color: #f2f2f2;
+    padding: 40px;
+}
+
+.suministros-residentes-titulo {
+    max-width: 1000px;
+    margin: 0 auto 30px auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.suministros-residentes-titulo h1 {
+    color: #1b5e20;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.suministros-residentes-titulo p {
+    margin: 0;
+    color: #555;
+    font-size: 15px;
+}
+
+.suministros-residentes-error {
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    padding: 15px;
+    text-align: center;
+    color: #b71c1c;
+    background-color: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+}
+
+.suministros-residentes-controles {
+    max-width: 1000px;
+    margin: 0 auto 15px auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.suministros-residentes-buscador {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.suministros-residentes-buscador-input {
+    width: 320px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    box-sizing: border-box;
+    transition: 0.2s ease;
+}
+
+.suministros-residentes-buscador-input:focus-within {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.suministros-residentes-buscador-icono {
+    color: #888;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.suministros-residentes-buscador-input input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 10px 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.suministros-residentes-buscador-input input::placeholder {
+    color: #888;
+}
+
+.suministros-residentes-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suministros-residentes-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.suministros-residentes-ordenacion select {
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.suministros-residentes-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.suministros-residentes-listado {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.suministro-residente-card {
+    width: 100%;
+    padding: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.suministro-residente-card:hover {
+    background-color: #f5f5f5;
+}
+
+.suministro-residente-card strong {
+    display: block;
+    padding: 12px 16px;
+    color: #1b5e20;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.suministro-residente-card span {
+    display: block;
+    padding: 10px 16px;
+    color: #555;
+    font-size: 13px;
+    background-color: #fafafa;
+    border-top: 1px solid #eeeeee;
+}
+
+.suministros-residentes-vacio {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 30px;
+    box-sizing: border-box;
+    text-align: center;
+    color: #666;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.suministros-residentes-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.suministros-residentes-paginacion button {
+    padding: 8px 16px;
+    border: 1px solid #1B5E20;
+    border-radius: 6px;
+    background-color: white;
+    color: #1B5E20;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.suministros-residentes-paginacion button:hover:not(:disabled) {
+    background-color: #1B5E20;
+    color: white;
+}
+
+.suministros-residentes-paginacion button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.suministros-residentes-paginacion span {
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    text-align: center;
+}
+
+.suministros-residentes-detalle-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.suministros-residentes-detalle {
+    position: relative;
+    width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.suministros-residentes-detalle-cerrar {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: none;
+    color: #555;
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 30px;
+    cursor: pointer;
+}
+
+.suministros-residentes-detalle-cerrar:hover {
+    color: #222;
+}
+
+.suministros-residentes-detalle h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #1b5e20;
+    font-size: 22px;
+}
+
+.suministros-residentes-resumen {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 25px;
+    color: #555;
+    font-size: 13px;
+}
+
+.suministros-residentes-resumen span + span::before {
+    content: '·';
+    margin-right: 8px;
+    color: #999;
+}
+
+.suministros-residentes-descripcion {
+    margin-bottom: 20px;
+}
+
+.suministros-residentes-descripcion h3,
+.suministros-residentes-contenido h3,
+.suministros-residentes-entregas h3 {
+    margin-bottom: 7px;
+    color: #333;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.suministros-residentes-descripcion p {
+    margin: 0;
+    color: #555;
+    font-size: 14px;
+}
+
+.suministros-residentes-contenido {
+    margin-top: 20px;
+}
+
+.suministros-residentes-suministro {
+    padding: 9px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eeeeee;
+    color: #333;
+    font-size: 14px;
+}
+
+.suministros-residentes-suministro:last-child {
+    border-bottom: none;
+}
+
+.suministros-residentes-suministro span:last-child {
+    color: #555;
+    font-weight: 500;
+}
+
+.suministros-residentes-entregas {
+    margin-top: 25px;
+}
+
+.suministros-residentes-tabla {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.suministros-residentes-tabla-cabecera,
+.suministros-residentes-tabla-fila {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    align-items: center;
+}
+
+.suministros-residentes-tabla-cabecera {
+    padding: 10px 12px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.suministros-residentes-tabla-fila {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eeeeee;
+    color: #555;
+    font-size: 13px;
+}
+
+.suministros-residentes-tabla-fila:last-child {
+    border-bottom: none;
+}
+
+.suministros-residentes-sin-entregas {
+    padding: 15px;
+    color: #777;
+    font-size: 14px;
+    font-style: italic;
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
