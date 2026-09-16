@@ -10,7 +10,23 @@ function Residentes() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
+    const [currentPage, setCurrentPage] = useState(1)
+
     const navigate = useNavigate()
+
+    const itemsPerPage = 5
+
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+
+    const residentesActuales = residentes.slice(
+        indexOfFirstItem,
+        indexOfLastItem
+    )
+
+    const totalPages = Math.ceil(
+        residentes.length / itemsPerPage
+    )
 
     useEffect(() => {
 
@@ -123,7 +139,7 @@ function Residentes() {
 
                         <tbody>
 
-                            {residentes.map((residente) => (
+                            {residentesActuales.map((residente) => (
 
                                 <tr
                                     key={residente.id}
@@ -186,6 +202,38 @@ function Residentes() {
                         </tbody>
 
                     </table>
+
+                    {totalPages > 1 && (
+
+                        <div className="residentes-paginacion">
+
+                            <button
+                                type="button"
+                                disabled={currentPage === 1}
+                                onClick={() =>
+                                    setCurrentPage(prev => prev - 1)
+                                }
+                            >
+                                Anterior
+                            </button>
+
+                            <span>
+                                Página {currentPage} de {totalPages}
+                            </span>
+
+                            <button
+                                type="button"
+                                disabled={currentPage === totalPages}
+                                onClick={() =>
+                                    setCurrentPage(prev => prev + 1)
+                                }
+                            >
+                                Siguiente
+                            </button>
+
+                        </div>
+
+                    )}
 
                 </div>
 

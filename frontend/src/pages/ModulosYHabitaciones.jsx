@@ -12,6 +12,9 @@ const ModulosYHabitaciones = () => {
     const [habitaciones, setHabitaciones] = useState({});
     const [error, setError] = useState(null);
 
+    const [paginasHabitaciones, setPaginasHabitaciones] = useState({});
+    const [paginaModulos, setPaginaModulos] = useState(1);
+
     const [mostrarCrearModulo, setMostrarCrearModulo] = useState(false);
 
     const [nombre, setNombre] = useState("");
@@ -428,6 +431,16 @@ const ModulosYHabitaciones = () => {
                 delete nuevasHabitaciones[moduloEliminando.id];
 
                 return nuevasHabitaciones;
+            });
+
+            setPaginasHabitaciones((paginasActuales) => {
+                const nuevasPaginas = {
+                    ...paginasActuales,
+                };
+
+                delete nuevasPaginas[moduloEliminando.id];
+
+                return nuevasPaginas;
             });
 
             setMostrarEliminarModulo(false);
@@ -861,6 +874,21 @@ const ModulosYHabitaciones = () => {
         return "habitacion-bloque-baja";
     };
 
+    const modulosPorPagina = 2;
+    const indiceUltimoModulo =
+        paginaModulos * modulosPorPagina;
+    const indicePrimerModulo =
+        indiceUltimoModulo - modulosPorPagina;
+
+    const modulosActuales = modulos.slice(
+        indicePrimerModulo,
+        indiceUltimoModulo
+    );
+
+    const totalPaginasModulos = Math.ceil(
+        modulos.length / modulosPorPagina
+    );
+
     return (
         <div className="modulos-container">
             <div className="modulos-titulo">
@@ -888,9 +916,33 @@ const ModulosYHabitaciones = () => {
             )}
 
             <div className="modulos-listado">
-                {modulos.map((modulo) => {
+                {modulosActuales.map((modulo) => {
                     const habitacionesModulo =
                         habitaciones[modulo.id] || [];
+
+                    const paginaActual =
+                        paginasHabitaciones[modulo.id] || 1;
+
+                    const habitacionesPorPagina = 4;
+
+                    const indiceUltimaHabitacion =
+                        paginaActual * habitacionesPorPagina;
+
+                    const indicePrimeraHabitacion =
+                        indiceUltimaHabitacion -
+                        habitacionesPorPagina;
+
+                    const habitacionesActuales =
+                        habitacionesModulo.slice(
+                            indicePrimeraHabitacion,
+                            indiceUltimaHabitacion
+                        );
+
+                    const totalPaginasHabitaciones =
+                        Math.ceil(
+                            habitacionesModulo.length /
+                                habitacionesPorPagina
+                        );
 
                     return (
                         <div
@@ -973,7 +1025,7 @@ const ModulosYHabitaciones = () => {
                                             No hay habitaciones en este módulo.
                                         </p>
                                     ) : (
-                                        habitacionesModulo.map(
+                                        habitacionesActuales.map(
                                             (habitacion) => {
                                                 const claseOcupacion =
                                                     obtenerClaseOcupacion(
@@ -1054,11 +1106,90 @@ const ModulosYHabitaciones = () => {
                                         )
                                     )}
                                 </div>
+
+                                {totalPaginasHabitaciones > 1 && (
+                                    <div className="habitaciones-paginacion">
+                                        <button
+                                            type="button"
+                                            disabled={paginaActual === 1}
+                                            onClick={() =>
+                                                setPaginasHabitaciones(
+                                                    (paginasActuales) => ({
+                                                        ...paginasActuales,
+                                                        [modulo.id]:
+                                                            paginaActual - 1,
+                                                    })
+                                                )
+                                            }
+                                        >
+                                            Anterior
+                                        </button>
+
+                                        <span>
+                                            Página {paginaActual} de{" "}
+                                            {totalPaginasHabitaciones}
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            disabled={
+                                                paginaActual ===
+                                                totalPaginasHabitaciones
+                                            }
+                                            onClick={() =>
+                                                setPaginasHabitaciones(
+                                                    (paginasActuales) => ({
+                                                        ...paginasActuales,
+                                                        [modulo.id]:
+                                                            paginaActual + 1,
+                                                    })
+                                                )
+                                            }
+                                        >
+                                            Siguiente
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     );
                 })}
             </div>
+
+            {totalPaginasModulos > 1 && (
+                <div className="modulos-paginacion">
+                    <button
+                        type="button"
+                        disabled={paginaModulos === 1}
+                        onClick={() =>
+                            setPaginaModulos(
+                                (paginaActual) => paginaActual - 1
+                            )
+                        }
+                    >
+                        Anterior
+                    </button>
+
+                    <span>
+                        Página {paginaModulos} de{" "}
+                        {totalPaginasModulos}
+                    </span>
+
+                    <button
+                        type="button"
+                        disabled={
+                            paginaModulos === totalPaginasModulos
+                        }
+                        onClick={() =>
+                            setPaginaModulos(
+                                (paginaActual) => paginaActual + 1
+                            )
+                        }
+                    >
+                        Siguiente
+                    </button>
+                </div>
+            )}
 
             {mostrarCrearModulo && (
                 <div className="crear-modulo-overlay">

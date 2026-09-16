@@ -7,7 +7,17 @@ function HistoricoResidentes() {
     const [residentes, setResidentes] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
     const navigate = useNavigate()
+
+    const itemsPerPage = 1
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const residentesActuales = residentes.slice(
+        indexOfFirstItem,
+        indexOfLastItem
+    )
+    const totalPages = Math.ceil(residentes.length / itemsPerPage)
 
     useEffect(() => {
         const obtenerResidentes = async () => {
@@ -78,6 +88,7 @@ function HistoricoResidentes() {
                     </p>
                 </div>
             </div>
+
             {residentes.length === 0 ? (
                 <div className="residentes-vacio">
                     <p>
@@ -98,7 +109,7 @@ function HistoricoResidentes() {
                             </tr>
                         </thead>
                         <tbody>
-                            {residentes.map((residente) => (
+                            {residentesActuales.map((residente) => (
                                 <tr
                                     key={residente.id}
                                     onClick={() =>
@@ -132,6 +143,34 @@ function HistoricoResidentes() {
                             ))}
                         </tbody>
                     </table>
+
+                    {totalPages > 1 && (
+                        <div className="residentes-paginacion">
+                            <button
+                                type="button"
+                                disabled={currentPage === 1}
+                                onClick={() =>
+                                    setCurrentPage((prev) => prev - 1)
+                                }
+                            >
+                                Anterior
+                            </button>
+
+                            <span>
+                                Página {currentPage} de {totalPages}
+                            </span>
+
+                            <button
+                                type="button"
+                                disabled={currentPage === totalPages}
+                                onClick={() =>
+                                    setCurrentPage((prev) => prev + 1)
+                                }
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
