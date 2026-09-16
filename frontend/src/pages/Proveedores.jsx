@@ -13,6 +13,18 @@ function Proveedores() {
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
 
+    const [paginaProveedores, setPaginaProveedores] = useState(1)
+    const proveedoresPorPagina = 4
+    const indiceUltimoProveedor = paginaProveedores * proveedoresPorPagina
+    const indicePrimerProveedor = indiceUltimoProveedor - proveedoresPorPagina
+    const proveedoresActuales = proveedores.slice(
+        indicePrimerProveedor,
+        indiceUltimoProveedor
+    )
+    const totalPaginasProveedores = Math.ceil(
+        proveedores.length / proveedoresPorPagina
+    )
+
     const [mostrarEditarProveedor, setMostrarEditarProveedor] = useState(false);
     const [proveedorEditando, setProveedorEditando] = useState(null);
 
@@ -497,7 +509,7 @@ function Proveedores() {
             {!cargando && !error && (
                 <div className="proveedores-lista">
 
-                    {proveedores.map((proveedor) => {
+                    {proveedoresActuales.map((proveedor) => {
 
                         const abierto =
                             proveedoresAbiertos[proveedor.id] || false
@@ -610,11 +622,11 @@ function Proveedores() {
                                                 {proveedor.expedientes.map(
                                                     (expediente) => (
 
-                                                            <div
-                                                                key={expediente.id}
-                                                                className="expediente-card"
-                                                                onClick={() => navigate(`/expedientes/${expediente.id}`)}
-                                                            >
+                                                        <div
+                                                            key={expediente.id}
+                                                            className="expediente-card"
+                                                            onClick={() => navigate(`/expedientes/${expediente.id}`)}
+                                                        >
 
                                                             <div>
                                                                 <h4>
@@ -653,6 +665,42 @@ function Proveedores() {
                             </div>
                         )
                     })}
+
+                </div>
+            )}
+
+            {totalPaginasProveedores > 1 && (
+                <div className="proveedores-paginacion">
+
+                    <button
+                        type="button"
+                        disabled={paginaProveedores === 1}
+                        onClick={() =>
+                            setPaginaProveedores(
+                                (paginaActual) => paginaActual - 1
+                            )
+                        }
+                    >
+                        Anterior
+                    </button>
+
+                    <span>
+                        Página {paginaProveedores} de {totalPaginasProveedores}
+                    </span>
+
+                    <button
+                        type="button"
+                        disabled={
+                            paginaProveedores === totalPaginasProveedores
+                        }
+                        onClick={() =>
+                            setPaginaProveedores(
+                                (paginaActual) => paginaActual + 1
+                            )
+                        }
+                    >
+                        Siguiente
+                    </button>
 
                 </div>
             )}

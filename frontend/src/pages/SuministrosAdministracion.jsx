@@ -10,6 +10,19 @@ function SuministrosAdministracion() {
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
 
+    const [paginaSuministros, setPaginaSuministros] = useState(1)
+    const suministrosPorPagina = 9
+    const indiceUltimoSuministro = paginaSuministros * suministrosPorPagina
+    const indicePrimerSuministro =
+        indiceUltimoSuministro - suministrosPorPagina
+    const suministrosActuales = suministros.slice(
+        indicePrimerSuministro,
+        indiceUltimoSuministro
+    )
+    const totalPaginasSuministros = Math.ceil(
+        suministros.length / suministrosPorPagina
+    )
+
     const [modalCrearSuministroAbierto, setModalCrearSuministroAbierto] =
         useState(false)
     const [nombreCrearSuministro, setNombreCrearSuministro] = useState('')
@@ -251,7 +264,7 @@ function SuministrosAdministracion() {
 
                 <div className="suministros-administracion-lista">
 
-                    {suministros.map((suministro) => {
+                    {suministrosActuales.map((suministro) => {
 
                         const abierto =
                             suministrosAbiertos[suministro.id] || false
@@ -385,6 +398,42 @@ function SuministrosAdministracion() {
 
                 </div>
 
+            )}
+
+            {totalPaginasSuministros > 1 && (
+                <div className="suministros-administracion-paginacion">
+
+                    <button
+                        type="button"
+                        disabled={paginaSuministros === 1}
+                        onClick={() =>
+                            setPaginaSuministros(
+                                (paginaActual) => paginaActual - 1
+                            )
+                        }
+                    >
+                        Anterior
+                    </button>
+
+                    <span>
+                        Página {paginaSuministros} de {totalPaginasSuministros}
+                    </span>
+
+                    <button
+                        type="button"
+                        disabled={
+                            paginaSuministros === totalPaginasSuministros
+                        }
+                        onClick={() =>
+                            setPaginaSuministros(
+                                (paginaActual) => paginaActual + 1
+                            )
+                        }
+                    >
+                        Siguiente
+                    </button>
+
+                </div>
             )}
 
             {modalCrearSuministroAbierto && (

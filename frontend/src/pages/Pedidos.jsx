@@ -38,6 +38,8 @@ function Pedidos() {
     const [errorSuministros, setErrorSuministros] = useState('');
     const [errorGeneral, setErrorGeneral] = useState('');
 
+    const [paginaPedidos, setPaginaPedidos] = useState(1);
+
     const navigate = useNavigate();
 
 
@@ -606,6 +608,22 @@ function Pedidos() {
     };
 
 
+    const pedidosPorPagina = 3;
+    const indiceUltimoPedido =
+        paginaPedidos * pedidosPorPagina;
+    const indicePrimerPedido =
+        indiceUltimoPedido - pedidosPorPagina;
+
+    const pedidosActuales = pedidos.slice(
+        indicePrimerPedido,
+        indiceUltimoPedido
+    );
+
+    const totalPaginasPedidos = Math.ceil(
+        pedidos.length / pedidosPorPagina
+    );
+
+
     if (cargando) {
         return (
             <div className="pedidos-cargando">
@@ -679,73 +697,113 @@ function Pedidos() {
 
             {pedidos.length > 0 ? (
 
-                <div className="pedidos-lista">
+                <>
+                    <div className="pedidos-lista">
 
-                    {pedidos.map(pedido => (
+                        {pedidosActuales.map(pedido => (
 
-                        <div
-                            className="pedido-card"
-                            key={pedido.id}
-                            onClick={() =>
-                                navigate(
-                                    `/pedidos/${pedido.id}`
-                                )
-                            }
-                        >
+                            <div
+                                className="pedido-card"
+                                key={pedido.id}
+                                onClick={() =>
+                                    navigate(
+                                        `/pedidos/${pedido.id}`
+                                    )
+                                }
+                            >
 
-                            <div className="pedido-card-header">
+                                <div className="pedido-card-header">
 
-                                <div>
+                                    <div>
 
-                                    <h2>
-                                        {pedido.nombre}
-                                    </h2>
+                                        <h2>
+                                            {pedido.nombre}
+                                        </h2>
 
-                                    <span>
-                                        {pedido.tipo_pedido === 'EXPEDIENTE'
-                                            ? `Expediente: ${pedido.expediente_nombre}`
-                                            : 'Gasto general'}
+                                        <span>
+                                            {pedido.tipo_pedido === 'EXPEDIENTE'
+                                                ? `Expediente: ${pedido.expediente_nombre}`
+                                                : 'Gasto general'}
+                                        </span>
+
+                                    </div>
+
+
+                                    <span
+                                        className={
+                                            !pedido.recibido
+                                                ? 'pedido-estado pendiente'
+                                                : pedido.correcto
+                                                    ? 'pedido-estado correcto'
+                                                    : 'pedido-estado incorrecto'
+                                        }
+                                    >
+                                        {!pedido.recibido
+                                            ? 'Pendiente'
+                                            : pedido.correcto
+                                                ? '✓ Recibido correctamente'
+                                                : '✕ Recibido con diferencias'}
                                     </span>
 
                                 </div>
 
 
-                                <span
-                                    className={
-                                        !pedido.recibido
-                                            ? 'pedido-estado pendiente'
-                                            : pedido.correcto
-                                                ? 'pedido-estado correcto'
-                                                : 'pedido-estado incorrecto'
-                                    }
-                                >
-                                    {!pedido.recibido
-                                        ? 'Pendiente'
-                                        : pedido.correcto
-                                            ? '✓ Recibido correctamente'
-                                            : '✕ Recibido con diferencias'}
-                                </span>
+                                <div className="pedido-card-fecha">
+
+                                    <span>
+                                        Fecha
+                                    </span>
+
+                                    <strong>
+                                        {pedido.fecha}
+                                    </strong>
+
+                                </div>
 
                             </div>
 
+                        ))}
 
-                            <div className="pedido-card-fecha">
+                    </div>
 
-                                <span>
-                                    Fecha
-                                </span>
+                    {totalPaginasPedidos > 1 && (
 
-                                <strong>
-                                    {pedido.fecha}
-                                </strong>
+                        <div className="pedidos-paginacion">
 
-                            </div>
+                            <button
+                                type="button"
+                                disabled={paginaPedidos === 1}
+                                onClick={() =>
+                                    setPaginaPedidos(
+                                        (paginaActual) => paginaActual - 1
+                                    )
+                                }
+                            >
+                                Anterior
+                            </button>
+
+                            <span>
+                                Página {paginaPedidos} de {totalPaginasPedidos}
+                            </span>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    paginaPedidos === totalPaginasPedidos
+                                }
+                                onClick={() =>
+                                    setPaginaPedidos(
+                                        (paginaActual) => paginaActual + 1
+                                    )
+                                }
+                            >
+                                Siguiente
+                            </button>
 
                         </div>
 
-                    ))}
-
-                </div>
+                    )}
+                </>
 
             ) : (
 
@@ -1120,7 +1178,7 @@ function Pedidos() {
                                                     </strong>
 
                                                 </div>
-
+                                                
 
                                                 {suministrosSeleccionados.length >
                                                     1 && (
