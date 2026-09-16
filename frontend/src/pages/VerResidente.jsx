@@ -6,6 +6,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 function VerResidente() {
     const [residente, setResidente] = useState(null)
+    const [packs, setPacks] = useState([])
+    const [packSeleccionado, setPackSeleccionado] = useState(null)
     const [error, setError] = useState('')
     const [mostrarModalAlta, setMostrarModalAlta] = useState(false)
     const [mostrarModalBaja, setMostrarModalBaja] = useState(false)
@@ -49,6 +51,44 @@ function VerResidente() {
             }
         })
     }, [id])
+
+    useEffect(() => {
+        const token = localStorage.getItem('access')
+
+        axios.get(
+            'http://127.0.0.1:8000/api/suministros/packs/',
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
+        .then((response) => {
+            setPacks(response.data)
+        })
+        .catch((error) => {
+            console.error(
+                'Error al obtener los packs:',
+                error
+            )
+        })
+    }, [])
+
+    const abrirModalPack = (packRecibido) => {
+        const pack = packs.find(
+            (pack) =>
+                String(pack.id) === String(packRecibido.id)
+        )
+
+        setPackSeleccionado({
+            ...packRecibido,
+            contenido: pack?.contenido || []
+        })
+    }
+
+    const cerrarModalPack = () => {
+        setPackSeleccionado(null)
+    }
 
     const abrirModalAlta = async () => {
         setErrorAlta('')
@@ -442,6 +482,17 @@ function VerResidente() {
 
                     <div className="ver-residente-grid">
 
+
+                        <div className="ver-residente-campo">
+                            <span className="ver-residente-label">
+                                Módulo
+                            </span>
+
+                            <span className="ver-residente-valor">
+                                {residente.habitacion_modulo_nombre || 'Sin módulo'}
+                            </span>
+                        </div>
+
                         <div className="ver-residente-campo">
                             <span className="ver-residente-label">
                                 Habitación
@@ -482,9 +533,10 @@ function VerResidente() {
                         <div className="ver-residente-packs">
 
                             {residente.packs_recibidos.map((pack) => (
-                                <div
+                                <button
                                     className="ver-residente-pack"
                                     key={pack.id}
+                                    onClick={() => abrirModalPack(pack)}
                                 >
                                     <div className="ver-residente-pack-info">
                                         <span className="ver-residente-label">
@@ -505,7 +557,7 @@ function VerResidente() {
                                             {pack.fecha_entrega}
                                         </span>
                                     </div>
-                                </div>
+                                </button>
                             ))}
 
                         </div>
@@ -528,6 +580,69 @@ function VerResidente() {
                 </div>
 
             </div>
+
+            {packSeleccionado && (
+                <div
+                    className="ver-residente-pack-modal-overlay"
+                    onClick={cerrarModalPack}
+                >
+                    <div
+                        className="ver-residente-pack-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="ver-residente-pack-modal-cerrar"
+                            onClick={cerrarModalPack}
+                        >
+                            ×
+                        </button>
+
+                        <h2>{packSeleccionado.nombre}</h2>
+
+                        <div className="ver-residente-pack-modal-fecha">
+                            <span className="ver-residente-label">
+                                Fecha de recepción
+                            </span>
+
+                            <span className="ver-residente-valor">
+                                {packSeleccionado.fecha_entrega}
+                            </span>
+                        </div>
+
+                        <div className="ver-residente-pack-modal-contenido">
+                            <h3>Suministros</h3>
+
+                            {packSeleccionado.contenido.length > 0 ? (
+                                <div className="ver-residente-pack-modal-suministros">
+
+                                    {packSeleccionado.contenido.map(
+                                        (contenido) => (
+                                            <div
+                                                className="ver-residente-pack-modal-suministro"
+                                                key={contenido.id}
+                                            >
+                                                <span>
+                                                    {contenido.suministro_nombre}
+                                                </span>
+
+                                                <span>
+                                                    {contenido.cantidad}{' '}
+                                                    {contenido.suministro_unidad || ''}
+                                                </span>
+                                            </div>
+                                        )
+                                    )}
+
+                                </div>
+                            ) : (
+                                <p className="ver-residente-pack-modal-sin-suministros">
+                                    No hay suministros asociados a este pack.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {mostrarModalBaja && (
                 <div className="ver-residente-modal-overlay">

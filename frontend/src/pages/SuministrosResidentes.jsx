@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './SuministrosResidentes.css'
 import { FaSearch } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
 
 function SuministrosResidentes() {
 
@@ -14,6 +15,8 @@ function SuministrosResidentes() {
     const [packSeleccionado, setPackSeleccionado] = useState(null)
     const [residentesEntrega, setResidentesEntrega] = useState([])
     const [error, setError] = useState('')
+
+    const navigate = useNavigate()
 
     const normalizarTexto = (texto) =>
         texto
@@ -349,18 +352,18 @@ function SuministrosResidentes() {
                             ×
                         </button>
 
-                            <h2>{packSeleccionado.nombre}</h2>
+                        <h2>{packSeleccionado.nombre}</h2>
 
-                            <div className="suministros-residentes-resumen">
-                                <span>
-                                    {residentesEntrega.length} entregas
-                                </span>
-                                <span>
-                                    {obtenerPorcentajeEntregas(packSeleccionado).toFixed(1)}% de los residentes
-                                </span>
-                            </div>
+                        <div className="suministros-residentes-resumen">
+                            <span>
+                                {residentesEntrega.length} entregas
+                            </span>
+                            <span>
+                                {obtenerPorcentajeEntregas(packSeleccionado).toFixed(1)}% de los residentes
+                            </span>
+                        </div>
 
-                            <div className="suministros-residentes-descripcion">
+                        <div className="suministros-residentes-descripcion">
                             <h3>Descripción</h3>
                             <p>
                                 {packSeleccionado.descripcion ||
@@ -410,6 +413,9 @@ function SuministrosResidentes() {
                                         <div
                                             key={`${residente.id}-${index}`}
                                             className="suministros-residentes-tabla-fila"
+                                            onClick={() =>
+                                                navigate(`/residentes/${residente.id}`)
+                                            }
                                         >
                                             <span>
                                                 {residente.nombre}{' '}

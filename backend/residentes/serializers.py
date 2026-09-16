@@ -11,6 +11,11 @@ class ResidenteSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    habitacion_modulo_nombre = serializers.CharField(
+        source='habitacion.modulo.nombre',
+        read_only=True
+    )
+
     pack_recibido = serializers.SerializerMethodField()
     packs_recibidos = serializers.SerializerMethodField()
 
@@ -31,12 +36,18 @@ class ResidenteSerializer(serializers.ModelSerializer):
             'activo',
             'habitacion',
             'habitacion_nombre',
+            'habitacion_modulo_nombre',
             'foto',
             'genero',
             'pack_recibido',
             'packs_recibidos'
         ]
-        read_only_fields = ['id', 'habitacion_nombre', 'f_alta']
+        read_only_fields = [
+            'id',
+            'habitacion_nombre',
+            'habitacion_modulo_nombre',
+            'f_alta'
+        ]
 
     def validate_nombre(self, value):
 
