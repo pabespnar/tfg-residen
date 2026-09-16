@@ -4,7 +4,6 @@
     padding: 40px;
 }
 
-
 .modulos-titulo {
     max-width: 1000px;
     margin: 0 auto 30px auto;
@@ -25,7 +24,6 @@
     color: #555;
     font-size: 15px;
 }
-
 
 .modulos-anadir {
     width: 42px;
@@ -51,7 +49,6 @@
     transform: scale(1.05);
 }
 
-
 .modulos-listado {
     max-width: 1000px;
     margin: 0 auto;
@@ -60,7 +57,6 @@
     flex-direction: column;
     gap: 15px;
 }
-
 
 .modulo-card {
     padding: 20px;
@@ -124,7 +120,6 @@
     opacity: 0.75;
 }
 
-
 .modulo-descripcion {
     margin: 10px 0 6px 0;
 
@@ -132,9 +127,48 @@
     font-size: 15px;
 }
 
+.modulo-datos {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    margin-top: 5px;
+}
+
+.modulo-datos-izquierda {
+    display: flex;
+    flex-direction: column;
+}
+
 .modulo-habitaciones-max {
     margin: 0;
 
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.modulo-residentes-actuales {
+    margin: 5px 0 0 0;
+
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.modulo-ocupacion {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.modulo-ocupacion-valor {
+    color: #1B5E20;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.modulo-ocupacion-texto {
     color: #444;
     font-size: 14px;
     font-weight: 600;
@@ -146,7 +180,6 @@
 
     border-top: 1px solid #eee;
 }
-
 
 .modulos-error {
     max-width: 1000px;
@@ -162,7 +195,6 @@
     border: 1px solid #ffcdd2;
     border-radius: 8px;
 }
-
 
 .crear-modulo-overlay {
     position: fixed;
@@ -201,7 +233,6 @@
     font-size: 22px;
 }
 
-
 .crear-modulo-campo {
     display: flex;
     flex-direction: column;
@@ -239,14 +270,12 @@
     resize: vertical;
 }
 
-
 .crear-modulo-error {
     margin: 7px 0 0 0;
 
     color: #b71c1c;
     font-size: 13px;
 }
-
 
 .crear-modulo-botones {
     display: flex;
@@ -288,8 +317,6 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
-
-
 
 .eliminar-modulo-overlay {
     position: fixed;
@@ -368,7 +395,6 @@
     font-size: 14px;
 }
 
-
 .habitaciones-titulo {
     display: flex;
     align-items: center;
@@ -383,7 +409,6 @@
     color: #333;
     font-size: 17px;
 }
-
 
 .habitacion-anadir {
     width: 32px;
@@ -602,18 +627,28 @@
     text-align: center;
 }
 
-.modulos-buscador {
+.modulos-controles {
     max-width: 1000px;
     margin: 0 auto 20px auto;
 
-    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
 
-    background-color: white;
+.modulos-buscador {
+    margin: 0;
+    padding: 0;
 
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    width: 320px;
 
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background-color: transparent;
+
+    border: none;
+    border-radius: 0;
+
+    box-shadow: none;
 
     box-sizing: border-box;
 }
@@ -624,9 +659,9 @@
     display: flex;
     align-items: center;
 
-    padding: 0 12px;
+    padding: 0 10px;
 
-    border: 1px solid #ccc;
+    border: 1px solid #d5d5d5;
     border-radius: 6px;
 
     background-color: white;
@@ -643,28 +678,72 @@
 
 .modulos-buscador-icono {
     color: #888;
-    font-size: 15px;
+    font-size: 14px;
 
     flex-shrink: 0;
+    margin-right: 8px;
 }
 
 .modulos-buscador-input input {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
+    width: auto;
 
-    padding: 10px 10px;
+    padding: 10px 0;
 
-    border: none;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
 
-    background-color: transparent;
+    background: transparent !important;
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    box-sizing: border-box;
+}
+
+.modulos-buscador-input input::placeholder {
+    color: #888;
+}
+
+.modulos-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0;
+}
+
+.modulos-ordenacion label {
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.modulos-ordenacion select {
+    min-width: 230px;
+
+    padding: 9px 12px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background-color: white;
     color: #333;
 
     font-family: inherit;
     font-size: 14px;
 
     outline: none;
+
+    cursor: pointer;
+
     box-sizing: border-box;
 }
 
-.modulos-buscador-input input::placeholder {
-    color: #888;
+.modulos-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
 }

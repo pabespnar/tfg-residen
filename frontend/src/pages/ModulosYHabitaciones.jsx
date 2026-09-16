@@ -13,6 +13,7 @@ const ModulosYHabitaciones = () => {
     const [error, setError] = useState(null);
 
     const [terminoBusqueda, setTerminoBusqueda] = useState("");
+    const [orden, setOrden] = useState("nombre_asc");
 
     const [paginasHabitaciones, setPaginasHabitaciones] = useState({});
     const [paginaModulos, setPaginaModulos] = useState(1);
@@ -59,7 +60,7 @@ const ModulosYHabitaciones = () => {
 
     const [nombreHabitacionEditar, setNombreHabitacionEditar] = useState("");
     const [infoHabitacionEditar, setInfoHabitacionEditar] = useState("");
-    const [capacidadHabitacionEditar, setCapacidadHabitacionEditar] =
+    const [capacidadHabitacionEditar] =
         useState("");
 
     const [erroresEditarHabitacion, setErroresEditarHabitacion] =
@@ -146,6 +147,38 @@ const ModulosYHabitaciones = () => {
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
 
+    const obtenerNumeroResidentesModulo = (moduloId) => {
+        const habitacionesModulo = habitaciones[moduloId] || [];
+
+        return habitacionesModulo.reduce(
+            (total, habitacion) =>
+                total + Number(habitacion.residentes_actuales || 0),
+            0
+        );
+    };
+
+    const obtenerPorcentajeOcupacionModulo = (modulo) => {
+        const habitacionesModulo = habitaciones[modulo.id] || [];
+
+        const residentesActuales = habitacionesModulo.reduce(
+            (total, habitacion) =>
+                total + Number(habitacion.residentes_actuales || 0),
+            0
+        );
+
+        const capacidadTotal = habitacionesModulo.reduce(
+            (total, habitacion) =>
+                total + Number(habitacion.capacidad || 0),
+            0
+        );
+
+        if (!capacidadTotal) {
+            return 0;
+        }
+
+        return (residentesActuales / capacidadTotal) * 100;
+    };
+
     const modulosFiltrados = modulos.filter((modulo) => {
         const texto = normalizarTexto(terminoBusqueda);
 
@@ -155,9 +188,60 @@ const ModulosYHabitaciones = () => {
         );
     });
 
+    const modulosOrdenados = [...modulosFiltrados].sort((a, b) => {
+        const habitacionesA = habitaciones[a.id] || [];
+        const habitacionesB = habitaciones[b.id] || [];
+
+        const residentesA = obtenerNumeroResidentesModulo(a.id);
+        const residentesB = obtenerNumeroResidentesModulo(b.id);
+
+        const nombreA = normalizarTexto(a.nombre || "");
+        const nombreB = normalizarTexto(b.nombre || "");
+
+        const habitacionesActualesA = habitacionesA.length;
+        const habitacionesActualesB = habitacionesB.length;
+
+        const ocupacionA = obtenerPorcentajeOcupacionModulo(a);
+        const ocupacionB = obtenerPorcentajeOcupacionModulo(b);
+
+        if (orden === "nombre_asc") {
+            return nombreA.localeCompare(nombreB);
+        }
+
+        if (orden === "nombre_desc") {
+            return nombreB.localeCompare(nombreA);
+        }
+
+        if (orden === "residentes_asc") {
+            return residentesA - residentesB;
+        }
+
+        if (orden === "residentes_desc") {
+            return residentesB - residentesA;
+        }
+
+        if (orden === "habitaciones_asc") {
+            return habitacionesActualesA - habitacionesActualesB;
+        }
+
+        if (orden === "habitaciones_desc") {
+            return habitacionesActualesB - habitacionesActualesA;
+        }
+
+        if (orden === "ocupacion_asc") {
+            return ocupacionA - ocupacionB;
+        }
+
+        if (orden === "ocupacion_desc") {
+            return ocupacionB - ocupacionA;
+        }
+
+        return 0;
+    });
+
     useEffect(() => {
         setPaginaModulos(1);
-    }, [terminoBusqueda]);
+    }, [terminoBusqueda, orden]);
 
     const validarFormulario = () => {
         const nuevosErrores = {};
@@ -901,13 +985,13 @@ const ModulosYHabitaciones = () => {
     const indicePrimerModulo =
         indiceUltimoModulo - modulosPorPagina;
 
-    const modulosActuales = modulosFiltrados.slice(
+    const modulosActuales = modulosOrdenados.slice(
         indicePrimerModulo,
         indiceUltimoModulo
     );
 
     const totalPaginasModulos = Math.ceil(
-        modulosFiltrados.length / modulosPorPagina
+        modulosOrdenados.length / modulosPorPagina
     );
 
     return (
@@ -937,15 +1021,65 @@ const ModulosYHabitaciones = () => {
             )}
 
             {modulos.length > 0 && (
-                <div className="modulos-buscador">
-                    <div className="modulos-buscador-input">
-                        <FaSearch className="modulos-buscador-icono" />
-                        <input
-                            type="text"
-                            placeholder="Buscar módulos..."
-                            value={terminoBusqueda}
-                            onChange={(e) => setTerminoBusqueda(e.target.value)}
-                        />
+                <div className="modulos-controles">
+                    <div className="modulos-buscador">
+                        <div className="modulos-buscador-input">
+                            <FaSearch className="modulos-buscador-icono" />
+                            <input
+                                type="text"
+                                placeholder="Buscar módulos..."
+                                value={terminoBusqueda}
+                                onChange={(e) =>
+                                    setTerminoBusqueda(e.target.value)
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    <div className="modulos-ordenacion">
+                        <label htmlFor="orden-modulos">
+                            Ordenar por:
+                        </label>
+
+                        <select
+                            id="orden-modulos"
+                            value={orden}
+                            onChange={(e) =>
+                                setOrden(e.target.value)
+                            }
+                        >
+                            <option value="nombre_asc">
+                                Nombre A-Z
+                            </option>
+
+                            <option value="nombre_desc">
+                                Nombre Z-A
+                            </option>
+
+                            <option value="residentes_asc">
+                                Residentes actuales: menor a mayor
+                            </option>
+
+                            <option value="residentes_desc">
+                                Residentes actuales: mayor a menor
+                            </option>
+
+                            <option value="habitaciones_asc">
+                                Habitaciones actuales: menor a mayor
+                            </option>
+
+                            <option value="habitaciones_desc">
+                                Habitaciones actuales: mayor a menor
+                            </option>
+
+                            <option value="ocupacion_asc">
+                                Porcentaje de ocupación: menor a mayor
+                            </option>
+
+                            <option value="ocupacion_desc">
+                                Porcentaje de ocupación: mayor a menor
+                            </option>
+                        </select>
                     </div>
                 </div>
             )}
@@ -986,6 +1120,12 @@ const ModulosYHabitaciones = () => {
                                     habitacionesPorPagina
                             );
 
+                        const residentesActualesModulo =
+                            obtenerNumeroResidentesModulo(modulo.id);
+
+                        const porcentajeOcupacionModulo =
+                            obtenerPorcentajeOcupacionModulo(modulo);
+
                         return (
                             <div
                                 className="modulo-card"
@@ -997,6 +1137,15 @@ const ModulosYHabitaciones = () => {
                                     </h2>
 
                                     <div className="modulo-acciones">
+                                        <div className="modulo-ocupacion">
+                                            <span className="modulo-ocupacion-valor">
+                                                {porcentajeOcupacionModulo.toFixed(0)}%
+                                            </span>
+                                            <span className="modulo-ocupacion-texto">
+                                                Ocupación
+                                            </span>
+                                        </div>
+
                                         <button
                                             type="button"
                                             className="modulo-editar"
@@ -1031,6 +1180,11 @@ const ModulosYHabitaciones = () => {
                                     Habitaciones:{" "}
                                     {habitacionesModulo.length} /{" "}
                                     {modulo.num_habitaciones_max}
+                                </p>
+
+                                <p className="modulo-residentes-actuales">
+                                    Residentes actuales:{" "}
+                                    {residentesActualesModulo}
                                 </p>
 
                                 <div className="modulo-contenido">
@@ -1625,7 +1779,8 @@ const ModulosYHabitaciones = () => {
 
                             {erroresEditarHabitacion.info && (
                                 <p className="crear-modulo-error">
-                                    {erroresEditarHabitacion.info}
+                                    {erroresEditarHabitacion.info
+                                    }
                                 </p>
                             )}
                         </div>

@@ -11,6 +11,7 @@ function Residentes() {
     const [error, setError] = useState('')
 
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
 
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -43,16 +44,78 @@ function Residentes() {
         )
     })
 
+    const residentesOrdenados = [...residentesFiltrados].sort((a, b) => {
+
+        let valorA = ''
+        let valorB = ''
+
+        switch (orden) {
+
+            case 'nombre_asc':
+            case 'nombre_desc':
+                valorA = normalizarTexto(a.nombre || '')
+                valorB = normalizarTexto(b.nombre || '')
+                break
+
+            case 'apellido_asc':
+            case 'apellido_desc':
+                valorA = normalizarTexto(a.apellido || '')
+                valorB = normalizarTexto(b.apellido || '')
+                break
+
+            case 'dni_asc':
+            case 'dni_desc':
+                valorA = normalizarTexto(a.dni_nie || '')
+                valorB = normalizarTexto(b.dni_nie || '')
+                break
+
+            case 'pais_asc':
+            case 'pais_desc':
+                valorA = normalizarTexto(a.pais || '')
+                valorB = normalizarTexto(b.pais || '')
+                break
+
+            case 'habitacion_asc':
+            case 'habitacion_desc':
+                valorA = normalizarTexto(
+                    a.habitacion_nombre || 'Sin habitación'
+                )
+                valorB = normalizarTexto(
+                    b.habitacion_nombre || 'Sin habitación'
+                )
+                break
+
+            case 'alta_asc':
+            case 'alta_desc':
+                valorA = a.f_alta || ''
+                valorB = b.f_alta || ''
+                break
+
+            default:
+                return 0
+        }
+
+        if (valorA < valorB) {
+            return orden.endsWith('_asc') ? -1 : 1
+        }
+
+        if (valorA > valorB) {
+            return orden.endsWith('_asc') ? 1 : -1
+        }
+
+        return 0
+    })
+
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
 
-    const residentesActuales = residentesFiltrados.slice(
+    const residentesActuales = residentesOrdenados.slice(
         indexOfFirstItem,
         indexOfLastItem
     )
 
     const totalPages = Math.ceil(
-        residentesFiltrados.length / itemsPerPage
+        residentesOrdenados.length / itemsPerPage
     )
 
     useEffect(() => {
@@ -98,7 +161,7 @@ function Residentes() {
 
     useEffect(() => {
         setCurrentPage(1)
-    }, [terminoBusqueda])
+    }, [terminoBusqueda, orden])
 
     if (loading) {
         return (
@@ -152,19 +215,88 @@ function Residentes() {
             ) : (
 
                 <>
-                    <div className="residentes-buscador">
-                        <div className="residentes-buscador-input">
-                            <FaSearch className="residentes-buscador-icono" />
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por nombre, apellido o DNI/NIE..."
-                                value={terminoBusqueda}
-                                onChange={(e) =>
-                                    setTerminoBusqueda(e.target.value)
-                                }
-                            />
+                    <div className="residentes-controles">
+
+                        <div className="residentes-buscador">
+                            <div className="residentes-buscador-input">
+                                <FaSearch className="residentes-buscador-icono" />
+
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre, apellido o DNI/NIE..."
+                                    value={terminoBusqueda}
+                                    onChange={(e) =>
+                                        setTerminoBusqueda(e.target.value)
+                                    }
+                                />
+                            </div>
                         </div>
+
+                        <div className="residentes-ordenacion">
+
+                            <label htmlFor="orden-residentes">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-residentes"
+                                value={orden}
+                                onChange={(e) =>
+                                    setOrden(e.target.value)
+                                }
+                            >
+                                <option value="nombre_asc">
+                                    Nombre A-Z
+                                </option>
+
+                                <option value="nombre_desc">
+                                    Nombre Z-A
+                                </option>
+
+                                <option value="apellido_asc">
+                                    Apellidos A-Z
+                                </option>
+
+                                <option value="apellido_desc">
+                                    Apellidos Z-A
+                                </option>
+
+                                <option value="dni_asc">
+                                    DNI/NIE A-Z
+                                </option>
+
+                                <option value="dni_desc">
+                                    DNI/NIE Z-A
+                                </option>
+
+                                <option value="pais_asc">
+                                    País A-Z
+                                </option>
+
+                                <option value="pais_desc">
+                                    País Z-A
+                                </option>
+
+                                <option value="habitacion_asc">
+                                    Habitación A-Z
+                                </option>
+
+                                <option value="habitacion_desc">
+                                    Habitación Z-A
+                                </option>
+
+                                <option value="alta_asc">
+                                    Fecha de alta más antigua
+                                </option>
+
+                                <option value="alta_desc">
+                                    Fecha de alta más reciente
+                                </option>
+                            </select>
+
+                        </div>
+
                     </div>
 
                     {residentesFiltrados.length === 0 ? (
