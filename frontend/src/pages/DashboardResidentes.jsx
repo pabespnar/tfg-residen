@@ -228,10 +228,6 @@ function DashboardResidentes() {
                         Movimientos de residentes
                     </h2>
 
-                    <span>
-                        Últimos 30 días
-                    </span>
-
                 </div>
 
 
@@ -240,7 +236,7 @@ function DashboardResidentes() {
                     <div className="dashboard-card">
 
                         <span className="dashboard-card-titulo">
-                            Altas
+                            Altas último mes
                         </span>
 
                         <strong className="dashboard-card-valor">
@@ -253,7 +249,7 @@ function DashboardResidentes() {
                     <div className="dashboard-card">
 
                         <span className="dashboard-card-titulo">
-                            Bajas
+                            Bajas último mes
                         </span>
 
                         <strong className="dashboard-card-valor">
