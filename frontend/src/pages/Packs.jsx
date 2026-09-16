@@ -14,6 +14,7 @@ function Packs() {
     const [categorias, setCategorias] = useState([])
 
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
 
     const [paginaPacks, setPaginaPacks] = useState(1)
 
@@ -66,9 +67,46 @@ function Packs() {
         )
     })
 
+    const packsOrdenados = [...packsFiltrados].sort((a, b) => {
+        const nombreA = normalizarTexto(a.nombre || '')
+        const nombreB = normalizarTexto(b.nombre || '')
+
+        const suministrosA = (a.contenido || []).length
+        const suministrosB = (b.contenido || []).length
+
+        const asignacionesA = Number(a.residentes_recibidos || 0)
+        const asignacionesB = Number(b.residentes_recibidos || 0)
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'suministros_asc') {
+            return suministrosA - suministrosB
+        }
+
+        if (orden === 'suministros_desc') {
+            return suministrosB - suministrosA
+        }
+
+        if (orden === 'asignaciones_asc') {
+            return asignacionesA - asignacionesB
+        }
+
+        if (orden === 'asignaciones_desc') {
+            return asignacionesB - asignacionesA
+        }
+
+        return 0
+    })
+
     useEffect(() => {
         setPaginaPacks(1)
-    }, [terminoBusqueda])
+    }, [terminoBusqueda, orden])
 
     useEffect(() => {
         obtenerPacks()
@@ -411,13 +449,13 @@ function Packs() {
     const indicePrimerPack =
         indiceUltimoPack - packsPorPagina
 
-    const packsActuales = packsFiltrados.slice(
+    const packsActuales = packsOrdenados.slice(
         indicePrimerPack,
         indiceUltimoPack
     )
 
     const totalPaginasPacks = Math.ceil(
-        packsFiltrados.length / packsPorPagina
+        packsOrdenados.length / packsPorPagina
     )
 
     return (
@@ -453,20 +491,55 @@ function Packs() {
             )}
 
             {packs.length > 0 && (
-                <div className="packs-buscador">
-                    <div className="packs-buscador-input">
-                        <FaSearch className="packs-buscador-icono" />
+                <div className="packs-controles">
+                    <div className="packs-buscador">
+                        <div className="packs-buscador-input">
+                            <FaSearch className="packs-buscador-icono" />
 
-                        <input
-                            type="text"
-                            placeholder="Buscar por nombre o descripción..."
-                            value={terminoBusqueda}
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre o descripción..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    <div className="packs-ordenacion">
+                        <label htmlFor="orden-packs">
+                            Ordenar por:
+                        </label>
+
+                        <select
+                            id="orden-packs"
+                            value={orden}
                             onChange={(evento) =>
-                                setTerminoBusqueda(
-                                    evento.target.value
-                                )
+                                setOrden(evento.target.value)
                             }
-                        />
+                        >
+                            <option value="nombre_asc">
+                                Nombre A-Z
+                            </option>
+                            <option value="nombre_desc">
+                                Nombre Z-A
+                            </option>
+                            <option value="suministros_asc">
+                                Número de suministros: menor a mayor
+                            </option>
+                            <option value="suministros_desc">
+                                Número de suministros: mayor a menor
+                            </option>
+                            <option value="asignaciones_asc">
+                                Número de asignaciones: menor a mayor
+                            </option>
+                            <option value="asignaciones_desc">
+                                Número de asignaciones: mayor a menor
+                            </option>
+                        </select>
                     </div>
                 </div>
             )}

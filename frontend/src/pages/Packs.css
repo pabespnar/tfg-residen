@@ -615,10 +615,17 @@
     text-align: center;
 }
 
-.packs-buscador {
+.packs-controles {
     max-width: 1000px;
     margin: 0 auto 15px auto;
 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.packs-buscador {
     display: flex;
     justify-content: flex-start;
 }
@@ -677,6 +684,37 @@
 
 .packs-buscador-input input::placeholder {
     color: #888;
+}
+
+.packs-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.packs-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.packs-ordenacion select {
+    padding: 10px 12px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background-color: white;
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.packs-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
 }
 
 .packs-vacio {

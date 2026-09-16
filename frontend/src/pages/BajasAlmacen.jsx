@@ -13,6 +13,7 @@ function BajasAlmacen() {
 
     const [paginaBajas, setPaginaBajas] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('fecha_desc')
 
     const navigate = useNavigate()
 
@@ -81,9 +82,52 @@ function BajasAlmacen() {
         )
     })
 
+    const bajasOrdenadas = [...bajasFiltradas].sort((a, b) => {
+
+        const nombreA = normalizarTexto(
+            a.suministro_nombre || ''
+        )
+
+        const nombreB = normalizarTexto(
+            b.suministro_nombre || ''
+        )
+
+        const cantidadA = Number(a.cantidad || 0)
+        const cantidadB = Number(b.cantidad || 0)
+
+        const fechaA = new Date(a.fecha || 0).getTime()
+        const fechaB = new Date(b.fecha || 0).getTime()
+
+        if (orden === 'fecha_asc') {
+            return fechaA - fechaB
+        }
+
+        if (orden === 'fecha_desc') {
+            return fechaB - fechaA
+        }
+
+        if (orden === 'suministro_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'suministro_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'cantidad_asc') {
+            return cantidadA - cantidadB
+        }
+
+        if (orden === 'cantidad_desc') {
+            return cantidadB - cantidadA
+        }
+
+        return 0
+    })
+
     useEffect(() => {
         setPaginaBajas(1)
-    }, [terminoBusqueda])
+    }, [terminoBusqueda, orden])
 
     const bajasPorPagina = 5
 
@@ -93,13 +137,13 @@ function BajasAlmacen() {
     const indicePrimeraBaja =
         indiceUltimaBaja - bajasPorPagina
 
-    const bajasActuales = bajasFiltradas.slice(
+    const bajasActuales = bajasOrdenadas.slice(
         indicePrimeraBaja,
         indiceUltimaBaja
     )
 
     const totalPaginasBajas = Math.ceil(
-        bajasFiltradas.length / bajasPorPagina
+        bajasOrdenadas.length / bajasPorPagina
     )
 
     if (loading) {
@@ -151,22 +195,66 @@ function BajasAlmacen() {
 
                 <>
 
-                    <div className="bajas-buscador">
+                    <div className="bajas-controles">
 
-                        <div className="bajas-buscador-input">
+                        <div className="bajas-buscador">
 
-                            <FaSearch className="bajas-buscador-icono" />
+                            <div className="bajas-buscador-input">
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por suministro..."
-                                value={terminoBusqueda}
+                                <FaSearch className="bajas-buscador-icono" />
+
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por suministro..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(
+                                            evento.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div className="bajas-ordenacion">
+
+                            <label htmlFor="orden-bajas">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-bajas"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(
-                                        evento.target.value
-                                    )
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="fecha_desc">
+                                    Fecha: más reciente
+                                </option>
+
+                                <option value="fecha_asc">
+                                    Fecha: más antigua
+                                </option>
+
+                                <option value="suministro_asc">
+                                    Suministro A-Z
+                                </option>
+
+                                <option value="suministro_desc">
+                                    Suministro Z-A
+                                </option>
+
+                                <option value="cantidad_asc">
+                                    Cantidad: menor a mayor
+                                </option>
+
+                                <option value="cantidad_desc">
+                                    Cantidad: mayor a menor
+                                </option>
+                            </select>
 
                         </div>
 

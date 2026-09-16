@@ -13,6 +13,7 @@ function AltasAlmacen() {
     const [mostrarAlbaran, setMostrarAlbaran] = useState(false)
     const [paginaAltas, setPaginaAltas] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('fecha_desc')
 
     const navigate = useNavigate()
 
@@ -93,9 +94,52 @@ function AltasAlmacen() {
         )
     })
 
+    const altasOrdenadas = [...altasFiltradas].sort((a, b) => {
+
+        const nombreA = normalizarTexto(
+            a.suministro_nombre || ''
+        )
+
+        const nombreB = normalizarTexto(
+            b.suministro_nombre || ''
+        )
+
+        const cantidadA = Number(a.cantidad || 0)
+        const cantidadB = Number(b.cantidad || 0)
+
+        const fechaA = new Date(a.fecha || 0).getTime()
+        const fechaB = new Date(b.fecha || 0).getTime()
+
+        if (orden === 'fecha_asc') {
+            return fechaA - fechaB
+        }
+
+        if (orden === 'fecha_desc') {
+            return fechaB - fechaA
+        }
+
+        if (orden === 'suministro_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'suministro_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'cantidad_asc') {
+            return cantidadA - cantidadB
+        }
+
+        if (orden === 'cantidad_desc') {
+            return cantidadB - cantidadA
+        }
+
+        return 0
+    })
+
     useEffect(() => {
         setPaginaAltas(1)
-    }, [terminoBusqueda])
+    }, [terminoBusqueda, orden])
 
     const altasPorPagina = 5
 
@@ -105,13 +149,13 @@ function AltasAlmacen() {
     const indicePrimeraAlta =
         indiceUltimaAlta - altasPorPagina
 
-    const altasActuales = altasFiltradas.slice(
+    const altasActuales = altasOrdenadas.slice(
         indicePrimeraAlta,
         indiceUltimaAlta
     )
 
     const totalPaginasAltas = Math.ceil(
-        altasFiltradas.length / altasPorPagina
+        altasOrdenadas.length / altasPorPagina
     )
 
     if (loading) {
@@ -156,22 +200,66 @@ function AltasAlmacen() {
 
                 <>
 
-                    <div className="altas-buscador">
+                    <div className="altas-controles">
 
-                        <div className="altas-buscador-input">
+                        <div className="altas-buscador">
 
-                            <FaSearch className="altas-buscador-icono" />
+                            <div className="altas-buscador-input">
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por suministro..."
-                                value={terminoBusqueda}
+                                <FaSearch className="altas-buscador-icono" />
+
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por suministro..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(
+                                            evento.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div className="altas-ordenacion">
+
+                            <label htmlFor="orden-altas">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-altas"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(
-                                        evento.target.value
-                                    )
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="fecha_desc">
+                                    Fecha: más reciente
+                                </option>
+
+                                <option value="fecha_asc">
+                                    Fecha: más antigua
+                                </option>
+
+                                <option value="suministro_asc">
+                                    Suministro A-Z
+                                </option>
+
+                                <option value="suministro_desc">
+                                    Suministro Z-A
+                                </option>
+
+                                <option value="cantidad_asc">
+                                    Cantidad: menor a mayor
+                                </option>
+
+                                <option value="cantidad_desc">
+                                    Cantidad: mayor a menor
+                                </option>
+                            </select>
 
                         </div>
 

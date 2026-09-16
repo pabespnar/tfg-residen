@@ -147,9 +147,16 @@
     text-align: center;
 }
 
-.bajas-buscador {
+.bajas-controles {
     margin-bottom: 15px;
 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.bajas-buscador {
     display: flex;
     justify-content: flex-start;
 }
@@ -208,4 +215,35 @@
 
 .bajas-buscador-input input::placeholder {
     color: #888;
+}
+
+.bajas-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bajas-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.bajas-ordenacion select {
+    padding: 10px 12px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background-color: white;
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.bajas-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
 }

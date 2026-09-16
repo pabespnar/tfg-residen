@@ -13,6 +13,7 @@ const Suministros = () => {
     const [error, setError] = useState(null);
 
     const [terminoBusqueda, setTerminoBusqueda] = useState("");
+    const [orden, setOrden] = useState("nombre_asc");
 
     const [paginaCategorias, setPaginaCategorias] = useState(1);
 
@@ -97,9 +98,43 @@ const Suministros = () => {
         })
         .filter(Boolean);
 
+    const obtenerNumeroSuministrosCategoria = (categoriaId) => {
+        const categoria = categorias.find(
+            (categoria) => categoria.id === categoriaId
+        );
+
+        return (categoria?.suministros || []).length;
+    };
+
+    const categoriasOrdenadas = [...categoriasFiltradas].sort((a, b) => {
+        const nombreA = normalizarTexto(a.nombre || "");
+        const nombreB = normalizarTexto(b.nombre || "");
+
+        const suministrosA = obtenerNumeroSuministrosCategoria(a.id);
+        const suministrosB = obtenerNumeroSuministrosCategoria(b.id);
+
+        if (orden === "nombre_asc") {
+            return nombreA.localeCompare(nombreB);
+        }
+
+        if (orden === "nombre_desc") {
+            return nombreB.localeCompare(nombreA);
+        }
+
+        if (orden === "suministros_asc") {
+            return suministrosA - suministrosB;
+        }
+
+        if (orden === "suministros_desc") {
+            return suministrosB - suministrosA;
+        }
+
+        return 0;
+    });
+
     useEffect(() => {
         setPaginaCategorias(1);
-    }, [terminoBusqueda]);
+    }, [terminoBusqueda, orden]);
 
     const obtenerCategorias = async () => {
         try {
@@ -447,13 +482,13 @@ const Suministros = () => {
     const indicePrimeraCategoria =
         indiceUltimaCategoria - categoriasPorPagina;
 
-    const categoriasActuales = categoriasFiltradas.slice(
+    const categoriasActuales = categoriasOrdenadas.slice(
         indicePrimeraCategoria,
         indiceUltimaCategoria
     );
 
     const totalPaginasCategorias = Math.ceil(
-        categoriasFiltradas.length / categoriasPorPagina
+        categoriasOrdenadas.length / categoriasPorPagina
     );
 
     return (
@@ -482,20 +517,52 @@ const Suministros = () => {
             )}
 
             {categorias.length > 0 && (
-                <div className="suministros-buscador">
-                    <div className="suministros-buscador-input">
-                        <FaSearch className="suministros-buscador-icono" />
+                <div className="suministros-controles">
+                    <div className="suministros-buscador">
+                        <div className="suministros-buscador-input">
+                            <FaSearch className="suministros-buscador-icono" />
 
-                        <input
-                            type="text"
-                            placeholder="Buscar por categoría o suministro..."
-                            value={terminoBusqueda}
+                            <input
+                                type="text"
+                                placeholder="Buscar por categoría o suministro..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    <div className="suministros-ordenacion">
+                        <label htmlFor="orden-suministros">
+                            Ordenar por:
+                        </label>
+
+                        <select
+                            id="orden-suministros"
+                            value={orden}
                             onChange={(evento) =>
-                                setTerminoBusqueda(
-                                    evento.target.value
-                                )
+                                setOrden(evento.target.value)
                             }
-                        />
+                        >
+                            <option value="nombre_asc">
+                                Nombre A-Z
+                            </option>
+
+                            <option value="nombre_desc">
+                                Nombre Z-A
+                            </option>
+
+                            <option value="suministros_asc">
+                                Número de suministros: menor a mayor
+                            </option>
+
+                            <option value="suministros_desc">
+                                Número de suministros: mayor a menor
+                            </option>
+                        </select>
                     </div>
                 </div>
             )}
