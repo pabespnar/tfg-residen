@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Residentes.css'
-import { FaPencilAlt } from 'react-icons/fa'
+import { FaPencilAlt, FaSearch } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
 function Residentes() {
@@ -10,22 +10,49 @@ function Residentes() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
+
     const [currentPage, setCurrentPage] = useState(1)
 
     const navigate = useNavigate()
 
     const itemsPerPage = 5
 
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const residentesFiltrados = residentes.filter((residente) => {
+
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombreCompleto = normalizarTexto(
+            `${residente.nombre} ${residente.apellido}`
+        )
+
+        const dniNie = normalizarTexto(
+            residente.dni_nie || ''
+        )
+
+        return (
+            texto === '' ||
+            nombreCompleto.includes(texto) ||
+            dniNie.includes(texto)
+        )
+    })
+
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
 
-    const residentesActuales = residentes.slice(
+    const residentesActuales = residentesFiltrados.slice(
         indexOfFirstItem,
         indexOfLastItem
     )
 
     const totalPages = Math.ceil(
-        residentes.length / itemsPerPage
+        residentesFiltrados.length / itemsPerPage
     )
 
     useEffect(() => {
@@ -68,6 +95,10 @@ function Residentes() {
         obtenerResidentes()
 
     }, [])
+
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [terminoBusqueda])
 
     if (loading) {
         return (
@@ -120,122 +151,152 @@ function Residentes() {
 
             ) : (
 
-                <div className="tabla-residentes-container">
+                <>
+                    <div className="residentes-buscador">
+                        <div className="residentes-buscador-input">
+                            <FaSearch className="residentes-buscador-icono" />
 
-                    <table className="tabla-residentes">
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre, apellido o DNI/NIE..."
+                                value={terminoBusqueda}
+                                onChange={(e) =>
+                                    setTerminoBusqueda(e.target.value)
+                                }
+                            />
+                        </div>
+                    </div>
 
-                        <thead>
+                    {residentesFiltrados.length === 0 ? (
 
-                            <tr>
-                                <th>Residente</th>
-                                <th>DNI/NIE</th>
-                                <th>País</th>
-                                <th>Habitación</th>
-                                <th>Fecha de alta</th>
-                                <th>Acciones</th>
-                            </tr>
+                        <div className="residentes-vacio">
+                            <p>
+                                No se han encontrado residentes que coincidan con la búsqueda.
+                            </p>
+                        </div>
 
-                        </thead>
+                    ) : (
 
-                        <tbody>
+                        <div className="tabla-residentes-container">
 
-                            {residentesActuales.map((residente) => (
+                            <table className="tabla-residentes">
 
-                                <tr
-                                    key={residente.id}
-                                    onClick={() =>
-                                        navigate(`/residentes/${residente.id}`)
-                                    }
-                                >
+                                <thead>
 
-                                    <td>
-                                        <div className="residente-nombre">
+                                    <tr>
+                                        <th>Residente</th>
+                                        <th>DNI/NIE</th>
+                                        <th>País</th>
+                                        <th>Habitación</th>
+                                        <th>Fecha de alta</th>
+                                        <th>Acciones</th>
+                                    </tr>
 
-                                            <strong>
-                                                {residente.nombre}{' '}
-                                                {residente.apellido}
-                                            </strong>
+                                </thead>
 
-                                        </div>
-                                    </td>
+                                <tbody>
 
-                                    <td>
-                                        {residente.dni_nie}
-                                    </td>
+                                    {residentesActuales.map((residente) => (
 
-                                    <td>
-                                        {residente.pais}
-                                    </td>
-
-                                    <td>
-                                        {residente.habitacion_nombre
-                                            ? residente.habitacion_nombre
-                                            : 'Sin habitación'}
-                                    </td>
-
-                                    <td>
-                                        {residente.f_alta}
-                                    </td>
-
-                                    <td>
-
-                                        <button
-                                            type="button"
-                                            className="residentes-editar-icono"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                navigate(
-                                                    `/residentes/${residente.id}/editar`
-                                                )
-                                            }}
-                                            title="Editar residente"
+                                        <tr
+                                            key={residente.id}
+                                            onClick={() =>
+                                                navigate(`/residentes/${residente.id}`)
+                                            }
                                         >
-                                            <FaPencilAlt />
-                                        </button>
 
-                                    </td>
+                                            <td>
+                                                <div className="residente-nombre">
 
-                                </tr>
+                                                    <strong>
+                                                        {residente.nombre}{' '}
+                                                        {residente.apellido}
+                                                    </strong>
 
-                            ))}
+                                                </div>
+                                            </td>
 
-                        </tbody>
+                                            <td>
+                                                {residente.dni_nie}
+                                            </td>
 
-                    </table>
+                                            <td>
+                                                {residente.pais}
+                                            </td>
 
-                    {totalPages > 1 && (
+                                            <td>
+                                                {residente.habitacion_nombre
+                                                    ? residente.habitacion_nombre
+                                                    : 'Sin habitación'}
+                                            </td>
 
-                        <div className="residentes-paginacion">
+                                            <td>
+                                                {residente.f_alta}
+                                            </td>
 
-                            <button
-                                type="button"
-                                disabled={currentPage === 1}
-                                onClick={() =>
-                                    setCurrentPage(prev => prev - 1)
-                                }
-                            >
-                                Anterior
-                            </button>
+                                            <td>
 
-                            <span>
-                                Página {currentPage} de {totalPages}
-                            </span>
+                                                <button
+                                                    type="button"
+                                                    className="residentes-editar-icono"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        navigate(
+                                                            `/residentes/${residente.id}/editar`
+                                                        )
+                                                    }}
+                                                    title="Editar residente"
+                                                >
+                                                    <FaPencilAlt />
+                                                </button>
 
-                            <button
-                                type="button"
-                                disabled={currentPage === totalPages}
-                                onClick={() =>
-                                    setCurrentPage(prev => prev + 1)
-                                }
-                            >
-                                Siguiente
-                            </button>
+                                            </td>
+
+                                        </tr>
+
+                                    ))}
+
+                                </tbody>
+
+                            </table>
+
+                            {totalPages > 1 && (
+
+                                <div className="residentes-paginacion">
+
+                                    <button
+                                        type="button"
+                                        disabled={currentPage === 1}
+                                        onClick={() =>
+                                            setCurrentPage(prev => prev - 1)
+                                        }
+                                    >
+                                        Anterior
+                                    </button>
+
+                                    <span>
+                                        Página {currentPage} de {totalPages}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() =>
+                                            setCurrentPage(prev => prev + 1)
+                                        }
+                                    >
+                                        Siguiente
+                                    </button>
+
+                                </div>
+
+                            )}
 
                         </div>
 
                     )}
 
-                </div>
+                </>
 
             )}
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaPencilAlt, FaTrash } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaSearch  } from "react-icons/fa";
 
 import "./ModulosYHabitaciones.css";
 
@@ -11,6 +11,8 @@ const ModulosYHabitaciones = () => {
     const [modulos, setModulos] = useState([]);
     const [habitaciones, setHabitaciones] = useState({});
     const [error, setError] = useState(null);
+
+    const [terminoBusqueda, setTerminoBusqueda] = useState("");
 
     const [paginasHabitaciones, setPaginasHabitaciones] = useState({});
     const [paginaModulos, setPaginaModulos] = useState(1);
@@ -137,6 +139,25 @@ const ModulosYHabitaciones = () => {
 
         obtenerModulos();
     }, []);
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+    const modulosFiltrados = modulos.filter((modulo) => {
+        const texto = normalizarTexto(terminoBusqueda);
+
+        return (
+            texto === "" ||
+            normalizarTexto(modulo.nombre).includes(texto)
+        );
+    });
+
+    useEffect(() => {
+        setPaginaModulos(1);
+    }, [terminoBusqueda]);
 
     const validarFormulario = () => {
         const nuevosErrores = {};
@@ -880,13 +901,13 @@ const ModulosYHabitaciones = () => {
     const indicePrimerModulo =
         indiceUltimoModulo - modulosPorPagina;
 
-    const modulosActuales = modulos.slice(
+    const modulosActuales = modulosFiltrados.slice(
         indicePrimerModulo,
         indiceUltimoModulo
     );
 
     const totalPaginasModulos = Math.ceil(
-        modulos.length / modulosPorPagina
+        modulosFiltrados.length / modulosPorPagina
     );
 
     return (
@@ -915,246 +936,268 @@ const ModulosYHabitaciones = () => {
                 </p>
             )}
 
-            <div className="modulos-listado">
-                {modulosActuales.map((modulo) => {
-                    const habitacionesModulo =
-                        habitaciones[modulo.id] || [];
+            {modulos.length > 0 && (
+                <div className="modulos-buscador">
+                    <div className="modulos-buscador-input">
+                        <FaSearch className="modulos-buscador-icono" />
+                        <input
+                            type="text"
+                            placeholder="Buscar módulos..."
+                            value={terminoBusqueda}
+                            onChange={(e) => setTerminoBusqueda(e.target.value)}
+                        />
+                    </div>
+                </div>
+            )}
 
-                    const paginaActual =
-                        paginasHabitaciones[modulo.id] || 1;
+            {modulosFiltrados.length === 0 && modulos.length > 0 ? (
+                <div className="modulos-vacio">
+                    <p>
+                        No se han encontrado módulos que coincidan con la búsqueda.
+                    </p>
+                </div>
+            ) : (
+                <div className="modulos-listado">
+                    {modulosActuales.map((modulo) => {
+                        const habitacionesModulo =
+                            habitaciones[modulo.id] || [];
 
-                    const habitacionesPorPagina = 4;
+                        const paginaActual =
+                            paginasHabitaciones[modulo.id] || 1;
 
-                    const indiceUltimaHabitacion =
-                        paginaActual * habitacionesPorPagina;
+                        const habitacionesPorPagina = 4;
 
-                    const indicePrimeraHabitacion =
-                        indiceUltimaHabitacion -
-                        habitacionesPorPagina;
+                        const indiceUltimaHabitacion =
+                            paginaActual * habitacionesPorPagina;
 
-                    const habitacionesActuales =
-                        habitacionesModulo.slice(
-                            indicePrimeraHabitacion,
-                            indiceUltimaHabitacion
-                        );
+                        const indicePrimeraHabitacion =
+                            indiceUltimaHabitacion -
+                            habitacionesPorPagina;
 
-                    const totalPaginasHabitaciones =
-                        Math.ceil(
-                            habitacionesModulo.length /
-                                habitacionesPorPagina
-                        );
+                        const habitacionesActuales =
+                            habitacionesModulo.slice(
+                                indicePrimeraHabitacion,
+                                indiceUltimaHabitacion
+                            );
 
-                    return (
-                        <div
-                            className="modulo-card"
-                            key={modulo.id}
-                        >
-                            <div className="modulo-cabecera">
-                                <h2>
-                                    {modulo.nombre}
-                                </h2>
+                        const totalPaginasHabitaciones =
+                            Math.ceil(
+                                habitacionesModulo.length /
+                                    habitacionesPorPagina
+                            );
 
-                                <div className="modulo-acciones">
-                                    <button
-                                        type="button"
-                                        className="modulo-editar"
-                                        onClick={() =>
-                                            abrirEditarModulo(modulo)
-                                        }
-                                        title="Editar módulo"
-                                        aria-label="Editar módulo"
-                                    >
-                                        <FaPencilAlt />
-                                    </button>
+                        return (
+                            <div
+                                className="modulo-card"
+                                key={modulo.id}
+                            >
+                                <div className="modulo-cabecera">
+                                    <h2>
+                                        {modulo.nombre}
+                                    </h2>
 
-                                    <button
-                                        type="button"
-                                        className="modulo-eliminar"
-                                        onClick={() =>
-                                            abrirEliminarModulo(modulo)
-                                        }
-                                        title="Eliminar módulo"
-                                        aria-label="Eliminar módulo"
-                                    >
-                                        <FaTrash />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <p className="modulo-descripcion">
-                                {modulo.descripcion || "Sin descripción"}
-                            </p>
-
-                            <p className="modulo-habitaciones-max">
-                                Habitaciones:{" "}
-                                {habitacionesModulo.length} /{" "}
-                                {modulo.num_habitaciones_max}
-                            </p>
-
-                            <div className="modulo-contenido">
-                                <div className="habitaciones-titulo">
-                                    <h3>
-                                        Habitaciones
-                                    </h3>
-
-                                    <button
-                                        type="button"
-                                        className="habitacion-anadir"
-                                        onClick={() =>
-                                            abrirCrearHabitacion(modulo)
-                                        }
-                                        disabled={
-                                            habitacionesModulo.length >=
-                                            modulo.num_habitaciones_max
-                                        }
-                                        title={
-                                            habitacionesModulo.length >=
-                                            modulo.num_habitaciones_max
-                                                ? "El módulo ha alcanzado su máximo de habitaciones"
-                                                : "Añadir habitación"
-                                        }
-                                        aria-label="Añadir habitación"
-                                    >
-                                        +
-                                    </button>
-                                </div>
-
-                                <div className="habitaciones-bloques">
-                                    {habitacionesModulo.length === 0 ? (
-                                        <p className="habitaciones-bloques-vacio">
-                                            No hay habitaciones en este módulo.
-                                        </p>
-                                    ) : (
-                                        habitacionesActuales.map(
-                                            (habitacion) => {
-                                                const claseOcupacion =
-                                                    obtenerClaseOcupacion(
-                                                        habitacion
-                                                    );
-
-                                                const residentesActuales =
-                                                    Number(
-                                                        habitacion.residentes_actuales ||
-                                                            0
-                                                    );
-
-                                                const capacidad =
-                                                    Number(
-                                                        habitacion.capacidad
-                                                    );
-
-                                                return (
-                                                    <div
-                                                        className={`habitacion-bloque ${claseOcupacion}`}
-                                                        key={habitacion.id}
-                                                        onClick={() =>
-                                                            navigate(
-                                                                `/modulos/${modulo.id}/habitacion/${habitacion.id}`
-                                                            )
-                                                        }
-                                                    >
-                                                        <div className="habitacion-bloque-cabecera">
-                                                            <h4>
-                                                                {habitacion.nombre}
-                                                            </h4>
-
-                                                            <div className="modulo-acciones">
-                                                                <button
-                                                                    type="button"
-                                                                    className="modulo-editar"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        abrirEditarHabitacion(
-                                                                            habitacion
-                                                                        );
-                                                                    }}
-                                                                    title="Editar habitación"
-                                                                    aria-label="Editar habitación"
-                                                                >
-                                                                    <FaPencilAlt />
-                                                                </button>
-
-                                                                <button
-                                                                    type="button"
-                                                                    className="modulo-eliminar"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        abrirEliminarHabitacion(
-                                                                            habitacion
-                                                                        );
-                                                                    }}
-                                                                    title="Eliminar habitación"
-                                                                    aria-label="Eliminar habitación"
-                                                                >
-                                                                    <FaTrash />
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="habitacion-ocupacion">
-                                                            <span className="habitacion-residentes">
-                                                                {residentesActuales}
-                                                            </span>
-
-                                                            <span className="habitacion-capacidad">
-                                                                / {capacidad} residentes
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-                                        )
-                                    )}
-                                </div>
-
-                                {totalPaginasHabitaciones > 1 && (
-                                    <div className="habitaciones-paginacion">
+                                    <div className="modulo-acciones">
                                         <button
                                             type="button"
-                                            disabled={paginaActual === 1}
+                                            className="modulo-editar"
                                             onClick={() =>
-                                                setPaginasHabitaciones(
-                                                    (paginasActuales) => ({
-                                                        ...paginasActuales,
-                                                        [modulo.id]:
-                                                            paginaActual - 1,
-                                                    })
-                                                )
+                                                abrirEditarModulo(modulo)
                                             }
+                                            title="Editar módulo"
+                                            aria-label="Editar módulo"
                                         >
-                                            Anterior
+                                            <FaPencilAlt />
                                         </button>
 
-                                        <span>
-                                            Página {paginaActual} de{" "}
-                                            {totalPaginasHabitaciones}
-                                        </span>
-
                                         <button
                                             type="button"
-                                            disabled={
-                                                paginaActual ===
-                                                totalPaginasHabitaciones
-                                            }
+                                            className="modulo-eliminar"
                                             onClick={() =>
-                                                setPaginasHabitaciones(
-                                                    (paginasActuales) => ({
-                                                        ...paginasActuales,
-                                                        [modulo.id]:
-                                                            paginaActual + 1,
-                                                    })
-                                                )
+                                                abrirEliminarModulo(modulo)
                                             }
+                                            title="Eliminar módulo"
+                                            aria-label="Eliminar módulo"
                                         >
-                                            Siguiente
+                                            <FaTrash />
                                         </button>
                                     </div>
-                                )}
+                                </div>
+
+                                <p className="modulo-descripcion">
+                                    {modulo.descripcion || "Sin descripción"}
+                                </p>
+
+                                <p className="modulo-habitaciones-max">
+                                    Habitaciones:{" "}
+                                    {habitacionesModulo.length} /{" "}
+                                    {modulo.num_habitaciones_max}
+                                </p>
+
+                                <div className="modulo-contenido">
+                                    <div className="habitaciones-titulo">
+                                        <h3>
+                                            Habitaciones
+                                        </h3>
+
+                                        <button
+                                            type="button"
+                                            className="habitacion-anadir"
+                                            onClick={() =>
+                                                abrirCrearHabitacion(modulo)
+                                            }
+                                            disabled={
+                                                habitacionesModulo.length >=
+                                                modulo.num_habitaciones_max
+                                            }
+                                            title={
+                                                habitacionesModulo.length >=
+                                                modulo.num_habitaciones_max
+                                                    ? "El módulo ha alcanzado su máximo de habitaciones"
+                                                    : "Añadir habitación"
+                                            }
+                                            aria-label="Añadir habitación"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+
+                                    <div className="habitaciones-bloques">
+                                        {habitacionesModulo.length === 0 ? (
+                                            <p className="habitaciones-bloques-vacio">
+                                                No hay habitaciones en este módulo.
+                                            </p>
+                                        ) : (
+                                            habitacionesActuales.map(
+                                                (habitacion) => {
+                                                    const claseOcupacion =
+                                                        obtenerClaseOcupacion(
+                                                            habitacion
+                                                        );
+
+                                                    const residentesActuales =
+                                                        Number(
+                                                            habitacion.residentes_actuales ||
+                                                                0
+                                                        );
+
+                                                    const capacidad =
+                                                        Number(
+                                                            habitacion.capacidad
+                                                        );
+
+                                                    return (
+                                                        <div
+                                                            className={`habitacion-bloque ${claseOcupacion}`}
+                                                            key={habitacion.id}
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/modulos/${modulo.id}/habitacion/${habitacion.id}`
+                                                                )
+                                                            }
+                                                        >
+                                                            <div className="habitacion-bloque-cabecera">
+                                                                <h4>
+                                                                    {habitacion.nombre}
+                                                                </h4>
+
+                                                                <div className="modulo-acciones">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="modulo-editar"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            abrirEditarHabitacion(
+                                                                                habitacion
+                                                                            );
+                                                                        }}
+                                                                        title="Editar habitación"
+                                                                        aria-label="Editar habitación"
+                                                                    >
+                                                                        <FaPencilAlt />
+                                                                    </button>
+
+                                                                    <button
+                                                                        type="button"
+                                                                        className="modulo-eliminar"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            abrirEliminarHabitacion(
+                                                                                habitacion
+                                                                            );
+                                                                        }}
+                                                                        title="Eliminar habitación"
+                                                                        aria-label="Eliminar habitación"
+                                                                    >
+                                                                        <FaTrash />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="habitacion-ocupacion">
+                                                                <span className="habitacion-residentes">
+                                                                    {residentesActuales}
+                                                                </span>
+
+                                                                <span className="habitacion-capacidad">
+                                                                    / {capacidad} residentes
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                            )
+                                        )}
+                                    </div>
+
+                                    {totalPaginasHabitaciones > 1 && (
+                                        <div className="habitaciones-paginacion">
+                                            <button
+                                                type="button"
+                                                disabled={paginaActual === 1}
+                                                onClick={() =>
+                                                    setPaginasHabitaciones(
+                                                        (paginasActuales) => ({
+                                                            ...paginasActuales,
+                                                            [modulo.id]:
+                                                                paginaActual - 1,
+                                                        })
+                                                    )
+                                                }
+                                            >
+                                                Anterior
+                                            </button>
+
+                                            <span>
+                                                Página {paginaActual} de{" "}
+                                                {totalPaginasHabitaciones}
+                                            </span>
+
+                                            <button
+                                                type="button"
+                                                disabled={
+                                                    paginaActual ===
+                                                    totalPaginasHabitaciones
+                                                }
+                                                onClick={() =>
+                                                    setPaginasHabitaciones(
+                                                        (paginasActuales) => ({
+                                                            ...paginasActuales,
+                                                            [modulo.id]:
+                                                                paginaActual + 1,
+                                                        })
+                                                    )
+                                                }
+                                            >
+                                                Siguiente
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             {totalPaginasModulos > 1 && (
                 <div className="modulos-paginacion">
