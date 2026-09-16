@@ -41,6 +41,7 @@ function Pedidos() {
 
     const [paginaPedidos, setPaginaPedidos] = useState(1);
     const [terminoBusqueda, setTerminoBusqueda] = useState('');
+    const [orden, setOrden] = useState('fecha_desc');
 
     const navigate = useNavigate();
 
@@ -640,11 +641,85 @@ function Pedidos() {
     });
 
 
+    const pedidosOrdenados = [...pedidosFiltrados].sort((a, b) => {
+
+        const nombreA = normalizarTexto(
+            a.nombre || ''
+        );
+
+        const nombreB = normalizarTexto(
+            b.nombre || ''
+        );
+
+        const expedienteA = normalizarTexto(
+            a.expediente_nombre || ''
+        );
+
+        const expedienteB = normalizarTexto(
+            b.expediente_nombre || ''
+        );
+
+        const fechaA = new Date(
+            a.fecha || 0
+        ).getTime();
+
+        const fechaB = new Date(
+            b.fecha || 0
+        ).getTime();
+
+        const estadoA = !a.recibido
+            ? 0
+            : a.correcto
+                ? 1
+                : 2;
+
+        const estadoB = !b.recibido
+            ? 0
+            : b.correcto
+                ? 1
+                : 2;
+
+        if (orden === 'fecha_asc') {
+            return fechaA - fechaB;
+        }
+
+        if (orden === 'fecha_desc') {
+            return fechaB - fechaA;
+        }
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB);
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA);
+        }
+
+        if (orden === 'expediente_asc') {
+            return expedienteA.localeCompare(expedienteB);
+        }
+
+        if (orden === 'expediente_desc') {
+            return expedienteB.localeCompare(expedienteA);
+        }
+
+        if (orden === 'estado_asc') {
+            return estadoA - estadoB;
+        }
+
+        if (orden === 'estado_desc') {
+            return estadoB - estadoA;
+        }
+
+        return 0;
+    });
+
+
     useEffect(() => {
 
         setPaginaPedidos(1);
 
-    }, [terminoBusqueda]);
+    }, [terminoBusqueda, orden]);
 
 
     const pedidosPorPagina = 3;
@@ -655,13 +730,13 @@ function Pedidos() {
     const indicePrimerPedido =
         indiceUltimoPedido - pedidosPorPagina;
 
-    const pedidosActuales = pedidosFiltrados.slice(
+    const pedidosActuales = pedidosOrdenados.slice(
         indicePrimerPedido,
         indiceUltimoPedido
     );
 
     const totalPaginasPedidos = Math.ceil(
-        pedidosFiltrados.length / pedidosPorPagina
+        pedidosOrdenados.length / pedidosPorPagina
     );
 
 
@@ -740,22 +815,74 @@ function Pedidos() {
 
                 <>
 
-                    <div className="pedidos-buscador">
+                    <div className="pedidos-controles">
 
-                        <div className="pedidos-buscador-input">
+                        <div className="pedidos-buscador">
 
-                            <FaSearch className="pedidos-buscador-icono" />
+                            <div className="pedidos-buscador-input">
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por pedido o expediente..."
-                                value={terminoBusqueda}
+                                <FaSearch className="pedidos-buscador-icono" />
+
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por pedido o expediente..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(
+                                            evento.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div className="pedidos-ordenacion">
+
+                            <label htmlFor="orden-pedidos">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-pedidos"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(
-                                        evento.target.value
-                                    )
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="fecha_desc">
+                                    Fecha: más reciente
+                                </option>
+
+                                <option value="fecha_asc">
+                                    Fecha: más antigua
+                                </option>
+
+                                <option value="nombre_asc">
+                                    Pedido A-Z
+                                </option>
+
+                                <option value="nombre_desc">
+                                    Pedido Z-A
+                                </option>
+
+                                <option value="expediente_asc">
+                                    Expediente A-Z
+                                </option>
+
+                                <option value="expediente_desc">
+                                    Expediente Z-A
+                                </option>
+
+                                <option value="estado_asc">
+                                    Estado: pendientes primero
+                                </option>
+
+                                <option value="estado_desc">
+                                    Estado: recibidos primero
+                                </option>
+                            </select>
 
                         </div>
 

@@ -12,6 +12,7 @@ function SuministrosAdministracion() {
 
     const [paginaSuministros, setPaginaSuministros] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
 
     const suministrosPorPagina = 9
 
@@ -41,17 +42,55 @@ function SuministrosAdministracion() {
         )
     })
 
+    const suministrosOrdenados = [...suministrosFiltrados].sort((a, b) => {
+
+        const nombreA = normalizarTexto(a.nombre || '')
+        const nombreB = normalizarTexto(b.nombre || '')
+
+        const unidadA = normalizarTexto(a.unidad || '')
+        const unidadB = normalizarTexto(b.unidad || '')
+
+        const expedientesA = (a.expedientes || []).length
+        const expedientesB = (b.expedientes || []).length
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'unidad_asc') {
+            return unidadA.localeCompare(unidadB)
+        }
+
+        if (orden === 'unidad_desc') {
+            return unidadB.localeCompare(unidadA)
+        }
+
+        if (orden === 'expedientes_asc') {
+            return expedientesA - expedientesB
+        }
+
+        if (orden === 'expedientes_desc') {
+            return expedientesB - expedientesA
+        }
+
+        return 0
+    })
+
     useEffect(() => {
         setPaginaSuministros(1)
-    }, [terminoBusqueda])
+    }, [terminoBusqueda, orden])
 
-    const suministrosActuales = suministrosFiltrados.slice(
+    const suministrosActuales = suministrosOrdenados.slice(
         indicePrimerSuministro,
         indiceUltimoSuministro
     )
 
     const totalPaginasSuministros = Math.ceil(
-        suministrosFiltrados.length / suministrosPorPagina
+        suministrosOrdenados.length / suministrosPorPagina
     )
 
     const [modalCrearSuministroAbierto, setModalCrearSuministroAbierto] =
@@ -305,22 +344,66 @@ function SuministrosAdministracion() {
 
             {!cargando && !error && suministros.length > 0 && (
 
-                <div className="suministros-administracion-buscador">
+                <div className="suministros-administracion-controles">
 
-                    <div className="suministros-administracion-buscador-input">
+                    <div className="suministros-administracion-buscador">
 
-                        <FaSearch className="suministros-administracion-buscador-icono" />
+                        <div className="suministros-administracion-buscador-input">
 
-                        <input
-                            type="text"
-                            placeholder="Buscar por suministro..."
-                            value={terminoBusqueda}
+                            <FaSearch className="suministros-administracion-buscador-icono" />
+
+                            <input
+                                type="text"
+                                placeholder="Buscar por suministro..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+                    </div>
+
+                    <div className="suministros-administracion-ordenacion">
+
+                        <label htmlFor="orden-suministros-administracion">
+                            Ordenar por:
+                        </label>
+
+                        <select
+                            id="orden-suministros-administracion"
+                            value={orden}
                             onChange={(evento) =>
-                                setTerminoBusqueda(
-                                    evento.target.value
-                                )
+                                setOrden(evento.target.value)
                             }
-                        />
+                        >
+                            <option value="nombre_asc">
+                                Suministro A-Z
+                            </option>
+
+                            <option value="nombre_desc">
+                                Suministro Z-A
+                            </option>
+
+                            <option value="unidad_asc">
+                                Unidad A-Z
+                            </option>
+
+                            <option value="unidad_desc">
+                                Unidad Z-A
+                            </option>
+
+                            <option value="expedientes_asc">
+                                Número de expedientes: menor a mayor
+                            </option>
+
+                            <option value="expedientes_desc">
+                                Número de expedientes: mayor a menor
+                            </option>
+                        </select>
 
                     </div>
 

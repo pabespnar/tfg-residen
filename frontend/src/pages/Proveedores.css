@@ -562,6 +562,7 @@
     margin: 0 0 15px 0;
 
     color: #b71c1c;
+
     font-size: 14px;
 }
 
@@ -662,12 +663,45 @@
     text-align: center;
 }
 
-.proveedores-buscador {
+.proveedores-controles {
     max-width: 1000px;
     margin: 0 auto 15px auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
 
+.proveedores-buscador {
     display: flex;
     justify-content: flex-start;
+}
+
+.proveedores-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.proveedores-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.proveedores-ordenacion select {
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.proveedores-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
 }
 
 .proveedores-buscador-input {

@@ -15,6 +15,7 @@ function Proveedores() {
 
     const [paginaProveedores, setPaginaProveedores] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
 
     const normalizarTexto = (texto) =>
         texto
@@ -46,21 +47,90 @@ function Proveedores() {
         )
     })
 
+    const proveedoresOrdenados = [...proveedoresFiltrados].sort((a, b) => {
+
+        const nombreA = normalizarTexto(
+            a.nombre || ''
+        )
+
+        const nombreB = normalizarTexto(
+            b.nombre || ''
+        )
+
+        const cifA = normalizarTexto(
+            a.cif || ''
+        )
+
+        const cifB = normalizarTexto(
+            b.cif || ''
+        )
+
+        const correoA = normalizarTexto(
+            a.correo || ''
+        )
+
+        const correoB = normalizarTexto(
+            b.correo || ''
+        )
+
+        const expedientesA = Array.isArray(a.expedientes)
+            ? a.expedientes.length
+            : 0
+
+        const expedientesB = Array.isArray(b.expedientes)
+            ? b.expedientes.length
+            : 0
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'cif_asc') {
+            return cifA.localeCompare(cifB)
+        }
+
+        if (orden === 'cif_desc') {
+            return cifB.localeCompare(cifA)
+        }
+
+        if (orden === 'correo_asc') {
+            return correoA.localeCompare(correoB)
+        }
+
+        if (orden === 'correo_desc') {
+            return correoB.localeCompare(correoA)
+        }
+
+        if (orden === 'expedientes_asc') {
+            return expedientesA - expedientesB
+        }
+
+        if (orden === 'expedientes_desc') {
+            return expedientesB - expedientesA
+        }
+
+        return 0
+    })
+
     useEffect(() => {
         setPaginaProveedores(1)
-    }, [terminoBusqueda])
+    }, [terminoBusqueda, orden])
 
     const proveedoresPorPagina = 4
     const indiceUltimoProveedor = paginaProveedores * proveedoresPorPagina
     const indicePrimerProveedor = indiceUltimoProveedor - proveedoresPorPagina
 
-    const proveedoresActuales = proveedoresFiltrados.slice(
+    const proveedoresActuales = proveedoresOrdenados.slice(
         indicePrimerProveedor,
         indiceUltimoProveedor
     )
 
     const totalPaginasProveedores = Math.ceil(
-        proveedoresFiltrados.length / proveedoresPorPagina
+        proveedoresOrdenados.length / proveedoresPorPagina
     )
 
     const [mostrarEditarProveedor, setMostrarEditarProveedor] = useState(false);
@@ -546,20 +616,72 @@ function Proveedores() {
 
             {!cargando && !error && proveedores.length > 0 && (
 
-                <div className="proveedores-buscador">
+                <div className="proveedores-controles">
 
-                    <div className="proveedores-buscador-input">
+                    <div className="proveedores-buscador">
 
-                        <FaSearch className="proveedores-buscador-icono" />
+                        <div className="proveedores-buscador-input">
 
-                        <input
-                            type="text"
-                            placeholder="Buscar por proveedor, CIF o correo..."
-                            value={terminoBusqueda}
+                            <FaSearch className="proveedores-buscador-icono" />
+
+                            <input
+                                type="text"
+                                placeholder="Buscar por proveedor, CIF o correo..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(evento.target.value)
+                                }
+                            />
+
+                        </div>
+
+                    </div>
+
+                    <div className="proveedores-ordenacion">
+
+                        <label htmlFor="orden-proveedores">
+                            Ordenar por:
+                        </label>
+
+                        <select
+                            id="orden-proveedores"
+                            value={orden}
                             onChange={(evento) =>
-                                setTerminoBusqueda(evento.target.value)
+                                setOrden(evento.target.value)
                             }
-                        />
+                        >
+                            <option value="nombre_asc">
+                                Proveedor A-Z
+                            </option>
+
+                            <option value="nombre_desc">
+                                Proveedor Z-A
+                            </option>
+
+                            <option value="cif_asc">
+                                CIF A-Z
+                            </option>
+
+                            <option value="cif_desc">
+                                CIF Z-A
+                            </option>
+
+                            <option value="correo_asc">
+                                Correo A-Z
+                            </option>
+
+                            <option value="correo_desc">
+                                Correo Z-A
+                            </option>
+
+                            <option value="expedientes_asc">
+                                Número de expedientes: menor a mayor
+                            </option>
+
+                            <option value="expedientes_desc">
+                                Número de expedientes: mayor a menor
+                            </option>
+                        </select>
 
                     </div>
 

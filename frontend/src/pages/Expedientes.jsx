@@ -13,6 +13,7 @@ function Expedientes() {
     const [error, setError] = useState(null);
     const [paginaExpedientes, setPaginaExpedientes] = useState(1);
     const [terminoBusqueda, setTerminoBusqueda] = useState('');
+    const [orden, setOrden] = useState('fecha_inicio_desc');
 
     const navigate = useNavigate();
 
@@ -86,9 +87,111 @@ function Expedientes() {
     });
 
 
+    const expedientesOrdenados = [...expedientesFiltrados].sort((a, b) => {
+
+        const nombreA = normalizarTexto(
+            a.nombre || ''
+        );
+
+        const nombreB = normalizarTexto(
+            b.nombre || ''
+        );
+
+        const proveedorA = normalizarTexto(
+            a.proveedor_nombre || ''
+        );
+
+        const proveedorB = normalizarTexto(
+            b.proveedor_nombre || ''
+        );
+
+        const presupuestoA = Number(
+            a.presupuesto || 0
+        );
+
+        const presupuestoB = Number(
+            b.presupuesto || 0
+        );
+
+        const presupuestoRestanteA = Number(
+            a.presupuesto_restante || 0
+        );
+
+        const presupuestoRestanteB = Number(
+            b.presupuesto_restante || 0
+        );
+
+        const fechaInicioA = new Date(
+            a.fecha_inicio || 0
+        ).getTime();
+
+        const fechaInicioB = new Date(
+            b.fecha_inicio || 0
+        ).getTime();
+
+        const fechaFinalA = new Date(
+            a.fecha_final || 0
+        ).getTime();
+
+        const fechaFinalB = new Date(
+            b.fecha_final || 0
+        ).getTime();
+
+        if (orden === 'fecha_inicio_asc') {
+            return fechaInicioA - fechaInicioB;
+        }
+
+        if (orden === 'fecha_inicio_desc') {
+            return fechaInicioB - fechaInicioA;
+        }
+
+        if (orden === 'fecha_final_asc') {
+            return fechaFinalA - fechaFinalB;
+        }
+
+        if (orden === 'fecha_final_desc') {
+            return fechaFinalB - fechaFinalA;
+        }
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB);
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA);
+        }
+
+        if (orden === 'proveedor_asc') {
+            return proveedorA.localeCompare(proveedorB);
+        }
+
+        if (orden === 'proveedor_desc') {
+            return proveedorB.localeCompare(proveedorA);
+        }
+
+        if (orden === 'presupuesto_asc') {
+            return presupuestoA - presupuestoB;
+        }
+
+        if (orden === 'presupuesto_desc') {
+            return presupuestoB - presupuestoA;
+        }
+
+        if (orden === 'presupuesto_restante_asc') {
+            return presupuestoRestanteA - presupuestoRestanteB;
+        }
+
+        if (orden === 'presupuesto_restante_desc') {
+            return presupuestoRestanteB - presupuestoRestanteA;
+        }
+
+        return 0;
+    });
+
+
     useEffect(() => {
         setPaginaExpedientes(1);
-    }, [terminoBusqueda]);
+    }, [terminoBusqueda, orden]);
 
 
     const expedientesPorPagina = 3;
@@ -96,13 +199,13 @@ function Expedientes() {
     const indicePrimerExpediente =
         indiceUltimoExpediente - expedientesPorPagina;
 
-    const expedientesActuales = expedientesFiltrados.slice(
+    const expedientesActuales = expedientesOrdenados.slice(
         indicePrimerExpediente,
         indiceUltimoExpediente
     );
 
     const totalPaginasExpedientes = Math.ceil(
-        expedientesFiltrados.length / expedientesPorPagina
+        expedientesOrdenados.length / expedientesPorPagina
     );
 
 
@@ -157,22 +260,90 @@ function Expedientes() {
 
                 <>
 
-                    <div className="expedientes-buscador">
+                    <div className="expedientes-controles">
 
-                        <div className="expedientes-buscador-input">
+                        <div className="expedientes-buscador">
 
-                            <FaSearch className="expedientes-buscador-icono" />
+                            <div className="expedientes-buscador-input">
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por expediente o proveedor..."
-                                value={terminoBusqueda}
+                                <FaSearch className="expedientes-buscador-icono" />
+
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por expediente o proveedor..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(
+                                            evento.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div className="expedientes-ordenacion">
+
+                            <label htmlFor="orden-expedientes">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-expedientes"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(
-                                        evento.target.value
-                                    )
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="fecha_inicio_desc">
+                                    Fecha inicio: más reciente
+                                </option>
+
+                                <option value="fecha_inicio_asc">
+                                    Fecha inicio: más antigua
+                                </option>
+
+                                <option value="fecha_final_desc">
+                                    Fecha final: más reciente
+                                </option>
+
+                                <option value="fecha_final_asc">
+                                    Fecha final: más antigua
+                                </option>
+
+                                <option value="nombre_asc">
+                                    Expediente A-Z
+                                </option>
+
+                                <option value="nombre_desc">
+                                    Expediente Z-A
+                                </option>
+
+                                <option value="proveedor_asc">
+                                    Proveedor A-Z
+                                </option>
+
+                                <option value="proveedor_desc">
+                                    Proveedor Z-A
+                                </option>
+
+                                <option value="presupuesto_asc">
+                                    Presupuesto: menor a mayor
+                                </option>
+
+                                <option value="presupuesto_desc">
+                                    Presupuesto: mayor a menor
+                                </option>
+
+                                <option value="presupuesto_restante_asc">
+                                    Presupuesto restante: menor a mayor
+                                </option>
+
+                                <option value="presupuesto_restante_desc">
+                                    Presupuesto restante: mayor a menor
+                                </option>
+                            </select>
 
                         </div>
 
