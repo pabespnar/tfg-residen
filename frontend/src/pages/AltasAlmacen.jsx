@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AltasAlmacen.css'
 import { useNavigate } from 'react-router-dom'
+import { FaSearch } from 'react-icons/fa'
 
 function AltasAlmacen() {
 
@@ -11,6 +12,7 @@ function AltasAlmacen() {
     const [altaSeleccionada, setAltaSeleccionada] = useState(null)
     const [mostrarAlbaran, setMostrarAlbaran] = useState(false)
     const [paginaAltas, setPaginaAltas] = useState(1)
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
 
     const navigate = useNavigate()
 
@@ -71,15 +73,45 @@ function AltasAlmacen() {
             : `http://127.0.0.1:8000${altaSeleccionada.factura_albaran}`
     }
 
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const altasFiltradas = altas.filter((alta) => {
+
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombreSuministro = normalizarTexto(
+            alta.suministro_nombre || ''
+        )
+
+        return (
+            texto === '' ||
+            nombreSuministro.includes(texto)
+        )
+    })
+
+    useEffect(() => {
+        setPaginaAltas(1)
+    }, [terminoBusqueda])
+
     const altasPorPagina = 5
-    const indiceUltimaAlta = paginaAltas * altasPorPagina
-    const indicePrimeraAlta = indiceUltimaAlta - altasPorPagina
-    const altasActuales = altas.slice(
+
+    const indiceUltimaAlta =
+        paginaAltas * altasPorPagina
+
+    const indicePrimeraAlta =
+        indiceUltimaAlta - altasPorPagina
+
+    const altasActuales = altasFiltradas.slice(
         indicePrimeraAlta,
         indiceUltimaAlta
     )
+
     const totalPaginasAltas = Math.ceil(
-        altas.length / altasPorPagina
+        altasFiltradas.length / altasPorPagina
     )
 
     if (loading) {
@@ -113,108 +145,169 @@ function AltasAlmacen() {
             </div>
 
             {altas.length === 0 ? (
+
                 <div className="altas-vacio">
                     <p>
                         No hay altas de almacén registradas.
                     </p>
                 </div>
+
             ) : (
+
                 <>
-                    <div className="tabla-altas-container">
-                        <table className="tabla-altas">
-                            <thead>
-                                <tr>
-                                    <th>Suministro</th>
-                                    <th>Cantidad</th>
-                                    <th>Stock tras alta</th>
-                                    <th>Precio unidad</th>
-                                    <th>Pedido</th>
-                                    <th>Tipo</th>
-                                    <th>Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {altasActuales.map((alta) => (
-                                    <tr
-                                        key={alta.id}
-                                        onClick={() => {
-                                            setAltaSeleccionada(alta)
-                                            setMostrarAlbaran(false)
-                                        }}
-                                        style={{
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <td>{alta.suministro_nombre}</td>
 
-                                        <td>
-                                            +{alta.cantidad} {alta.suministro_unidad}
-                                        </td>
+                    <div className="altas-buscador">
 
-                                        <td>
-                                            {alta.stock_tras_alta} {alta.suministro_unidad}
-                                        </td>
+                        <div className="altas-buscador-input">
 
-                                        <td>
-                                            {alta.precio_unidad} €
-                                        </td>
+                            <FaSearch className="altas-buscador-icono" />
 
-                                        <td>
-                                            {alta.pedido_nombre}
-                                        </td>
+                            <input
+                                type="text"
+                                placeholder="Buscar por suministro..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
+                                }
+                            />
 
-                                        <td>
-                                            {alta.pedido_tipo === 'EXPEDIENTE'
-                                                ? 'Con expediente'
-                                                : 'Gasto general'}
-                                        </td>
+                        </div>
 
-                                        <td>
-                                            {alta.fecha}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
                     </div>
 
-                    {totalPaginasAltas > 1 && (
-                        <div className="altas-paginacion">
-                            <button
-                                type="button"
-                                disabled={paginaAltas === 1}
-                                onClick={() =>
-                                    setPaginaAltas(
-                                        (paginaActual) => paginaActual - 1
-                                    )
-                                }
-                            >
-                                Anterior
-                            </button>
+                    {altasFiltradas.length === 0 ? (
 
-                            <span>
-                                Página {paginaAltas} de {totalPaginasAltas}
-                            </span>
-
-                            <button
-                                type="button"
-                                disabled={
-                                    paginaAltas === totalPaginasAltas
-                                }
-                                onClick={() =>
-                                    setPaginaAltas(
-                                        (paginaActual) => paginaActual + 1
-                                    )
-                                }
-                            >
-                                Siguiente
-                            </button>
+                        <div className="altas-vacio">
+                            <p>
+                                No se han encontrado altas que coincidan con la búsqueda.
+                            </p>
                         </div>
+
+                    ) : (
+
+                        <>
+
+                            <div className="tabla-altas-container">
+
+                                <table className="tabla-altas">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Suministro</th>
+                                            <th>Cantidad</th>
+                                            <th>Stock tras alta</th>
+                                            <th>Precio unidad</th>
+                                            <th>Pedido</th>
+                                            <th>Tipo</th>
+                                            <th>Fecha</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {altasActuales.map((alta) => (
+
+                                            <tr
+                                                key={alta.id}
+                                                onClick={() => {
+                                                    setAltaSeleccionada(alta)
+                                                    setMostrarAlbaran(false)
+                                                }}
+                                                style={{
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+
+                                                <td>
+                                                    {alta.suministro_nombre}
+                                                </td>
+
+                                                <td>
+                                                    +{alta.cantidad} {alta.suministro_unidad}
+                                                </td>
+
+                                                <td>
+                                                    {alta.stock_tras_alta} {alta.suministro_unidad}
+                                                </td>
+
+                                                <td>
+                                                    {alta.precio_unidad} €
+                                                </td>
+
+                                                <td>
+                                                    {alta.pedido_nombre}
+                                                </td>
+
+                                                <td>
+                                                    {alta.pedido_tipo === 'EXPEDIENTE'
+                                                        ? 'Con expediente'
+                                                        : 'Gasto general'}
+                                                </td>
+
+                                                <td>
+                                                    {alta.fecha}
+                                                </td>
+
+                                            </tr>
+
+                                        ))}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                            {totalPaginasAltas > 1 && (
+                                <div className="altas-paginacion">
+
+                                    <button
+                                        type="button"
+                                        disabled={paginaAltas === 1}
+                                        onClick={() =>
+                                            setPaginaAltas(
+                                                (paginaActual) => paginaActual - 1
+                                            )
+                                        }
+                                    >
+                                        Anterior
+                                    </button>
+
+                                    <span>
+                                        Página {paginaAltas} de {totalPaginasAltas}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            paginaAltas === totalPaginasAltas
+                                        }
+                                        onClick={() =>
+                                            setPaginaAltas(
+                                                (paginaActual) => paginaActual + 1
+                                            )
+                                        }
+                                    >
+                                        Siguiente
+                                    </button>
+
+                                </div>
+                            )}
+
+                        </>
+
                     )}
+
                 </>
+
             )}
 
             <div className="altas-botones">
+
                 <button
                     type="button"
                     className="altas-volver"
@@ -222,6 +315,7 @@ function AltasAlmacen() {
                 >
                     Volver
                 </button>
+
             </div>
 
             {altaSeleccionada && (

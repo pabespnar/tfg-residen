@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './BajasAlmacen.css'
 import { useNavigate } from 'react-router-dom'
+import { FaSearch } from 'react-icons/fa'
 
 function BajasAlmacen() {
 
@@ -11,6 +12,7 @@ function BajasAlmacen() {
     const [bajaSeleccionada, setBajaSeleccionada] = useState(null)
 
     const [paginaBajas, setPaginaBajas] = useState(1)
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
 
     const navigate = useNavigate()
 
@@ -59,6 +61,30 @@ function BajasAlmacen() {
         setBajaSeleccionada(null)
     }
 
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const bajasFiltradas = bajas.filter((baja) => {
+
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombreSuministro = normalizarTexto(
+            baja.suministro_nombre || ''
+        )
+
+        return (
+            texto === '' ||
+            nombreSuministro.includes(texto)
+        )
+    })
+
+    useEffect(() => {
+        setPaginaBajas(1)
+    }, [terminoBusqueda])
+
     const bajasPorPagina = 5
 
     const indiceUltimaBaja =
@@ -67,13 +93,13 @@ function BajasAlmacen() {
     const indicePrimeraBaja =
         indiceUltimaBaja - bajasPorPagina
 
-    const bajasActuales = bajas.slice(
+    const bajasActuales = bajasFiltradas.slice(
         indicePrimeraBaja,
         indiceUltimaBaja
     )
 
     const totalPaginasBajas = Math.ceil(
-        bajas.length / bajasPorPagina
+        bajasFiltradas.length / bajasPorPagina
     )
 
     if (loading) {
@@ -124,111 +150,150 @@ function BajasAlmacen() {
             ) : (
 
                 <>
-                    <div className="tabla-bajas-container">
 
-                        <table className="tabla-bajas">
+                    <div className="bajas-buscador">
 
-                            <thead>
+                        <div className="bajas-buscador-input">
 
-                                <tr>
-                                    <th>Suministro</th>
-                                    <th>Cantidad</th>
-                                    <th>Stock tras baja</th>
-                                    <th>Tipo</th>
-                                    <th>Servicio</th>
-                                    <th>Fecha</th>
-                                </tr>
+                            <FaSearch className="bajas-buscador-icono" />
 
-                            </thead>
+                            <input
+                                type="text"
+                                placeholder="Buscar por suministro..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
+                                }
+                            />
 
-                            <tbody>
-
-                                {bajasActuales.map((baja) => (
-
-                                    <tr
-                                        key={baja.id}
-                                        onClick={() => {
-                                            setBajaSeleccionada(baja)
-                                        }}
-                                        style={{
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-
-                                        <td>
-                                            {baja.suministro_nombre}
-                                        </td>
-
-                                        <td>
-                                            −{baja.cantidad} {baja.suministro_unidad}
-                                        </td>
-
-                                        <td>
-                                            {baja.stock_tras_baja} {baja.suministro_unidad}
-                                        </td>
-
-                                        <td>
-                                            {baja.tipo === 'PACK'
-                                                ? 'Pack'
-                                                : 'Servicio'}
-                                        </td>
-
-                                        <td>
-                                            {baja.servicio
-                                                ? baja.servicio
-                                                : '—'}
-                                        </td>
-
-                                        <td>
-                                            {baja.fecha}
-                                        </td>
-
-                                    </tr>
-
-                                ))}
-
-                            </tbody>
-
-                        </table>
+                        </div>
 
                     </div>
 
-                    {totalPaginasBajas > 1 && (
-                        <div className="bajas-paginacion">
+                    {bajasFiltradas.length === 0 ? (
 
-                            <button
-                                type="button"
-                                disabled={paginaBajas === 1}
-                                onClick={() =>
-                                    setPaginaBajas(
-                                        (paginaActual) => paginaActual - 1
-                                    )
-                                }
-                            >
-                                Anterior
-                            </button>
-
-                            <span>
-                                Página {paginaBajas} de{" "}
-                                {totalPaginasBajas}
-                            </span>
-
-                            <button
-                                type="button"
-                                disabled={
-                                    paginaBajas === totalPaginasBajas
-                                }
-                                onClick={() =>
-                                    setPaginaBajas(
-                                        (paginaActual) => paginaActual + 1
-                                    )
-                                }
-                            >
-                                Siguiente
-                            </button>
-
+                        <div className="bajas-vacio">
+                            <p>
+                                No se han encontrado bajas que coincidan con la búsqueda.
+                            </p>
                         </div>
+
+                    ) : (
+
+                        <>
+
+                            <div className="tabla-bajas-container">
+
+                                <table className="tabla-bajas">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Suministro</th>
+                                            <th>Cantidad</th>
+                                            <th>Stock tras baja</th>
+                                            <th>Tipo</th>
+                                            <th>Servicio</th>
+                                            <th>Fecha</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {bajasActuales.map((baja) => (
+
+                                            <tr
+                                                key={baja.id}
+                                                onClick={() => {
+                                                    setBajaSeleccionada(baja)
+                                                }}
+                                                style={{
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+
+                                                <td>
+                                                    {baja.suministro_nombre}
+                                                </td>
+
+                                                <td>
+                                                    −{baja.cantidad} {baja.suministro_unidad}
+                                                </td>
+
+                                                <td>
+                                                    {baja.stock_tras_baja} {baja.suministro_unidad}
+                                                </td>
+
+                                                <td>
+                                                    {baja.tipo === 'PACK'
+                                                        ? 'Pack'
+                                                        : 'Servicio'}
+                                                </td>
+
+                                                <td>
+                                                    {baja.servicio
+                                                        ? baja.servicio
+                                                        : '—'}
+                                                </td>
+
+                                                <td>
+                                                    {baja.fecha}
+                                                </td>
+
+                                            </tr>
+
+                                        ))}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                            {totalPaginasBajas > 1 && (
+                                <div className="bajas-paginacion">
+
+                                    <button
+                                        type="button"
+                                        disabled={paginaBajas === 1}
+                                        onClick={() =>
+                                            setPaginaBajas(
+                                                (paginaActual) => paginaActual - 1
+                                            )
+                                        }
+                                    >
+                                        Anterior
+                                    </button>
+
+                                    <span>
+                                        Página {paginaBajas} de{" "}
+                                        {totalPaginasBajas}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            paginaBajas === totalPaginasBajas
+                                        }
+                                        onClick={() =>
+                                            setPaginaBajas(
+                                                (paginaActual) => paginaActual + 1
+                                            )
+                                        }
+                                    >
+                                        Siguiente
+                                    </button>
+
+                                </div>
+                            )}
+
+                        </>
+
                     )}
+
                 </>
 
             )}

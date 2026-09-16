@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Packs.css'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { FaSearch } from 'react-icons/fa'
 
 function Packs() {
 
@@ -11,6 +12,8 @@ function Packs() {
     const [packs, setPacks] = useState([])
     const [suministros, setSuministros] = useState([])
     const [categorias, setCategorias] = useState([])
+
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
 
     const [paginaPacks, setPaginaPacks] = useState(1)
 
@@ -27,6 +30,45 @@ function Packs() {
     const [errores, setErrores] = useState({})
     const [error, setError] = useState('')
     const [mensaje, setMensaje] = useState('')
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const packsFiltrados = packs.filter((pack) => {
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombrePack = normalizarTexto(
+            pack.nombre || ''
+        )
+
+        const descripcionPack = normalizarTexto(
+            pack.descripcion || ''
+        )
+
+        const coincideSuministro = (
+            pack.contenido || []
+        ).some((contenido) => {
+            const nombreSuministro = normalizarTexto(
+                contenido.suministro_nombre || ''
+            )
+
+            return nombreSuministro.includes(texto)
+        })
+
+        return (
+            texto === '' ||
+            nombrePack.includes(texto) ||
+            descripcionPack.includes(texto) ||
+            coincideSuministro
+        )
+    })
+
+    useEffect(() => {
+        setPaginaPacks(1)
+    }, [terminoBusqueda])
 
     useEffect(() => {
         obtenerPacks()
@@ -369,13 +411,13 @@ function Packs() {
     const indicePrimerPack =
         indiceUltimoPack - packsPorPagina
 
-    const packsActuales = packs.slice(
+    const packsActuales = packsFiltrados.slice(
         indicePrimerPack,
         indiceUltimoPack
     )
 
     const totalPaginasPacks = Math.ceil(
-        packs.length / packsPorPagina
+        packsFiltrados.length / packsPorPagina
     )
 
     return (
@@ -410,10 +452,35 @@ function Packs() {
                 </p>
             )}
 
+            {packs.length > 0 && (
+                <div className="packs-buscador">
+                    <div className="packs-buscador-input">
+                        <FaSearch className="packs-buscador-icono" />
+
+                        <input
+                            type="text"
+                            placeholder="Buscar por nombre o descripción..."
+                            value={terminoBusqueda}
+                            onChange={(evento) =>
+                                setTerminoBusqueda(
+                                    evento.target.value
+                                )
+                            }
+                        />
+                    </div>
+                </div>
+            )}
+
             {packs.length === 0 ? (
                 <div className="packs-sin-elementos">
                     <p>
                         No hay packs registrados.
+                    </p>
+                </div>
+            ) : packsFiltrados.length === 0 ? (
+                <div className="packs-vacio">
+                    <p>
+                        No se han encontrado packs que coincidan con la búsqueda.
                     </p>
                 </div>
             ) : (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaPencilAlt, FaTrash } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaSearch } from "react-icons/fa";
 
 import "./Suministros.css";
 
@@ -11,6 +11,8 @@ const Suministros = () => {
     const [categorias, setCategorias] = useState([]);
     const [categoriasAbiertas, setCategoriasAbiertas] = useState({});
     const [error, setError] = useState(null);
+
+    const [terminoBusqueda, setTerminoBusqueda] = useState("");
 
     const [paginaCategorias, setPaginaCategorias] = useState(1);
 
@@ -35,6 +37,69 @@ const Suministros = () => {
     const [detallesEditar, setDetallesEditar] = useState("");
     const [errorEditarSuministro, setErrorEditarSuministro] = useState(null);
     const [editandoSuministro, setEditandoSuministro] = useState(false);
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+    const categoriasFiltradas = categorias
+        .map((categoria) => {
+            const texto = normalizarTexto(terminoBusqueda);
+
+            const nombreCategoria = normalizarTexto(
+                categoria.nombre || ""
+            );
+
+            const descripcionCategoria = normalizarTexto(
+                categoria.descripcion || ""
+            );
+
+            const coincideCategoria =
+                texto === "" ||
+                nombreCategoria.includes(texto) ||
+                descripcionCategoria.includes(texto);
+
+            const suministrosFiltrados = (
+                categoria.suministros || []
+            ).filter((suministro) => {
+                const nombreSuministro = normalizarTexto(
+                    suministro.nombre || ""
+                );
+
+                const detallesSuministro = normalizarTexto(
+                    suministro.detalles || ""
+                );
+
+                return (
+                    texto === "" ||
+                    nombreSuministro.includes(texto) ||
+                    detallesSuministro.includes(texto)
+                );
+            });
+
+            if (coincideCategoria) {
+                return {
+                    ...categoria,
+                    suministros: categoria.suministros || [],
+                };
+            }
+
+            if (suministrosFiltrados.length > 0) {
+                return {
+                    ...categoria,
+                    suministros: suministrosFiltrados,
+                };
+            }
+
+            return null;
+        })
+        .filter(Boolean);
+
+    useEffect(() => {
+        setPaginaCategorias(1);
+    }, [terminoBusqueda]);
 
     const obtenerCategorias = async () => {
         try {
@@ -382,13 +447,13 @@ const Suministros = () => {
     const indicePrimeraCategoria =
         indiceUltimaCategoria - categoriasPorPagina;
 
-    const categoriasActuales = categorias.slice(
+    const categoriasActuales = categoriasFiltradas.slice(
         indicePrimeraCategoria,
         indiceUltimaCategoria
     );
 
     const totalPaginasCategorias = Math.ceil(
-        categorias.length / categoriasPorPagina
+        categoriasFiltradas.length / categoriasPorPagina
     );
 
     return (
@@ -416,109 +481,140 @@ const Suministros = () => {
                 </p>
             )}
 
+            {categorias.length > 0 && (
+                <div className="suministros-buscador">
+                    <div className="suministros-buscador-input">
+                        <FaSearch className="suministros-buscador-icono" />
+
+                        <input
+                            type="text"
+                            placeholder="Buscar por categoría o suministro..."
+                            value={terminoBusqueda}
+                            onChange={(evento) =>
+                                setTerminoBusqueda(
+                                    evento.target.value
+                                )
+                            }
+                        />
+                    </div>
+                </div>
+            )}
+
             <div className="suministros-listado">
-                {categoriasActuales.map((categoria) => {
-                    const abierta =
-                        categoriasAbiertas[categoria.id] || false;
+                {categoriasFiltradas.length === 0 ? (
+                    <div className="suministros-vacio">
+                        <p>
+                            No se han encontrado categorías o suministros que coincidan con la búsqueda.
+                        </p>
+                    </div>
+                ) : (
+                    categoriasActuales.map((categoria) => {
+                        const abierta =
+                            categoriasAbiertas[categoria.id] || false;
 
-                    return (
-                        <div
-                            className="suministro-categoria-card"
-                            key={categoria.id}
-                        >
-                            <div className="suministro-categoria-cabecera">
+                        return (
+                            <div
+                                className="suministro-categoria-card"
+                                key={categoria.id}
+                            >
+                                <div className="suministro-categoria-cabecera">
 
-                                <button
-                                    className="suministro-categoria-boton"
-                                    onClick={() =>
-                                        alternarCategoria(categoria.id)
-                                    }
-                                >
-                                    <span>
-                                        {categoria.nombre}
-                                    </span>
+                                    <button
+                                        className="suministro-categoria-boton"
+                                        onClick={() =>
+                                            alternarCategoria(categoria.id)
+                                        }
+                                    >
+                                        <span>
+                                            {categoria.nombre}
+                                        </span>
 
-                                    <span>
-                                        {abierta ? "▼" : "▶"}
-                                    </span>
-                                </button>
+                                        <span>
+                                            {abierta ? "▼" : "▶"}
+                                        </span>
+                                    </button>
 
-                                {categoria.id !== "sin-asignar" && (
-                                    <div className="suministro-categoria-acciones">
-                                        <button
-                                            className="suministro-categoria-eliminar"
-                                            onClick={() =>
-                                                abrirEliminarCategoria(categoria)
-                                            }
-                                            disabled={eliminandoCategoria}
-                                        >
-                                            <FaTrash />
-                                        </button>
+                                    {categoria.id !== "sin-asignar" && (
+                                        <div className="suministro-categoria-acciones">
+                                            <button
+                                                className="suministro-categoria-eliminar"
+                                                onClick={() =>
+                                                    abrirEliminarCategoria(
+                                                        categoria
+                                                    )
+                                                }
+                                                disabled={eliminandoCategoria}
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                </div>
+
+                                {abierta && (
+                                    <div className="suministros-categoria-listado">
+                                        <p className="suministro-categoria-descripcion">
+                                            {categoria.descripcion ||
+                                                "Sin descripción"}
+                                        </p>
+
+                                        {categoria.suministros.length > 0 ? (
+                                            categoria.suministros.map(
+                                                (suministro) => (
+                                                    <div
+                                                        className="suministro-item"
+                                                        key={suministro.id}
+                                                    >
+                                                        <div
+                                                            className="suministro-item-informacion"
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/suministros/${suministro.id}`
+                                                                )
+                                                            }
+                                                        >
+                                                            <span className="suministro-nombre">
+                                                                {suministro.nombre}
+                                                            </span>
+
+                                                            <span className="suministro-stock">
+                                                                {suministro.stock}{" "}
+                                                                {suministro.unidad}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="suministro-acciones">
+                                                            <button
+                                                                className="suministro-editar"
+                                                                onClick={(evento) => {
+                                                                    evento.stopPropagation();
+                                                                    abrirEditarSuministro(
+                                                                        suministro,
+                                                                        categoria
+                                                                    );
+                                                                }}
+                                                                disabled={
+                                                                    editandoSuministro
+                                                                }
+                                                            >
+                                                                <FaPencilAlt />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            )
+                                        ) : (
+                                            <p className="suministros-sin-elementos">
+                                                No hay suministros en esta categoría.
+                                            </p>
+                                        )}
                                     </div>
                                 )}
-
                             </div>
-
-                            {abierta && (
-                                <div className="suministros-categoria-listado">
-                                    <p className="suministro-categoria-descripcion">
-                                        {categoria.descripcion ||
-                                            "Sin descripción"}
-                                    </p>
-
-                                    {categoria.suministros.length > 0 ? (
-                                        categoria.suministros.map(
-                                            (suministro) => (
-                                                <div
-                                                    className="suministro-item"
-                                                    key={suministro.id}
-                                                >
-                                                    <div
-                                                        className="suministro-item-informacion"
-                                                        onClick={() =>
-                                                            navigate(
-                                                                `/suministros/${suministro.id}`
-                                                            )
-                                                        }
-                                                    >
-                                                        <span className="suministro-nombre">
-                                                            {suministro.nombre}
-                                                        </span>
-
-                                                        <span className="suministro-stock">
-                                                            {suministro.stock}{" "}
-                                                            {suministro.unidad}
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="suministro-acciones">
-                                                        <button
-                                                            className="suministro-editar"
-                                                            onClick={(evento) => {
-                                                                evento.stopPropagation();
-                                                                abrirEditarSuministro(
-                                                                    suministro,
-                                                                    categoria
-                                                                );
-                                                            }}
-                                                            disabled={editandoSuministro}
-                                                        >
-                                                            <FaPencilAlt />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )
-                                        )
-                                    ) : (
-                                        <p className="suministros-sin-elementos">
-                                            No hay suministros en esta categoría.
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                        );
+                    })
+                )}
             </div>
 
             {totalPaginasCategorias > 1 && (

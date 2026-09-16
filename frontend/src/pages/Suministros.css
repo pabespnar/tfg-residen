@@ -615,3 +615,92 @@
     min-width: 120px;
     text-align: center;
 }
+
+/* Buscador */
+
+.suministros-buscador {
+    max-width: 1000px;
+    margin: 0 auto 15px auto;
+
+    display: flex;
+    justify-content: flex-start;
+}
+
+.suministros-buscador-input {
+    width: 320px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 10px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background-color: white;
+
+    box-sizing: border-box;
+
+    transition: 0.2s ease;
+}
+
+.suministros-buscador-input:focus-within {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.suministros-buscador-icono {
+    color: #888;
+    font-size: 14px;
+
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.suministros-buscador-input input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+
+    padding: 10px 0;
+
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    background: transparent !important;
+
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    box-sizing: border-box;
+}
+
+.suministros-buscador-input input::placeholder {
+    color: #888;
+}
+
+/* Resultado vacío */
+
+.suministros-vacio {
+    grid-column: 1 / -1;
+
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+    color: #666;
+
+    background-color: white;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
