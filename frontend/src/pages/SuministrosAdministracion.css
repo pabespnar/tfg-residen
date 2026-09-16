@@ -7,7 +7,6 @@
 .suministros-administracion-titulo {
     max-width: 1000px;
     margin: 0 auto 30px auto;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -28,11 +27,9 @@
 .suministros-administracion-lista {
     max-width: 1000px;
     margin: 0 auto;
-
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-
     align-items: start;
 }
 
@@ -45,25 +42,19 @@
 
 .suministro-administracion-cabecera {
     width: 100%;
-
     display: flex;
     align-items: center;
 }
 
 .suministro-administracion-cabecera-boton {
     width: 100%;
-
     padding: 18px;
-
     border: none;
     background: none;
-
     display: flex;
     align-items: center;
-
     cursor: pointer;
     text-align: left;
-
     min-width: 0;
 }
 
@@ -74,42 +65,33 @@
 
 .suministro-administracion-informacion h2 {
     margin: 0 0 8px 0;
-
     color: #333;
     font-size: 17px;
 }
 
 .suministro-administracion-informacion p {
     margin: 3px 0;
-
     color: #666;
     font-size: 14px;
 }
 
 .suministro-administracion-flecha {
     margin-left: 15px;
-
     color: #1b5e20;
     font-size: 28px;
     line-height: 1;
-
     flex-shrink: 0;
 }
 
 .suministro-administracion-boton-eliminar {
     padding: 7px 12px;
-
     margin-right: 18px;
-
     border: 1px solid #b71c1c;
     border-radius: 6px;
-
     background-color: white;
     color: #b71c1c;
-
     font-size: 13px;
     cursor: pointer;
-
     transition: opacity 0.2s ease;
 }
 
@@ -124,20 +106,17 @@
 
 .suministro-administracion-expedientes {
     border-top: 1px solid #eee;
-
     padding: 18px;
 }
 
 .suministro-administracion-expedientes h3 {
     margin: 0 0 15px 0;
-
     color: #1b5e20;
     font-size: 16px;
 }
 
 .suministro-administracion-sin-expedientes {
     margin: 0;
-
     color: #777;
     font-size: 14px;
 }
@@ -150,10 +129,8 @@
 
 .suministro-administracion-expediente {
     padding: 12px 14px;
-
     background-color: #f7f7f7;
     border-radius: 7px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -162,26 +139,21 @@
 
 .suministro-administracion-expediente h4 {
     margin: 0 0 5px 0;
-
     color: #333;
     font-size: 14px;
 }
 
 .suministro-administracion-expediente p {
     margin: 3px 0;
-
     color: #777;
     font-size: 13px;
 }
 
 .suministro-administracion-estado {
     padding: 5px 10px;
-
     border-radius: 12px;
-
     font-size: 12px;
     font-weight: bold;
-
     white-space: nowrap;
 }
 
@@ -208,16 +180,12 @@
 .suministros-administracion-boton-anadir {
     width: 42px;
     height: 42px;
-
     border: none;
     border-radius: 50%;
-
     background-color: #1b5e20;
     color: white;
-
     font-size: 28px;
     line-height: 42px;
-
     cursor: pointer;
 }
 
@@ -229,33 +197,25 @@
     position: fixed;
     top: 0;
     left: 0;
-
     width: 100%;
     height: 100%;
-
     background-color: rgba(0, 0, 0, 0.4);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     z-index: 1000;
 }
 
 .suministros-administracion-modal-crear {
     width: 420px;
-
     background-color: white;
     border-radius: 10px;
-
     padding: 30px;
-
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .suministros-administracion-modal-crear h2 {
     margin: 0 0 25px 0;
-
     color: #1b5e20;
     font-size: 22px;
 }
@@ -266,9 +226,7 @@
 
 .suministros-administracion-modal-crear-campo label {
     display: block;
-
     margin-bottom: 7px;
-
     color: #333;
     font-size: 14px;
     font-weight: bold;
@@ -277,12 +235,9 @@
 .suministros-administracion-modal-crear-campo input {
     width: 100%;
     box-sizing: border-box;
-
     padding: 10px 12px;
-
     border: 1px solid #ccc;
     border-radius: 6px;
-
     font-size: 14px;
 }
 
@@ -293,7 +248,6 @@
 
 .suministros-administracion-modal-crear-error {
     margin: 0 0 15px 0;
-
     color: #b71c1c;
     font-size: 14px;
 }
@@ -302,17 +256,14 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-
     margin-top: 25px;
 }
 
 .suministros-administracion-modal-crear-cancelar,
 .suministros-administracion-modal-crear-confirmar {
     padding: 9px 18px;
-
     border: none;
     border-radius: 6px;
-
     font-size: 14px;
     cursor: pointer;
 }
@@ -335,44 +286,33 @@
     position: fixed;
     top: 0;
     left: 0;
-
     width: 100%;
     height: 100%;
-
     background-color: rgba(0, 0, 0, 0.45);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     z-index: 1000;
 }
 
 .eliminar-suministro-confirmacion {
     width: 450px;
-
     padding: 30px;
-
     background-color: white;
-
     border-radius: 10px;
-
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
     text-align: center;
 }
 
 .eliminar-suministro-confirmacion h2 {
     margin-top: 0;
     margin-bottom: 20px;
-
     color: #1b5e20;
     font-size: 22px;
 }
 
 .eliminar-suministro-confirmacion p {
     margin: 8px 0;
-
     color: #555;
     font-size: 14px;
 }
@@ -383,7 +323,6 @@
 
 .eliminar-suministro-error {
     margin: 15px 0 !important;
-
     color: #b71c1c !important;
     font-size: 14px !important;
 }
@@ -393,57 +332,176 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-
     margin-top: 25px;
 }
 
 .eliminar-suministro-botones button {
     padding: 10px 18px;
-
     border: none;
     border-radius: 6px;
-
     font-size: 14px;
-
     cursor: pointer;
 }
 
 .eliminar-suministro-botones button:first-child {
     order: 1;
-
     padding: 5px 10px;
-
     background: none;
-
     color: #777;
-
     font-size: 12px;
 }
 
 .eliminar-suministro-botones button:first-child:hover {
     background: none;
-
     color: #333;
-
     opacity: 1;
 }
 
 .eliminar-suministro-botones button:last-child {
     order: 0;
-
     background-color: #c62828;
     color: white;
-
     font-weight: 500;
 }
 
 .eliminar-suministro-botones button:last-child:hover {
     background-color: #b71c1c;
-
     opacity: 1;
 }
 
 .eliminar-suministro-botones button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.suministros-administracion-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.suministros-administracion-paginacion button {
+    padding: 8px 16px;
+    border: 1px solid #1B5E20;
+    border-radius: 6px;
+    background: white;
+    color: #1B5E20;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.suministros-administracion-paginacion button:hover:not(:disabled) {
+    background: #1B5E20;
+    color: white;
+}
+
+.suministros-administracion-paginacion button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.suministros-administracion-paginacion span {
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    text-align: center;
+}
+
+.suministros-administracion-controles {
+    max-width: 1000px;
+    margin: 0 auto 15px auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.suministros-administracion-buscador {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.suministros-administracion-buscador-input {
+    width: 320px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    box-sizing: border-box;
+    transition: 0.2s ease;
+}
+
+.suministros-administracion-buscador-input:focus-within {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.suministros-administracion-buscador-icono {
+    color: #888;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.suministros-administracion-buscador-input input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 10px 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.suministros-administracion-buscador-input input::placeholder {
+    color: #888;
+}
+
+.suministros-administracion-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suministros-administracion-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.suministros-administracion-ordenacion select {
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.suministros-administracion-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.suministros-administracion-vacio {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px;
+    text-align: center;
+    color: #777;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }

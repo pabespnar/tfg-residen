@@ -577,3 +577,161 @@
 
     font-size: 13px;
 }
+
+.packs-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.packs-paginacion button {
+    padding: 8px 16px;
+    border: 1px solid #1B5E20;
+    border-radius: 6px;
+    background-color: white;
+    color: #1B5E20;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.packs-paginacion button:hover:not(:disabled) {
+    background-color: #1B5E20;
+    color: white;
+}
+
+.packs-paginacion button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.packs-paginacion span {
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    text-align: center;
+}
+
+.packs-controles {
+    max-width: 1000px;
+    margin: 0 auto 15px auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.packs-buscador {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.packs-buscador-input {
+    width: 320px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 10px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background-color: white;
+
+    box-sizing: border-box;
+
+    transition: 0.2s ease;
+}
+
+.packs-buscador-input:focus-within {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.packs-buscador-icono {
+    color: #888;
+    font-size: 14px;
+
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.packs-buscador-input input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+
+    padding: 10px 0;
+
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    background: transparent !important;
+
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    box-sizing: border-box;
+}
+
+.packs-buscador-input input::placeholder {
+    color: #888;
+}
+
+.packs-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.packs-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.packs-ordenacion select {
+    padding: 10px 12px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background-color: white;
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.packs-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.packs-vacio {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+    color: #666;
+
+    background-color: white;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}

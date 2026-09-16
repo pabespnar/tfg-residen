@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Residentes.css'
-import { FaPencilAlt } from 'react-icons/fa'
+import { FaPencilAlt, FaSearch } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
 function Residentes() {
@@ -10,7 +10,113 @@ function Residentes() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
+
+    const [currentPage, setCurrentPage] = useState(1)
+
     const navigate = useNavigate()
+
+    const itemsPerPage = 5
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const residentesFiltrados = residentes.filter((residente) => {
+
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombreCompleto = normalizarTexto(
+            `${residente.nombre} ${residente.apellido}`
+        )
+
+        const dniNie = normalizarTexto(
+            residente.dni_nie || ''
+        )
+
+        return (
+            texto === '' ||
+            nombreCompleto.includes(texto) ||
+            dniNie.includes(texto)
+        )
+    })
+
+    const residentesOrdenados = [...residentesFiltrados].sort((a, b) => {
+
+        let valorA = ''
+        let valorB = ''
+
+        switch (orden) {
+
+            case 'nombre_asc':
+            case 'nombre_desc':
+                valorA = normalizarTexto(a.nombre || '')
+                valorB = normalizarTexto(b.nombre || '')
+                break
+
+            case 'apellido_asc':
+            case 'apellido_desc':
+                valorA = normalizarTexto(a.apellido || '')
+                valorB = normalizarTexto(b.apellido || '')
+                break
+
+            case 'dni_asc':
+            case 'dni_desc':
+                valorA = normalizarTexto(a.dni_nie || '')
+                valorB = normalizarTexto(b.dni_nie || '')
+                break
+
+            case 'pais_asc':
+            case 'pais_desc':
+                valorA = normalizarTexto(a.pais || '')
+                valorB = normalizarTexto(b.pais || '')
+                break
+
+            case 'habitacion_asc':
+            case 'habitacion_desc':
+                valorA = normalizarTexto(
+                    a.habitacion_nombre || 'Sin habitación'
+                )
+                valorB = normalizarTexto(
+                    b.habitacion_nombre || 'Sin habitación'
+                )
+                break
+
+            case 'alta_asc':
+            case 'alta_desc':
+                valorA = a.f_alta || ''
+                valorB = b.f_alta || ''
+                break
+
+            default:
+                return 0
+        }
+
+        if (valorA < valorB) {
+            return orden.endsWith('_asc') ? -1 : 1
+        }
+
+        if (valorA > valorB) {
+            return orden.endsWith('_asc') ? 1 : -1
+        }
+
+        return 0
+    })
+
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+
+    const residentesActuales = residentesOrdenados.slice(
+        indexOfFirstItem,
+        indexOfLastItem
+    )
+
+    const totalPages = Math.ceil(
+        residentesOrdenados.length / itemsPerPage
+    )
 
     useEffect(() => {
 
@@ -52,6 +158,10 @@ function Residentes() {
         obtenerResidentes()
 
     }, [])
+
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [terminoBusqueda, orden])
 
     if (loading) {
         return (
@@ -104,90 +214,221 @@ function Residentes() {
 
             ) : (
 
-                <div className="tabla-residentes-container">
+                <>
 
-                    <table className="tabla-residentes">
+                    <div className="residentes-controles">
 
-                        <thead>
+                        <div className="residentes-buscador">
+                            <div className="residentes-buscador-input">
+                                <FaSearch className="residentes-buscador-icono" />
 
-                            <tr>
-                                <th>Residente</th>
-                                <th>DNI/NIE</th>
-                                <th>País</th>
-                                <th>Habitación</th>
-                                <th>Fecha de alta</th>
-                                <th>Acciones</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            {residentes.map((residente) => (
-
-                                <tr
-                                    key={residente.id}
-                                    onClick={() =>
-                                        navigate(`/residentes/${residente.id}`)
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre, apellido o DNI/NIE..."
+                                    value={terminoBusqueda}
+                                    onChange={(e) =>
+                                        setTerminoBusqueda(e.target.value)
                                     }
-                                >
+                                />
+                            </div>
+                        </div>
 
-                                    <td>
-                                        <div className="residente-nombre">
+                        <div className="residentes-ordenacion">
 
-                                            <strong>
-                                                {residente.nombre}{' '}
-                                                {residente.apellido}
-                                            </strong>
+                            <label htmlFor="orden-residentes">
+                                Ordenar por:
+                            </label>
 
-                                        </div>
-                                    </td>
+                            <select
+                                id="orden-residentes"
+                                value={orden}
+                                onChange={(e) =>
+                                    setOrden(e.target.value)
+                                }
+                            >
+                                <option value="nombre_asc">
+                                    Nombre A-Z
+                                </option>
 
-                                    <td>
-                                        {residente.dni_nie}
-                                    </td>
+                                <option value="nombre_desc">
+                                    Nombre Z-A
+                                </option>
 
-                                    <td>
-                                        {residente.pais}
-                                    </td>
+                                <option value="apellido_asc">
+                                    Apellidos A-Z
+                                </option>
 
-                                    <td>
-                                        {residente.habitacion_nombre
-                                            ? residente.habitacion_nombre
-                                            : 'Sin habitación'}
-                                    </td>
+                                <option value="apellido_desc">
+                                    Apellidos Z-A
+                                </option>
 
-                                    <td>
-                                        {residente.f_alta}
-                                    </td>
+                                <option value="dni_asc">
+                                    DNI/NIE A-Z
+                                </option>
 
-                                    <td>
+                                <option value="dni_desc">
+                                    DNI/NIE Z-A
+                                </option>
 
-                                        <button
-                                            type="button"
-                                            className="residentes-editar-icono"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                navigate(
-                                                    `/residentes/${residente.id}/editar`
-                                                )
-                                            }}
-                                            title="Editar residente"
+                                <option value="pais_asc">
+                                    País A-Z
+                                </option>
+
+                                <option value="pais_desc">
+                                    País Z-A
+                                </option>
+
+                                <option value="habitacion_asc">
+                                    Habitación A-Z
+                                </option>
+
+                                <option value="habitacion_desc">
+                                    Habitación Z-A
+                                </option>
+
+                                <option value="alta_asc">
+                                    Fecha de alta más antigua
+                                </option>
+
+                                <option value="alta_desc">
+                                    Fecha de alta más reciente
+                                </option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    {residentesFiltrados.length === 0 ? (
+
+                        <div className="residentes-vacio">
+                            <p>
+                                No se han encontrado residentes que coincidan con la búsqueda.
+                            </p>
+                        </div>
+
+                    ) : (
+
+                        <div className="tabla-residentes-container">
+
+                            <table className="tabla-residentes">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Residente</th>
+                                        <th>DNI/NIE</th>
+                                        <th>País</th>
+                                        <th>Habitación</th>
+                                        <th>Fecha de alta</th>
+                                        <th>Acciones</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {residentesActuales.map((residente) => (
+
+                                        <tr
+                                            key={residente.id}
+                                            onClick={() =>
+                                                navigate(`/residentes/${residente.id}`)
+                                            }
                                         >
-                                            <FaPencilAlt />
-                                        </button>
 
-                                    </td>
+                                            <td>
+                                                <div className="residente-nombre">
 
-                                </tr>
+                                                    <strong>
+                                                        {residente.nombre}{' '}
+                                                        {residente.apellido}
+                                                    </strong>
 
-                            ))}
+                                                </div>
+                                            </td>
 
-                        </tbody>
+                                            <td>
+                                                {residente.dni_nie}
+                                            </td>
 
-                    </table>
+                                            <td>
+                                                {residente.pais}
+                                            </td>
 
-                </div>
+                                            <td>
+                                                {residente.habitacion_nombre
+                                                    ? residente.habitacion_nombre
+                                                    : 'Sin habitación'}
+                                            </td>
+
+                                            <td>
+                                                {residente.f_alta}
+                                            </td>
+
+                                            <td>
+
+                                                <button
+                                                    type="button"
+                                                    className="residentes-editar-icono"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        navigate(
+                                                            `/residentes/${residente.id}/editar`
+                                                        )
+                                                    }}
+                                                    title="Editar residente"
+                                                >
+                                                    <FaPencilAlt />
+                                                </button>
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))}
+
+                                </tbody>
+
+                            </table>
+
+                            {totalPages > 1 && (
+
+                                <div className="residentes-paginacion">
+
+                                    <button
+                                        type="button"
+                                        disabled={currentPage === 1}
+                                        onClick={() =>
+                                            setCurrentPage(prev => prev - 1)
+                                        }
+                                    >
+                                        Anterior
+                                    </button>
+
+                                    <span>
+                                        Página {currentPage} de {totalPages}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() =>
+                                            setCurrentPage(prev => prev + 1)
+                                        }
+                                    >
+                                        Siguiente
+                                    </button>
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+                    )}
+
+                </>
 
             )}
 

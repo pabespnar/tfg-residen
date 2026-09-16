@@ -132,3 +132,136 @@
 .albaran-boton:hover {
     opacity: 0.9;
 }
+
+.altas-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.altas-paginacion button {
+    padding: 8px 16px;
+    border: 1px solid #1B5E20;
+    border-radius: 6px;
+    background: white;
+    color: #1B5E20;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.altas-paginacion button:hover:not(:disabled) {
+    background: #1B5E20;
+    color: white;
+}
+
+.altas-paginacion button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.altas-paginacion span {
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    text-align: center;
+}
+
+.altas-controles {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.altas-buscador {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.altas-buscador-input {
+    width: 320px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 10px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background-color: white;
+
+    box-sizing: border-box;
+
+    transition: 0.2s ease;
+}
+
+.altas-buscador-input:focus-within {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.altas-buscador-icono {
+    color: #888;
+    font-size: 14px;
+
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.altas-buscador-input input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+
+    padding: 10px 0;
+
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    background: transparent !important;
+
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    box-sizing: border-box;
+}
+
+.altas-buscador-input input::placeholder {
+    color: #888;
+}
+
+.altas-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.altas-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.altas-ordenacion select {
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.altas-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}

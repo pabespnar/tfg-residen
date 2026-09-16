@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { FaTrash } from 'react-icons/fa'
+import { FaTrash, FaSearch } from 'react-icons/fa'
 import './SuministrosAdministracion.css'
 
 function SuministrosAdministracion() {
@@ -10,18 +10,113 @@ function SuministrosAdministracion() {
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
 
+    const [paginaSuministros, setPaginaSuministros] = useState(1)
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
+
+    const suministrosPorPagina = 9
+
+    const indiceUltimoSuministro =
+        paginaSuministros * suministrosPorPagina
+
+    const indicePrimerSuministro =
+        indiceUltimoSuministro - suministrosPorPagina
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const suministrosFiltrados = suministros.filter((suministro) => {
+
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombreSuministro = normalizarTexto(
+            suministro.nombre || ''
+        )
+
+        return (
+            texto === '' ||
+            nombreSuministro.includes(texto)
+        )
+    })
+
+    const suministrosOrdenados = [...suministrosFiltrados].sort((a, b) => {
+
+        const nombreA = normalizarTexto(a.nombre || '')
+        const nombreB = normalizarTexto(b.nombre || '')
+
+        const unidadA = normalizarTexto(a.unidad || '')
+        const unidadB = normalizarTexto(b.unidad || '')
+
+        const expedientesA = (a.expedientes || []).length
+        const expedientesB = (b.expedientes || []).length
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'unidad_asc') {
+            return unidadA.localeCompare(unidadB)
+        }
+
+        if (orden === 'unidad_desc') {
+            return unidadB.localeCompare(unidadA)
+        }
+
+        if (orden === 'expedientes_asc') {
+            return expedientesA - expedientesB
+        }
+
+        if (orden === 'expedientes_desc') {
+            return expedientesB - expedientesA
+        }
+
+        return 0
+    })
+
+    useEffect(() => {
+        setPaginaSuministros(1)
+    }, [terminoBusqueda, orden])
+
+    const suministrosActuales = suministrosOrdenados.slice(
+        indicePrimerSuministro,
+        indiceUltimoSuministro
+    )
+
+    const totalPaginasSuministros = Math.ceil(
+        suministrosOrdenados.length / suministrosPorPagina
+    )
+
     const [modalCrearSuministroAbierto, setModalCrearSuministroAbierto] =
         useState(false)
-    const [nombreCrearSuministro, setNombreCrearSuministro] = useState('')
-    const [unidadCrearSuministro, setUnidadCrearSuministro] = useState('')
-    const [errorCrearSuministro, setErrorCrearSuministro] = useState('')
-    const [creandoSuministro, setCreandoSuministro] = useState(false)
+
+    const [nombreCrearSuministro, setNombreCrearSuministro] =
+        useState('')
+
+    const [unidadCrearSuministro, setUnidadCrearSuministro] =
+        useState('')
+
+    const [errorCrearSuministro, setErrorCrearSuministro] =
+        useState('')
+
+    const [creandoSuministro, setCreandoSuministro] =
+        useState(false)
 
     const [modalEliminarSuministroAbierto, setModalEliminarSuministroAbierto] =
         useState(false)
-    const [suministroEliminar, setSuministroEliminar] = useState(null)
+
+    const [suministroEliminar, setSuministroEliminar] =
+        useState(null)
+
     const [errorEliminarSuministro, setErrorEliminarSuministro] =
         useState('')
+
     const [eliminandoSuministro, setEliminandoSuministro] =
         useState(false)
 
@@ -247,144 +342,265 @@ function SuministrosAdministracion() {
                 </p>
             )}
 
-            {!cargando && !error && (
+            {!cargando && !error && suministros.length > 0 && (
 
-                <div className="suministros-administracion-lista">
+                <div className="suministros-administracion-controles">
 
-                    {suministros.map((suministro) => {
+                    <div className="suministros-administracion-buscador">
 
-                        const abierto =
-                            suministrosAbiertos[suministro.id] || false
+                        <div className="suministros-administracion-buscador-input">
 
-                        return (
+                            <FaSearch className="suministros-administracion-buscador-icono" />
 
-                            <div
-                                key={suministro.id}
-                                className={
-                                    abierto
-                                        ? 'suministro-administracion-card suministro-administracion-card-abierto'
-                                        : 'suministro-administracion-card'
+                            <input
+                                type="text"
+                                placeholder="Buscar por suministro..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
                                 }
-                            >
+                            />
 
-                                <div className="suministro-administracion-cabecera">
+                        </div>
 
-                                    <button
-                                        type="button"
-                                        className="suministro-administracion-cabecera-boton"
-                                        onClick={() =>
-                                            alternarSuministro(
-                                                suministro.id
-                                            )
-                                        }
-                                    >
+                    </div>
 
-                                        <div className="suministro-administracion-informacion">
+                    <div className="suministros-administracion-ordenacion">
 
-                                            <h2>
-                                                {suministro.nombre}
-                                            </h2>
+                        <label htmlFor="orden-suministros-administracion">
+                            Ordenar por:
+                        </label>
 
-                                            <p>
-                                                Unidad: {suministro.unidad}
-                                            </p>
+                        <select
+                            id="orden-suministros-administracion"
+                            value={orden}
+                            onChange={(evento) =>
+                                setOrden(evento.target.value)
+                            }
+                        >
+                            <option value="nombre_asc">
+                                Suministro A-Z
+                            </option>
 
-                                        </div>
+                            <option value="nombre_desc">
+                                Suministro Z-A
+                            </option>
 
-                                        <span className="suministro-administracion-flecha">
-                                            {abierto
-                                                ? '⌄'
-                                                : '›'}
-                                        </span>
+                            <option value="unidad_asc">
+                                Unidad A-Z
+                            </option>
 
-                                    </button>
+                            <option value="unidad_desc">
+                                Unidad Z-A
+                            </option>
 
-                                    <button
-                                        type="button"
-                                        className="suministro-administracion-boton-eliminar"
-                                        onClick={() =>
-                                            abrirModalEliminarSuministro(
-                                                suministro
-                                            )
-                                        }
-                                    >
-                                        <FaTrash />
-                                    </button>
+                            <option value="expedientes_asc">
+                                Número de expedientes: menor a mayor
+                            </option>
 
-                                </div>
+                            <option value="expedientes_desc">
+                                Número de expedientes: mayor a menor
+                            </option>
+                        </select>
 
-                                {abierto && (
-
-                                    <div className="suministro-administracion-expedientes">
-
-                                        <h3>
-                                            Expedientes
-                                        </h3>
-
-                                        {suministro.expedientes.length === 0 ? (
-
-                                            <p className="suministro-administracion-sin-expedientes">
-                                                Este suministro no tiene expedientes asociados.
-                                            </p>
-
-                                        ) : (
-
-                                            <div className="suministro-administracion-expedientes-lista">
-
-                                                {suministro.expedientes.map(
-                                                    (expediente) => (
-
-                                                        <div
-                                                            key={expediente.id}
-                                                            className="suministro-administracion-expediente"
-                                                        >
-
-                                                            <div>
-
-                                                                <h4>
-                                                                    {expediente.nombre}
-                                                                </h4>
-
-                                                                <p>
-                                                                    {expediente.proveedor_nombre}
-                                                                    {' '}
-                                                                    {expediente.precio_unidad} €/{suministro.unidad}
-                                                                </p>
-
-                                                            </div>
-
-                                                            <span
-                                                                className={
-                                                                    expediente.activo
-                                                                        ? 'suministro-administracion-estado activo'
-                                                                        : 'suministro-administracion-estado finalizado'
-                                                                }
-                                                            >
-                                                                {expediente.activo
-                                                                    ? 'Activo'
-                                                                    : 'Inactivo'}
-                                                            </span>
-
-                                                        </div>
-
-                                                    )
-                                                )}
-
-                                            </div>
-
-                                        )}
-
-                                    </div>
-
-                                )}
-
-                            </div>
-
-                        )
-                    })}
+                    </div>
 
                 </div>
 
+            )}
+
+            {!cargando && !error && (
+
+                suministros.length === 0 ? (
+
+                    <div className="suministros-administracion-vacio">
+                        No hay suministros registrados.
+                    </div>
+
+                ) : suministrosActuales.length === 0 ? (
+
+                    <div className="suministros-administracion-vacio">
+                        No se han encontrado suministros que coincidan con la búsqueda.
+                    </div>
+
+                ) : (
+
+                    <div className="suministros-administracion-lista">
+
+                        {suministrosActuales.map((suministro) => {
+
+                            const abierto =
+                                suministrosAbiertos[suministro.id] || false
+
+                            return (
+
+                                <div
+                                    key={suministro.id}
+                                    className={
+                                        abierto
+                                            ? 'suministro-administracion-card suministro-administracion-card-abierto'
+                                            : 'suministro-administracion-card'
+                                    }
+                                >
+
+                                    <div className="suministro-administracion-cabecera">
+
+                                        <button
+                                            type="button"
+                                            className="suministro-administracion-cabecera-boton"
+                                            onClick={() =>
+                                                alternarSuministro(
+                                                    suministro.id
+                                                )
+                                            }
+                                        >
+
+                                            <div className="suministro-administracion-informacion">
+
+                                                <h2>
+                                                    {suministro.nombre}
+                                                </h2>
+
+                                                <p>
+                                                    Unidad: {suministro.unidad}
+                                                </p>
+
+                                            </div>
+
+                                            <span className="suministro-administracion-flecha">
+                                                {abierto
+                                                    ? '⌄'
+                                                    : '›'}
+                                            </span>
+
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="suministro-administracion-boton-eliminar"
+                                            onClick={() =>
+                                                abrirModalEliminarSuministro(
+                                                    suministro
+                                                )
+                                            }
+                                        >
+                                            <FaTrash />
+                                        </button>
+
+                                    </div>
+
+                                    {abierto && (
+
+                                        <div className="suministro-administracion-expedientes">
+
+                                            <h3>
+                                                Expedientes
+                                            </h3>
+
+                                            {suministro.expedientes.length === 0 ? (
+
+                                                <p className="suministro-administracion-sin-expedientes">
+                                                    Este suministro no tiene expedientes asociados.
+                                                </p>
+
+                                            ) : (
+
+                                                <div className="suministro-administracion-expedientes-lista">
+
+                                                    {suministro.expedientes.map(
+                                                        (expediente) => (
+
+                                                            <div
+                                                                key={expediente.id}
+                                                                className="suministro-administracion-expediente"
+                                                            >
+
+                                                                <div>
+
+                                                                    <h4>
+                                                                        {expediente.nombre}
+                                                                    </h4>
+
+                                                                    <p>
+                                                                        {expediente.proveedor_nombre}
+                                                                        {' '}
+                                                                        {expediente.precio_unidad} €/{suministro.unidad}
+                                                                    </p>
+
+                                                                </div>
+
+                                                                <span
+                                                                    className={
+                                                                        expediente.activo
+                                                                            ? 'suministro-administracion-estado activo'
+                                                                            : 'suministro-administracion-estado finalizado'
+                                                                    }
+                                                                >
+                                                                    {expediente.activo
+                                                                        ? 'Activo'
+                                                                        : 'Inactivo'}
+                                                                </span>
+
+                                                            </div>
+
+                                                        )
+                                                    )}
+
+                                                </div>
+
+                                            )}
+
+                                        </div>
+
+                                    )}
+
+                                </div>
+
+                            )
+                        })}
+
+                    </div>
+
+                )
+
+            )}
+
+            {totalPaginasSuministros > 1 && (
+                <div className="suministros-administracion-paginacion">
+
+                    <button
+                        type="button"
+                        disabled={paginaSuministros === 1}
+                        onClick={() =>
+                            setPaginaSuministros(
+                                (paginaActual) => paginaActual - 1
+                            )
+                        }
+                    >
+                        Anterior
+                    </button>
+
+                    <span>
+                        Página {paginaSuministros} de {totalPaginasSuministros}
+                    </span>
+
+                    <button
+                        type="button"
+                        disabled={
+                            paginaSuministros === totalPaginasSuministros
+                        }
+                        onClick={() =>
+                            setPaginaSuministros(
+                                (paginaActual) => paginaActual + 1
+                            )
+                        }
+                    >
+                        Siguiente
+                    </button>
+
+                </div>
             )}
 
             {modalCrearSuministroAbierto && (

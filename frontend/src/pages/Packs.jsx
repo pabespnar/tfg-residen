@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Packs.css'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { FaSearch } from 'react-icons/fa'
 
 function Packs() {
 
@@ -11,6 +12,11 @@ function Packs() {
     const [packs, setPacks] = useState([])
     const [suministros, setSuministros] = useState([])
     const [categorias, setCategorias] = useState([])
+
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
+
+    const [paginaPacks, setPaginaPacks] = useState(1)
 
     const [packSeleccionado, setPackSeleccionado] = useState(null)
     const [mostrarCrearPack, setMostrarCrearPack] = useState(false)
@@ -25,6 +31,82 @@ function Packs() {
     const [errores, setErrores] = useState({})
     const [error, setError] = useState('')
     const [mensaje, setMensaje] = useState('')
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const packsFiltrados = packs.filter((pack) => {
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombrePack = normalizarTexto(
+            pack.nombre || ''
+        )
+
+        const descripcionPack = normalizarTexto(
+            pack.descripcion || ''
+        )
+
+        const coincideSuministro = (
+            pack.contenido || []
+        ).some((contenido) => {
+            const nombreSuministro = normalizarTexto(
+                contenido.suministro_nombre || ''
+            )
+
+            return nombreSuministro.includes(texto)
+        })
+
+        return (
+            texto === '' ||
+            nombrePack.includes(texto) ||
+            descripcionPack.includes(texto) ||
+            coincideSuministro
+        )
+    })
+
+    const packsOrdenados = [...packsFiltrados].sort((a, b) => {
+        const nombreA = normalizarTexto(a.nombre || '')
+        const nombreB = normalizarTexto(b.nombre || '')
+
+        const suministrosA = (a.contenido || []).length
+        const suministrosB = (b.contenido || []).length
+
+        const asignacionesA = Number(a.residentes_recibidos || 0)
+        const asignacionesB = Number(b.residentes_recibidos || 0)
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'suministros_asc') {
+            return suministrosA - suministrosB
+        }
+
+        if (orden === 'suministros_desc') {
+            return suministrosB - suministrosA
+        }
+
+        if (orden === 'asignaciones_asc') {
+            return asignacionesA - asignacionesB
+        }
+
+        if (orden === 'asignaciones_desc') {
+            return asignacionesB - asignacionesA
+        }
+
+        return 0
+    })
+
+    useEffect(() => {
+        setPaginaPacks(1)
+    }, [terminoBusqueda, orden])
 
     useEffect(() => {
         obtenerPacks()
@@ -359,6 +441,23 @@ function Packs() {
         return categoria.suministros || []
     }
 
+    const packsPorPagina = 9
+
+    const indiceUltimoPack =
+        paginaPacks * packsPorPagina
+
+    const indicePrimerPack =
+        indiceUltimoPack - packsPorPagina
+
+    const packsActuales = packsOrdenados.slice(
+        indicePrimerPack,
+        indiceUltimoPack
+    )
+
+    const totalPaginasPacks = Math.ceil(
+        packsOrdenados.length / packsPorPagina
+    )
+
     return (
         <div className="packs-container">
 
@@ -391,34 +490,131 @@ function Packs() {
                 </p>
             )}
 
+            {packs.length > 0 && (
+                <div className="packs-controles">
+                    <div className="packs-buscador">
+                        <div className="packs-buscador-input">
+                            <FaSearch className="packs-buscador-icono" />
+
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre o descripción..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    <div className="packs-ordenacion">
+                        <label htmlFor="orden-packs">
+                            Ordenar por:
+                        </label>
+
+                        <select
+                            id="orden-packs"
+                            value={orden}
+                            onChange={(evento) =>
+                                setOrden(evento.target.value)
+                            }
+                        >
+                            <option value="nombre_asc">
+                                Nombre A-Z
+                            </option>
+                            <option value="nombre_desc">
+                                Nombre Z-A
+                            </option>
+                            <option value="suministros_asc">
+                                Número de suministros: menor a mayor
+                            </option>
+                            <option value="suministros_desc">
+                                Número de suministros: mayor a menor
+                            </option>
+                            <option value="asignaciones_asc">
+                                Número de asignaciones: menor a mayor
+                            </option>
+                            <option value="asignaciones_desc">
+                                Número de asignaciones: mayor a menor
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            )}
+
             {packs.length === 0 ? (
                 <div className="packs-sin-elementos">
                     <p>
                         No hay packs registrados.
                     </p>
                 </div>
+            ) : packsFiltrados.length === 0 ? (
+                <div className="packs-vacio">
+                    <p>
+                        No se han encontrado packs que coincidan con la búsqueda.
+                    </p>
+                </div>
             ) : (
-                <div className="packs-listado">
-                    {packs.map((pack) => (
-                        <button
-                            type="button"
-                            className="pack-card"
-                            key={pack.id}
-                            onClick={() => abrirDetallePack(pack)}
-                        >
-                            <strong>
-                                {pack.nombre}
-                            </strong>
+                <>
+                    <div className="packs-listado">
+                        {packsActuales.map((pack) => (
+                            <button
+                                type="button"
+                                className="pack-card"
+                                key={pack.id}
+                                onClick={() => abrirDetallePack(pack)}
+                            >
+                                <strong>
+                                    {pack.nombre}
+                                </strong>
+
+                                <span>
+                                    {pack.contenido?.length || 0}{' '}
+                                    {pack.contenido?.length === 1
+                                        ? 'suministro'
+                                        : 'suministros'}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {totalPaginasPacks > 1 && (
+                        <div className="packs-paginacion">
+                            <button
+                                type="button"
+                                disabled={paginaPacks === 1}
+                                onClick={() =>
+                                    setPaginaPacks(
+                                        (paginaActual) => paginaActual - 1
+                                    )
+                                }
+                            >
+                                Anterior
+                            </button>
 
                             <span>
-                                {pack.contenido?.length || 0}{' '}
-                                {pack.contenido?.length === 1
-                                    ? 'suministro'
-                                    : 'suministros'}
+                                Página {paginaPacks} de{" "}
+                                {totalPaginasPacks}
                             </span>
-                        </button>
-                    ))}
-                </div>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    paginaPacks === totalPaginasPacks
+                                }
+                                onClick={() =>
+                                    setPaginaPacks(
+                                        (paginaActual) => paginaActual + 1
+                                    )
+                                }
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
 
             {packSeleccionado && (

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import './Proveedores.css'
-import { FaPencilAlt, FaTrash } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaSearch } from "react-icons/fa";
 
 function Proveedores() {
 
@@ -12,6 +12,126 @@ function Proveedores() {
     const [proveedoresAbiertos, setProveedoresAbiertos] = useState({})
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
+
+    const [paginaProveedores, setPaginaProveedores] = useState(1)
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [orden, setOrden] = useState('nombre_asc')
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const proveedoresFiltrados = proveedores.filter((proveedor) => {
+
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombreProveedor = normalizarTexto(
+            proveedor.nombre || ''
+        )
+
+        const cifProveedor = normalizarTexto(
+            proveedor.cif || ''
+        )
+
+        const correoProveedor = normalizarTexto(
+            proveedor.correo || ''
+        )
+
+        return (
+            texto === '' ||
+            nombreProveedor.includes(texto) ||
+            cifProveedor.includes(texto) ||
+            correoProveedor.includes(texto)
+        )
+    })
+
+    const proveedoresOrdenados = [...proveedoresFiltrados].sort((a, b) => {
+
+        const nombreA = normalizarTexto(
+            a.nombre || ''
+        )
+
+        const nombreB = normalizarTexto(
+            b.nombre || ''
+        )
+
+        const cifA = normalizarTexto(
+            a.cif || ''
+        )
+
+        const cifB = normalizarTexto(
+            b.cif || ''
+        )
+
+        const correoA = normalizarTexto(
+            a.correo || ''
+        )
+
+        const correoB = normalizarTexto(
+            b.correo || ''
+        )
+
+        const expedientesA = Array.isArray(a.expedientes)
+            ? a.expedientes.length
+            : 0
+
+        const expedientesB = Array.isArray(b.expedientes)
+            ? b.expedientes.length
+            : 0
+
+        if (orden === 'nombre_asc') {
+            return nombreA.localeCompare(nombreB)
+        }
+
+        if (orden === 'nombre_desc') {
+            return nombreB.localeCompare(nombreA)
+        }
+
+        if (orden === 'cif_asc') {
+            return cifA.localeCompare(cifB)
+        }
+
+        if (orden === 'cif_desc') {
+            return cifB.localeCompare(cifA)
+        }
+
+        if (orden === 'correo_asc') {
+            return correoA.localeCompare(correoB)
+        }
+
+        if (orden === 'correo_desc') {
+            return correoB.localeCompare(correoA)
+        }
+
+        if (orden === 'expedientes_asc') {
+            return expedientesA - expedientesB
+        }
+
+        if (orden === 'expedientes_desc') {
+            return expedientesB - expedientesA
+        }
+
+        return 0
+    })
+
+    useEffect(() => {
+        setPaginaProveedores(1)
+    }, [terminoBusqueda, orden])
+
+    const proveedoresPorPagina = 4
+    const indiceUltimoProveedor = paginaProveedores * proveedoresPorPagina
+    const indicePrimerProveedor = indiceUltimoProveedor - proveedoresPorPagina
+
+    const proveedoresActuales = proveedoresOrdenados.slice(
+        indicePrimerProveedor,
+        indiceUltimoProveedor
+    )
+
+    const totalPaginasProveedores = Math.ceil(
+        proveedoresOrdenados.length / proveedoresPorPagina
+    )
 
     const [mostrarEditarProveedor, setMostrarEditarProveedor] = useState(false);
     const [proveedorEditando, setProveedorEditando] = useState(null);
@@ -494,121 +614,204 @@ function Proveedores() {
                 </p>
             )}
 
+            {!cargando && !error && proveedores.length > 0 && (
+
+                <div className="proveedores-controles">
+
+                    <div className="proveedores-buscador">
+
+                        <div className="proveedores-buscador-input">
+
+                            <FaSearch className="proveedores-buscador-icono" />
+
+                            <input
+                                type="text"
+                                placeholder="Buscar por proveedor, CIF o correo..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(evento.target.value)
+                                }
+                            />
+
+                        </div>
+
+                    </div>
+
+                    <div className="proveedores-ordenacion">
+
+                        <label htmlFor="orden-proveedores">
+                            Ordenar por:
+                        </label>
+
+                        <select
+                            id="orden-proveedores"
+                            value={orden}
+                            onChange={(evento) =>
+                                setOrden(evento.target.value)
+                            }
+                        >
+                            <option value="nombre_asc">
+                                Proveedor A-Z
+                            </option>
+
+                            <option value="nombre_desc">
+                                Proveedor Z-A
+                            </option>
+
+                            <option value="cif_asc">
+                                CIF A-Z
+                            </option>
+
+                            <option value="cif_desc">
+                                CIF Z-A
+                            </option>
+
+                            <option value="correo_asc">
+                                Correo A-Z
+                            </option>
+
+                            <option value="correo_desc">
+                                Correo Z-A
+                            </option>
+
+                            <option value="expedientes_asc">
+                                Número de expedientes: menor a mayor
+                            </option>
+
+                            <option value="expedientes_desc">
+                                Número de expedientes: mayor a menor
+                            </option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+            )}
+
             {!cargando && !error && (
                 <div className="proveedores-lista">
 
-                    {proveedores.map((proveedor) => {
+                    {proveedoresActuales.length === 0 ? (
 
-                        const abierto =
-                            proveedoresAbiertos[proveedor.id] || false
+                        <div className="proveedores-vacio">
+                            No se han encontrado proveedores que coincidan con la búsqueda.
+                        </div>
 
-                        return (
-                            <div
-                                key={proveedor.id}
-                                className={`proveedor-card ${
-                                    abierto
-                                        ? 'proveedor-card-abierto'
-                                        : ''
-                                }`}
-                            >
+                    ) : (
 
-                                <div className="proveedor-cabecera">
+                        proveedoresActuales.map((proveedor) => {
 
-                                    <button
-                                        type="button"
-                                        className="proveedor-cabecera-boton"
-                                        onClick={() =>
-                                            alternarProveedor(proveedor.id)
-                                        }
-                                    >
+                            const abierto =
+                                proveedoresAbiertos[proveedor.id] || false
 
-                                        <div className="proveedor-foto">
-                                            {proveedor.foto ? (
-                                                <img
-                                                    src={`http://127.0.0.1:8000${proveedor.foto}`}
-                                                    alt={proveedor.nombre}
-                                                />
-                                            ) : (
-                                                <span>
-                                                    {proveedor.nombre?.charAt(0)}
-                                                </span>
-                                            )}
-                                        </div>
+                            return (
+                                <div
+                                    key={proveedor.id}
+                                    className={`proveedor-card ${
+                                        abierto
+                                            ? 'proveedor-card-abierto'
+                                            : ''
+                                    }`}
+                                >
 
-                                        <div className="proveedor-informacion">
-
-                                            <h2>
-                                                {proveedor.nombre}
-                                            </h2>
-
-                                            <p>
-                                                {proveedor.cif}
-                                            </p>
-
-                                            <p>
-                                                {proveedor.correo}
-                                            </p>
-
-                                        </div>
-
-                                        <span className="proveedor-flecha">
-                                            {abierto
-                                                ? '⌄'
-                                                : '›'}
-                                        </span>
-
-                                    </button>
-
-                                    <div className="proveedor-acciones">
+                                    <div className="proveedor-cabecera">
 
                                         <button
                                             type="button"
-                                            className="proveedor-editar"
-                                            onClick={(evento) => {
-                                                evento.stopPropagation();
-                                                abrirEditarProveedor(proveedor);
-                                            }}
-                                            disabled={editandoProveedor || eliminandoProveedor}
+                                            className="proveedor-cabecera-boton"
+                                            onClick={() =>
+                                                alternarProveedor(proveedor.id)
+                                            }
                                         >
-                                            <FaPencilAlt />
+
+                                            <div className="proveedor-foto">
+                                                {proveedor.foto ? (
+                                                    <img
+                                                        src={`http://127.0.0.1:8000${proveedor.foto}`}
+                                                        alt={proveedor.nombre}
+                                                    />
+                                                ) : (
+                                                    <span>
+                                                        {proveedor.nombre?.charAt(0)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="proveedor-informacion">
+
+                                                <h2>
+                                                    {proveedor.nombre}
+                                                </h2>
+
+                                                <p>
+                                                    {proveedor.cif}
+                                                </p>
+
+                                                <p>
+                                                    {proveedor.correo}
+                                                </p>
+
+                                            </div>
+
+                                            <span className="proveedor-flecha">
+                                                {abierto
+                                                    ? '⌄'
+                                                    : '›'}
+                                            </span>
+
                                         </button>
 
-                                        <button
-                                            type="button"
-                                            className="proveedor-eliminar"
-                                            onClick={(evento) => {
-                                                evento.stopPropagation();
-                                                abrirEliminarProveedor(proveedor);
-                                            }}
-                                            disabled={editandoProveedor || eliminandoProveedor}
-                                        >
-                                            <FaTrash />
-                                        </button>
+                                        <div className="proveedor-acciones">
+
+                                            <button
+                                                type="button"
+                                                className="proveedor-editar"
+                                                onClick={(evento) => {
+                                                    evento.stopPropagation();
+                                                    abrirEditarProveedor(proveedor);
+                                                }}
+                                                disabled={editandoProveedor || eliminandoProveedor}
+                                            >
+                                                <FaPencilAlt />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="proveedor-eliminar"
+                                                onClick={(evento) => {
+                                                    evento.stopPropagation();
+                                                    abrirEliminarProveedor(proveedor);
+                                                }}
+                                                disabled={editandoProveedor || eliminandoProveedor}
+                                            >
+                                                <FaTrash />
+                                            </button>
+
+                                        </div>
 
                                     </div>
 
-                                </div>
+                                    {abierto && (
 
-                                {abierto && (
+                                        <div className="proveedor-expedientes">
 
-                                    <div className="proveedor-expedientes">
+                                            <h3>
+                                                Expedientes
+                                            </h3>
 
-                                        <h3>
-                                            Expedientes
-                                        </h3>
+                                            {proveedor.expedientes.length === 0 ? (
 
-                                        {proveedor.expedientes.length === 0 ? (
+                                                <p className="proveedor-sin-expedientes">
+                                                    Este proveedor no tiene expedientes.
+                                                </p>
 
-                                            <p className="proveedor-sin-expedientes">
-                                                Este proveedor no tiene expedientes.
-                                            </p>
+                                            ) : (
 
-                                        ) : (
+                                                <div className="expedientes-lista">
 
-                                            <div className="expedientes-lista">
-
-                                                {proveedor.expedientes.map(
-                                                    (expediente) => (
+                                                    {proveedor.expedientes.map(
+                                                        (expediente) => (
 
                                                             <div
                                                                 key={expediente.id}
@@ -616,43 +819,80 @@ function Proveedores() {
                                                                 onClick={() => navigate(`/expedientes/${expediente.id}`)}
                                                             >
 
-                                                            <div>
-                                                                <h4>
-                                                                    {expediente.nombre}
-                                                                </h4>
+                                                                <div>
+                                                                    <h4>
+                                                                        {expediente.nombre}
+                                                                    </h4>
 
-                                                                <p>
-                                                                    {expediente.fecha_inicio}
-                                                                    {' - '}
-                                                                    {expediente.fecha_final}
-                                                                </p>
+                                                                    <p>
+                                                                        {expediente.fecha_inicio}
+                                                                        {' - '}
+                                                                        {expediente.fecha_final}
+                                                                    </p>
+                                                                </div>
+
+                                                                <span
+                                                                    className={
+                                                                        expediente.activo
+                                                                            ? 'ver-expediente-estado activo'
+                                                                            : 'ver-expediente-estado finalizado'
+                                                                    }
+                                                                >
+                                                                    {expediente.activo
+                                                                        ? 'Activo'
+                                                                        : 'Inactivo'}
+                                                                </span>
+
                                                             </div>
+                                                        )
+                                                    )}
 
-                                                            <span
-                                                                className={
-                                                                    expediente.activo
-                                                                        ? 'ver-expediente-estado activo'
-                                                                        : 'ver-expediente-estado finalizado'
-                                                                }
-                                                            >
-                                                                {expediente.activo
-                                                                    ? 'Activo'
-                                                                    : 'Inactivo'}
-                                                            </span>
+                                                </div>
+                                            )}
 
-                                                        </div>
-                                                    )
-                                                )}
+                                        </div>
+                                    )}
 
-                                            </div>
-                                        )}
+                                </div>
+                            )
+                        })
+                    )}
 
-                                    </div>
-                                )}
+                </div>
+            )}
 
-                            </div>
-                        )
-                    })}
+            {totalPaginasProveedores > 1 && (
+                <div className="proveedores-paginacion">
+
+                    <button
+                        type="button"
+                        disabled={paginaProveedores === 1}
+                        onClick={() =>
+                            setPaginaProveedores(
+                                (paginaActual) => paginaActual - 1
+                            )
+                        }
+                    >
+                        Anterior
+                    </button>
+
+                    <span>
+                        Página {paginaProveedores} de {totalPaginasProveedores}
+                    </span>
+
+                    <button
+                        type="button"
+                        disabled={
+                            paginaProveedores === totalPaginasProveedores
+                        }
+                        onClick={() =>
+                            setPaginaProveedores(
+                                (paginaActual) => paginaActual + 1
+                            )
+                        }
+                    >
+                        Siguiente
+                    </button>
 
                 </div>
             )}
