@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { FaSearch } from 'react-icons/fa';
 
 import './Expedientes.css';
 
@@ -11,6 +12,7 @@ function Expedientes() {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
     const [paginaExpedientes, setPaginaExpedientes] = useState(1);
+    const [terminoBusqueda, setTerminoBusqueda] = useState('');
 
     const navigate = useNavigate();
 
@@ -57,18 +59,50 @@ function Expedientes() {
     }, []);
 
 
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+
+
+    const expedientesFiltrados = expedientes.filter((expediente) => {
+
+        const texto = normalizarTexto(terminoBusqueda);
+
+        const nombreExpediente = normalizarTexto(
+            expediente.nombre || ''
+        );
+
+        const nombreProveedor = normalizarTexto(
+            expediente.proveedor_nombre || ''
+        );
+
+        return (
+            texto === '' ||
+            nombreExpediente.includes(texto) ||
+            nombreProveedor.includes(texto)
+        );
+    });
+
+
+    useEffect(() => {
+        setPaginaExpedientes(1);
+    }, [terminoBusqueda]);
+
+
     const expedientesPorPagina = 3;
     const indiceUltimoExpediente = paginaExpedientes * expedientesPorPagina;
     const indicePrimerExpediente =
         indiceUltimoExpediente - expedientesPorPagina;
 
-    const expedientesActuales = expedientes.slice(
+    const expedientesActuales = expedientesFiltrados.slice(
         indicePrimerExpediente,
         indiceUltimoExpediente
     );
 
     const totalPaginasExpedientes = Math.ceil(
-        expedientes.length / expedientesPorPagina
+        expedientesFiltrados.length / expedientesPorPagina
     );
 
 
@@ -122,139 +156,182 @@ function Expedientes() {
             {expedientes.length > 0 ? (
 
                 <>
-                    <div className="expedientes-lista">
 
-                        {expedientesActuales.map(expediente => (
+                    <div className="expedientes-buscador">
 
-                            <div
-                                className="expediente-card"
-                                key={expediente.id}
-                                onClick={() => navigate(`/expedientes/${expediente.id}`)}
-                            >
+                        <div className="expedientes-buscador-input">
 
-                                <div className="expediente-card-header">
+                            <FaSearch className="expedientes-buscador-icono" />
 
-                                    <div>
+                            <input
+                                type="text"
+                                placeholder="Buscar por expediente o proveedor..."
+                                value={terminoBusqueda}
+                                onChange={(evento) =>
+                                    setTerminoBusqueda(
+                                        evento.target.value
+                                    )
+                                }
+                            />
 
-                                        <h2>
-                                            {expediente.nombre}
-                                        </h2>
-
-                                        <span>
-                                            Proveedor: {expediente.proveedor_nombre}
-                                        </span>
-
-                                    </div>
-
-
-                                    <span
-                                        className={
-                                            expediente.activo
-                                                ? 'expediente-estado activo'
-                                                : 'expediente-estado finalizado'
-                                        }
-                                    >
-                                        {expediente.activo
-                                            ? 'Activo'
-                                            : 'Inactivo'}
-                                    </span>
-
-                                </div>
-
-
-                                <div className="expediente-card-fechas">
-
-                                    <span>
-                                        {expediente.fecha_inicio}
-                                    </span>
-
-                                    <span>
-                                        —
-                                    </span>
-
-                                    <span>
-                                        {expediente.fecha_final}
-                                    </span>
-
-                                </div>
-
-
-                                <div className="expediente-card-economia">
-
-                                    <div>
-
-                                        <span>
-                                            Presupuesto
-                                        </span>
-
-                                        <strong>
-                                            {Number(
-                                                expediente.presupuesto
-                                            ).toFixed(2)}
-                                            {' €'}
-                                        </strong>
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <span>
-                                            Presupuesto restante
-                                        </span>
-
-                                        <strong>
-                                            {Number(
-                                                expediente.presupuesto_restante
-                                            ).toFixed(2)}
-                                            {' €'}
-                                        </strong>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        ))}
+                        </div>
 
                     </div>
 
-                    {totalPaginasExpedientes > 1 && (
-                        <div className="expedientes-paginacion">
 
-                            <button
-                                type="button"
-                                disabled={paginaExpedientes === 1}
-                                onClick={() =>
-                                    setPaginaExpedientes(
-                                        (paginaActual) => paginaActual - 1
-                                    )
-                                }
-                            >
-                                Anterior
-                            </button>
+                    {expedientesFiltrados.length === 0 ? (
 
-                            <span>
-                                Página {paginaExpedientes} de {totalPaginasExpedientes}
-                            </span>
+                        <div className="expedientes-vacio">
 
-                            <button
-                                type="button"
-                                disabled={
-                                    paginaExpedientes === totalPaginasExpedientes
-                                }
-                                onClick={() =>
-                                    setPaginaExpedientes(
-                                        (paginaActual) => paginaActual + 1
-                                    )
-                                }
-                            >
-                                Siguiente
-                            </button>
+                            No se han encontrado expedientes que coincidan con la búsqueda.
 
                         </div>
+
+                    ) : (
+
+                        <>
+
+                            <div className="expedientes-lista">
+
+                                {expedientesActuales.map(expediente => (
+
+                                    <div
+                                        className="expediente-card"
+                                        key={expediente.id}
+                                        onClick={() =>
+                                            navigate(
+                                                `/expedientes/${expediente.id}`
+                                            )
+                                        }
+                                    >
+
+                                        <div className="expediente-card-header">
+
+                                            <div>
+
+                                                <h2>
+                                                    {expediente.nombre}
+                                                </h2>
+
+                                                <span>
+                                                    Proveedor: {expediente.proveedor_nombre}
+                                                </span>
+
+                                            </div>
+
+
+                                            <span
+                                                className={
+                                                    expediente.activo
+                                                        ? 'expediente-estado activo'
+                                                        : 'expediente-estado finalizado'
+                                                }
+                                            >
+                                                {expediente.activo
+                                                    ? 'Activo'
+                                                    : 'Inactivo'}
+                                            </span>
+
+                                        </div>
+
+
+                                        <div className="expediente-card-fechas">
+
+                                            <span>
+                                                {expediente.fecha_inicio}
+                                            </span>
+
+                                            <span>
+                                                —
+                                            </span>
+
+                                            <span>
+                                                {expediente.fecha_final}
+                                            </span>
+
+                                        </div>
+
+
+                                        <div className="expediente-card-economia">
+
+                                            <div>
+
+                                                <span>
+                                                    Presupuesto
+                                                </span>
+
+                                                <strong>
+                                                    {Number(
+                                                        expediente.presupuesto
+                                                    ).toFixed(2)}
+                                                    {' €'}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <span>
+                                                    Presupuesto restante
+                                                </span>
+
+                                                <strong>
+                                                    {Number(
+                                                        expediente.presupuesto_restante
+                                                    ).toFixed(2)}
+                                                    {' €'}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                ))}
+
+                            </div>
+
+                            {totalPaginasExpedientes > 1 && (
+                                <div className="expedientes-paginacion">
+
+                                    <button
+                                        type="button"
+                                        disabled={paginaExpedientes === 1}
+                                        onClick={() =>
+                                            setPaginaExpedientes(
+                                                (paginaActual) => paginaActual - 1
+                                            )
+                                        }
+                                    >
+                                        Anterior
+                                    </button>
+
+                                    <span>
+                                        Página {paginaExpedientes} de {totalPaginasExpedientes}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            paginaExpedientes === totalPaginasExpedientes
+                                        }
+                                        onClick={() =>
+                                            setPaginaExpedientes(
+                                                (paginaActual) => paginaActual + 1
+                                            )
+                                        }
+                                    >
+                                        Siguiente
+                                    </button>
+
+                                </div>
+                            )}
+                        </>
+
                     )}
+
                 </>
 
             ) : (

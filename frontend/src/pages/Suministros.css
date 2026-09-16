@@ -616,8 +616,6 @@
     text-align: center;
 }
 
-/* Buscador */
-
 .suministros-buscador {
     max-width: 1000px;
     margin: 0 auto 15px auto;
@@ -681,8 +679,6 @@
 .suministros-buscador-input input::placeholder {
     color: #888;
 }
-
-/* Resultado vacío */
 
 .suministros-vacio {
     grid-column: 1 / -1;

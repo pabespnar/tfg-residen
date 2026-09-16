@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import './Proveedores.css'
-import { FaPencilAlt, FaTrash } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaSearch } from "react-icons/fa";
 
 function Proveedores() {
 
@@ -14,15 +14,53 @@ function Proveedores() {
     const [error, setError] = useState('')
 
     const [paginaProveedores, setPaginaProveedores] = useState(1)
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
+
+    const normalizarTexto = (texto) =>
+        texto
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+
+    const proveedoresFiltrados = proveedores.filter((proveedor) => {
+
+        const texto = normalizarTexto(terminoBusqueda)
+
+        const nombreProveedor = normalizarTexto(
+            proveedor.nombre || ''
+        )
+
+        const cifProveedor = normalizarTexto(
+            proveedor.cif || ''
+        )
+
+        const correoProveedor = normalizarTexto(
+            proveedor.correo || ''
+        )
+
+        return (
+            texto === '' ||
+            nombreProveedor.includes(texto) ||
+            cifProveedor.includes(texto) ||
+            correoProveedor.includes(texto)
+        )
+    })
+
+    useEffect(() => {
+        setPaginaProveedores(1)
+    }, [terminoBusqueda])
+
     const proveedoresPorPagina = 4
     const indiceUltimoProveedor = paginaProveedores * proveedoresPorPagina
     const indicePrimerProveedor = indiceUltimoProveedor - proveedoresPorPagina
-    const proveedoresActuales = proveedores.slice(
+
+    const proveedoresActuales = proveedoresFiltrados.slice(
         indicePrimerProveedor,
         indiceUltimoProveedor
     )
+
     const totalPaginasProveedores = Math.ceil(
-        proveedores.length / proveedoresPorPagina
+        proveedoresFiltrados.length / proveedoresPorPagina
     )
 
     const [mostrarEditarProveedor, setMostrarEditarProveedor] = useState(false);
@@ -506,165 +544,197 @@ function Proveedores() {
                 </p>
             )}
 
+            {!cargando && !error && proveedores.length > 0 && (
+
+                <div className="proveedores-buscador">
+
+                    <div className="proveedores-buscador-input">
+
+                        <FaSearch className="proveedores-buscador-icono" />
+
+                        <input
+                            type="text"
+                            placeholder="Buscar por proveedor, CIF o correo..."
+                            value={terminoBusqueda}
+                            onChange={(evento) =>
+                                setTerminoBusqueda(evento.target.value)
+                            }
+                        />
+
+                    </div>
+
+                </div>
+
+            )}
+
             {!cargando && !error && (
                 <div className="proveedores-lista">
 
-                    {proveedoresActuales.map((proveedor) => {
+                    {proveedoresActuales.length === 0 ? (
 
-                        const abierto =
-                            proveedoresAbiertos[proveedor.id] || false
+                        <div className="proveedores-vacio">
+                            No se han encontrado proveedores que coincidan con la búsqueda.
+                        </div>
 
-                        return (
-                            <div
-                                key={proveedor.id}
-                                className={`proveedor-card ${
-                                    abierto
-                                        ? 'proveedor-card-abierto'
-                                        : ''
-                                }`}
-                            >
+                    ) : (
 
-                                <div className="proveedor-cabecera">
+                        proveedoresActuales.map((proveedor) => {
 
-                                    <button
-                                        type="button"
-                                        className="proveedor-cabecera-boton"
-                                        onClick={() =>
-                                            alternarProveedor(proveedor.id)
-                                        }
-                                    >
+                            const abierto =
+                                proveedoresAbiertos[proveedor.id] || false
 
-                                        <div className="proveedor-foto">
-                                            {proveedor.foto ? (
-                                                <img
-                                                    src={`http://127.0.0.1:8000${proveedor.foto}`}
-                                                    alt={proveedor.nombre}
-                                                />
-                                            ) : (
-                                                <span>
-                                                    {proveedor.nombre?.charAt(0)}
-                                                </span>
-                                            )}
-                                        </div>
+                            return (
+                                <div
+                                    key={proveedor.id}
+                                    className={`proveedor-card ${
+                                        abierto
+                                            ? 'proveedor-card-abierto'
+                                            : ''
+                                    }`}
+                                >
 
-                                        <div className="proveedor-informacion">
-
-                                            <h2>
-                                                {proveedor.nombre}
-                                            </h2>
-
-                                            <p>
-                                                {proveedor.cif}
-                                            </p>
-
-                                            <p>
-                                                {proveedor.correo}
-                                            </p>
-
-                                        </div>
-
-                                        <span className="proveedor-flecha">
-                                            {abierto
-                                                ? '⌄'
-                                                : '›'}
-                                        </span>
-
-                                    </button>
-
-                                    <div className="proveedor-acciones">
+                                    <div className="proveedor-cabecera">
 
                                         <button
                                             type="button"
-                                            className="proveedor-editar"
-                                            onClick={(evento) => {
-                                                evento.stopPropagation();
-                                                abrirEditarProveedor(proveedor);
-                                            }}
-                                            disabled={editandoProveedor || eliminandoProveedor}
+                                            className="proveedor-cabecera-boton"
+                                            onClick={() =>
+                                                alternarProveedor(proveedor.id)
+                                            }
                                         >
-                                            <FaPencilAlt />
-                                        </button>
 
-                                        <button
-                                            type="button"
-                                            className="proveedor-eliminar"
-                                            onClick={(evento) => {
-                                                evento.stopPropagation();
-                                                abrirEliminarProveedor(proveedor);
-                                            }}
-                                            disabled={editandoProveedor || eliminandoProveedor}
-                                        >
-                                            <FaTrash />
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                                {abierto && (
-
-                                    <div className="proveedor-expedientes">
-
-                                        <h3>
-                                            Expedientes
-                                        </h3>
-
-                                        {proveedor.expedientes.length === 0 ? (
-
-                                            <p className="proveedor-sin-expedientes">
-                                                Este proveedor no tiene expedientes.
-                                            </p>
-
-                                        ) : (
-
-                                            <div className="expedientes-lista">
-
-                                                {proveedor.expedientes.map(
-                                                    (expediente) => (
-
-                                                        <div
-                                                            key={expediente.id}
-                                                            className="expediente-card"
-                                                            onClick={() => navigate(`/expedientes/${expediente.id}`)}
-                                                        >
-
-                                                            <div>
-                                                                <h4>
-                                                                    {expediente.nombre}
-                                                                </h4>
-
-                                                                <p>
-                                                                    {expediente.fecha_inicio}
-                                                                    {' - '}
-                                                                    {expediente.fecha_final}
-                                                                </p>
-                                                            </div>
-
-                                                            <span
-                                                                className={
-                                                                    expediente.activo
-                                                                        ? 'ver-expediente-estado activo'
-                                                                        : 'ver-expediente-estado finalizado'
-                                                                }
-                                                            >
-                                                                {expediente.activo
-                                                                    ? 'Activo'
-                                                                    : 'Inactivo'}
-                                                            </span>
-
-                                                        </div>
-                                                    )
+                                            <div className="proveedor-foto">
+                                                {proveedor.foto ? (
+                                                    <img
+                                                        src={`http://127.0.0.1:8000${proveedor.foto}`}
+                                                        alt={proveedor.nombre}
+                                                    />
+                                                ) : (
+                                                    <span>
+                                                        {proveedor.nombre?.charAt(0)}
+                                                    </span>
                                                 )}
+                                            </div>
+
+                                            <div className="proveedor-informacion">
+
+                                                <h2>
+                                                    {proveedor.nombre}
+                                                </h2>
+
+                                                <p>
+                                                    {proveedor.cif}
+                                                </p>
+
+                                                <p>
+                                                    {proveedor.correo}
+                                                </p>
 
                                             </div>
-                                        )}
+
+                                            <span className="proveedor-flecha">
+                                                {abierto
+                                                    ? '⌄'
+                                                    : '›'}
+                                            </span>
+
+                                        </button>
+
+                                        <div className="proveedor-acciones">
+
+                                            <button
+                                                type="button"
+                                                className="proveedor-editar"
+                                                onClick={(evento) => {
+                                                    evento.stopPropagation();
+                                                    abrirEditarProveedor(proveedor);
+                                                }}
+                                                disabled={editandoProveedor || eliminandoProveedor}
+                                            >
+                                                <FaPencilAlt />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="proveedor-eliminar"
+                                                onClick={(evento) => {
+                                                    evento.stopPropagation();
+                                                    abrirEliminarProveedor(proveedor);
+                                                }}
+                                                disabled={editandoProveedor || eliminandoProveedor}
+                                            >
+                                                <FaTrash />
+                                            </button>
+
+                                        </div>
 
                                     </div>
-                                )}
 
-                            </div>
-                        )
-                    })}
+                                    {abierto && (
+
+                                        <div className="proveedor-expedientes">
+
+                                            <h3>
+                                                Expedientes
+                                            </h3>
+
+                                            {proveedor.expedientes.length === 0 ? (
+
+                                                <p className="proveedor-sin-expedientes">
+                                                    Este proveedor no tiene expedientes.
+                                                </p>
+
+                                            ) : (
+
+                                                <div className="expedientes-lista">
+
+                                                    {proveedor.expedientes.map(
+                                                        (expediente) => (
+
+                                                            <div
+                                                                key={expediente.id}
+                                                                className="expediente-card"
+                                                                onClick={() => navigate(`/expedientes/${expediente.id}`)}
+                                                            >
+
+                                                                <div>
+                                                                    <h4>
+                                                                        {expediente.nombre}
+                                                                    </h4>
+
+                                                                    <p>
+                                                                        {expediente.fecha_inicio}
+                                                                        {' - '}
+                                                                        {expediente.fecha_final}
+                                                                    </p>
+                                                                </div>
+
+                                                                <span
+                                                                    className={
+                                                                        expediente.activo
+                                                                            ? 'ver-expediente-estado activo'
+                                                                            : 'ver-expediente-estado finalizado'
+                                                                    }
+                                                                >
+                                                                    {expediente.activo
+                                                                        ? 'Activo'
+                                                                        : 'Inactivo'}
+                                                                </span>
+
+                                                            </div>
+                                                        )
+                                                    )}
+
+                                                </div>
+                                            )}
+
+                                        </div>
+                                    )}
+
+                                </div>
+                            )
+                        })
+                    )}
 
                 </div>
             )}
