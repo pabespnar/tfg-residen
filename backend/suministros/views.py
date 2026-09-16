@@ -2,6 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from residentes.permissions import EsGestorResidentesOAlmacen
 from expedientes.permissions import EsGestorAlmacenOAdministracion, EsGestorAdministracion
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
@@ -150,7 +151,7 @@ class ListaCategoriasView(APIView):
         return Response(datos)
 
 class ListaPacksView(APIView):
-    permission_classes = [IsAuthenticated, EsGestorAlmacen]
+    permission_classes = [IsAuthenticated, EsGestorResidentesOAlmacen]
 
     def get(self, request):
         packs = Pack.objects.all()

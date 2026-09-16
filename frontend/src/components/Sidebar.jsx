@@ -38,6 +38,15 @@ function Sidebar({ setAutenticado, rol }) {
                             <li
                                 className="sideItem"
                                 onClick={() =>
+                                    navigate('/suministrosResidentes')
+                                }
+                            >
+                                Suministros
+                            </li>
+
+                            <li
+                                className="sideItem"
+                                onClick={() =>
                                     navigate('/historico_residentes')
                                 }
                             >

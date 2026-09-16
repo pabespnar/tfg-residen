@@ -34,6 +34,7 @@ import Proveedores from "./pages/Proveedores"
 import CrearExpediente from "./pages/CrearExpediente"
 import SuministrosAdministracion from "./pages/SuministrosAdministracion"
 import DashboardAdministracion from './pages/DashboardAdministracion';
+import SuministrosResidentes from "./pages/SuministrosResidentes"
 
 
 function tokenValido() {
@@ -289,6 +290,10 @@ function App() {
                                 <Route
                                     path="/historico_residentes"
                                     element={<VerHistoricoResidentes />}
+                                />
+                                <Route
+                                    path="/suministrosResidentes"
+                                    element={<SuministrosResidentes />}
                                 />
                                 <Route
                                     path="/dashboard_residentes"
