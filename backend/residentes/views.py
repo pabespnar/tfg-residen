@@ -5,12 +5,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
 from .models import Residente
 from modulos.models import Habitacion
 from .serializers import ResidenteSerializer
 from modulos.permissions import EsGestorResidentes
 from .permissions import EsGestorResidentesOAlmacen
+from evento.models import Historial
 
 
 class ListaResidentesView(APIView):
@@ -32,6 +32,7 @@ class ListaResidentesView(APIView):
 
         return Response(serializer.data)
 
+
 class CrearResidenteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
     parser_classes = [MultiPartParser, FormParser]
@@ -42,8 +43,32 @@ class CrearResidenteView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save(
+            residente = serializer.save(
                 f_alta=timezone.now().date()
+            )
+
+            habitacion = residente.habitacion
+
+            if habitacion:
+                habitacion_info = (
+                    f'{habitacion.nombre}, '
+                    f'Módulo {habitacion.modulo.nombre}'
+                )
+            else:
+                habitacion_info = 'Sin habitación asignada'
+
+            Historial.objects.create(
+                tipo='Alta de residente',
+                descripcion=(
+                    f'Se ha dado de alta al residente '
+                    f'{residente.nombre} {residente.apellido} en el centro.\n'
+                    f'Fecha de alta: '
+                    f'{residente.f_alta.strftime("%d/%m/%Y")}.\n'
+                    f'Habitación asignada: {habitacion_info}.\n'
+                    f'País: {residente.pais}.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
             )
 
             return Response(
@@ -55,6 +80,7 @@ class CrearResidenteView(APIView):
             serializer.errors,
             status=400
         )
+
 
 class DetalleResidenteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
@@ -89,6 +115,42 @@ class EditarResidenteView(APIView):
                 status=404
             )
 
+        campos = {
+            'nombre': 'Nombre',
+            'apellido': 'Apellido',
+            'telefono': 'Teléfono',
+            'email': 'Correo electrónico',
+            'f_nacimiento': 'Fecha de nacimiento',
+            'info': 'Información',
+            'pais': 'País',
+            'dni_nie': 'DNI/NIE',
+            'habitacion': 'Habitación',
+            'foto': 'Foto',
+            'genero': 'Género'
+        }
+
+        valores_anteriores = {}
+
+        for campo in campos:
+            if campo in request.data:
+                if campo == 'habitacion':
+                    habitacion_anterior = residente.habitacion
+
+                    if habitacion_anterior:
+                        valores_anteriores[campo] = (
+                            f'{habitacion_anterior.nombre}, '
+                            f'Módulo {habitacion_anterior.modulo.nombre}'
+                        )
+                    else:
+                        valores_anteriores[campo] = 'Sin habitación'
+                elif campo == 'foto':
+                    valores_anteriores[campo] = bool(residente.foto)
+                else:
+                    valores_anteriores[campo] = getattr(
+                        residente,
+                        campo
+                    )
+
         serializer = ResidenteSerializer(
             residente,
             data=request.data,
@@ -97,13 +159,81 @@ class EditarResidenteView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+            residente = serializer.save()
+
+            cambios = []
+
+            for campo, nombre_campo in campos.items():
+                if campo not in request.data:
+                    continue
+
+                if campo == 'habitacion':
+                    habitacion_nueva = residente.habitacion
+
+                    if habitacion_nueva:
+                        valor_nuevo = (
+                            f'{habitacion_nueva.nombre}, '
+                            f'Módulo {habitacion_nueva.modulo.nombre}'
+                        )
+                    else:
+                        valor_nuevo = 'Sin habitación'
+
+                elif campo == 'foto':
+                    valor_nuevo = bool(residente.foto)
+
+                else:
+                    valor_nuevo = getattr(
+                        residente,
+                        campo
+                    )
+
+                valor_anterior = valores_anteriores[campo]
+
+                if campo == 'foto':
+                    if valor_anterior != valor_nuevo:
+                        cambios.append(
+                            f'{nombre_campo}: Foto '
+                            f'{"añadida" if valor_nuevo else "eliminada"}.'
+                        )
+                else:
+                    if str(valor_anterior) != str(valor_nuevo):
+                        if valor_anterior in [None, '']:
+                            valor_anterior = 'Sin especificar'
+
+                        if valor_nuevo in [None, '']:
+                            valor_nuevo = 'Sin especificar'
+
+                        cambios.append(
+                            f'{nombre_campo}: '
+                            f'{valor_anterior} → {valor_nuevo}'
+                        )
+
+            if cambios:
+                descripcion_cambios = '\n'.join(cambios)
+            else:
+                descripcion_cambios = (
+                    'No se han producido cambios en los datos '
+                    'del residente.'
+                )
+
+            Historial.objects.create(
+                tipo='Edición de residente',
+                descripcion=(
+                    f'Se han modificado los datos del residente '
+                    f'{residente.nombre} {residente.apellido}.\n'
+                    f'{descripcion_cambios}'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
+
             return Response(serializer.data)
 
         return Response(
             serializer.errors,
             status=400
         )
+
 
 class DarDeBajaResidenteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
@@ -123,10 +253,33 @@ class DarDeBajaResidenteView(APIView):
                 status=400
             )
 
+        habitacion_anterior = residente.habitacion
+
+        if habitacion_anterior:
+            habitacion_info = (
+                f'{habitacion_anterior.nombre}, '
+                f'Módulo {habitacion_anterior.modulo.nombre}'
+            )
+        else:
+            habitacion_info = 'Sin habitación asignada'
+
         residente.activo = False
         residente.f_baja = timezone.now().date()
         residente.habitacion = None
         residente.save()
+
+        Historial.objects.create(
+            tipo='Baja de residente',
+            descripcion=(
+                f'Se ha dado de baja al residente '
+                f'{residente.nombre} {residente.apellido} del centro.\n'
+                f'Fecha de baja: '
+                f'{residente.f_baja.strftime("%d/%m/%Y")}.\n'
+                f'Habitación que ocupaba: {habitacion_info}.'
+            ),
+            rol=request.user.rol,
+            usuario=request.user
+        )
 
         serializer = ResidenteSerializer(residente)
 
@@ -182,6 +335,24 @@ class DarDeAltaResidenteView(APIView):
         residente.f_alta = timezone.now().date()
         residente.habitacion = habitacion
         residente.save()
+
+        habitacion_info = (
+            f'{habitacion.nombre}, '
+            f'Módulo {habitacion.modulo.nombre}'
+        )
+
+        Historial.objects.create(
+            tipo='Reingreso de residente',
+            descripcion=(
+                f'Se ha producido el reingreso del residente '
+                f'{residente.nombre} {residente.apellido} en el centro.\n'
+                f'Fecha de reingreso: '
+                f'{residente.f_alta.strftime("%d/%m/%Y")}.\n'
+                f'Nueva habitación asignada: {habitacion_info}.'
+            ),
+            rol=request.user.rol,
+            usuario=request.user
+        )
 
         serializer = ResidenteSerializer(residente)
 
