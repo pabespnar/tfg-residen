@@ -14,6 +14,7 @@ from almacen.models import AltaAlmacen, BajaAlmacen
 from expedientes.models import Expediente, Pedido, Proveedor
 from suministros.permissions import EsGestorAlmacen
 from expedientes.permissions import EsGestorAdministracion
+from centro.models import Centro
 
 
 class DashboardResidentesView(APIView):
@@ -668,6 +669,27 @@ class DashboardAdministracionView(APIView):
         hoy = timezone.now().date()
         hace_30_dias = hoy - timedelta(days=30)
 
+        centro = Centro.get_solo()
+
+        presupuesto_referencia = centro.presupuesto_referencia
+        presupuesto_gasto_corriente = centro.presupuesto
+
+        presupuesto_gastado_gasto_corriente = (
+            presupuesto_referencia -
+            presupuesto_gasto_corriente
+        )
+
+        if presupuesto_referencia:
+            porcentaje_gastado_gasto_corriente = round(
+                (
+                    presupuesto_gastado_gasto_corriente /
+                    presupuesto_referencia
+                ) * 100,
+                2
+            )
+        else:
+            porcentaje_gastado_gasto_corriente = 0
+
         presupuesto_total_expedientes = Expediente.objects.aggregate(
             total=Sum('presupuesto')
         )['total'] or 0
@@ -692,12 +714,6 @@ class DashboardAdministracionView(APIView):
             expedientes_totales -
             expedientes_activos
         )
-
-        from centro.models import Centro
-
-        centro = Centro.get_solo()
-
-        presupuesto_gasto_corriente = centro.presupuesto
 
         pedidos_totales = Pedido.objects.count()
 
@@ -759,6 +775,87 @@ class DashboardAdministracionView(APIView):
             )['total'] or 0
         )
 
+        meses = []
+
+        año = hoy.year
+        mes = hoy.month
+
+        for _ in range(12):
+            meses.append({
+                'año': año,
+                'mes': mes
+            })
+
+            mes -= 1
+
+            if mes == 0:
+                mes = 12
+                año -= 1
+
+        meses.reverse()
+
+        evolucion_pedidos = []
+        evolucion_importe_generales = []
+
+        for periodo in meses:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            pedidos_expediente_mes = Pedido.objects.filter(
+                tipo_pedido=Pedido.TipoPedido.EXPEDIENTE,
+                fecha__gte=inicio_mes,
+                fecha__lt=inicio_siguiente_mes
+            ).count()
+
+            pedidos_generales_mes = Pedido.objects.filter(
+                tipo_pedido=Pedido.TipoPedido.GENERAL,
+                fecha__gte=inicio_mes,
+                fecha__lt=inicio_siguiente_mes
+            ).count()
+
+            importe_generales_mes = (
+                Pedido.objects.filter(
+                    tipo_pedido=Pedido.TipoPedido.GENERAL,
+                    fecha__gte=inicio_mes,
+                    fecha__lt=inicio_siguiente_mes
+                ).aggregate(
+                    total=Sum(
+                        F('detalles_pedido__cantidad') *
+                        F('detalles_pedido__precio_unidad')
+                    )
+                )['total'] or 0
+            )
+
+            evolucion_pedidos.append({
+                'mes': f'{año}-{mes:02d}',
+                'con_expediente': pedidos_expediente_mes,
+                'generales': pedidos_generales_mes,
+            })
+
+            evolucion_importe_generales.append({
+                'mes': f'{año}-{mes:02d}',
+                'importe': importe_generales_mes,
+            })
+
         proveedores_totales = Proveedor.objects.count()
 
         proveedores_por_importe = (
@@ -797,20 +894,52 @@ class DashboardAdministracionView(APIView):
                 'presupuesto_restante_expedientes':
                     presupuesto_restante_expedientes,
 
+                'presupuesto_referencia':
+                    presupuesto_referencia,
+
+                'presupuesto_gastado_gasto_corriente':
+                    presupuesto_gastado_gasto_corriente,
+
+                'presupuesto_gasto_corriente':
+                    presupuesto_gasto_corriente,
+
+                'porcentaje_gastado_gasto_corriente':
+                    porcentaje_gastado_gasto_corriente,
+
                 'expedientes_totales':
                     expedientes_totales,
 
                 'expedientes_activos':
                     expedientes_activos,
 
+                'expedientes_inactivos':
+                    expedientes_inactivos,
+
                 'pedidos_totales':
                     pedidos_totales,
 
                 'proveedores_totales':
                     proveedores_totales,
+            },
 
-                'presupuesto_gasto_corriente':
-                    presupuesto_gasto_corriente,
+            'expedientes': {
+                'totales':
+                    expedientes_totales,
+
+                'activos':
+                    expedientes_activos,
+
+                'inactivos':
+                    expedientes_inactivos,
+
+                'presupuesto_total':
+                    presupuesto_total_expedientes,
+
+                'presupuesto_gastado':
+                    presupuesto_gastado_expedientes,
+
+                'presupuesto_restante':
+                    presupuesto_restante_expedientes,
             },
 
             'pedidos': {
@@ -840,6 +969,12 @@ class DashboardAdministracionView(APIView):
 
                 'importe_generales_30_dias':
                     importe_pedidos_generales_30_dias,
+
+                'evolucion':
+                    evolucion_pedidos,
+
+                'evolucion_importe_generales':
+                    evolucion_importe_generales,
             },
 
             'proveedores': {
