@@ -50,6 +50,7 @@ def limpiar_base_datos():
 def crear_centro():
     centro = Centro.get_solo()
     centro.nombre = 'Residencia Los Olivos'
+    centro.presupuesto_referencia = Decimal('60000.00')
     centro.presupuesto = Decimal('47843.50')
     centro.correo = 'contacto@residencialosolivos.es'
     centro.save()
