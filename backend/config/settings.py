@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'almacen',
     'expedientes',
     'centro',
+    'evento',
 ]
 
 MIDDLEWARE = [
