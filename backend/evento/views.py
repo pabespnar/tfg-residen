@@ -55,7 +55,10 @@ class ListaHistorialView(APIView):
 
         serializer = HistorialSerializer(
             historial,
-            many=True
+            many=True,
+            context={
+                'request': request
+            }
         )
 
         return Response(serializer.data)
