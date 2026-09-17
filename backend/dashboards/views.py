@@ -528,10 +528,7 @@ class DashboardAlmacenView(APIView):
                 'cantidad': suministro['cantidad'],
             })
 
-        ids_suministros_principales = [
-            suministro['id']
-            for suministro in suministros_mas_consumidos
-        ]
+        evolucion_principales = []
 
         meses_consumo = []
 
