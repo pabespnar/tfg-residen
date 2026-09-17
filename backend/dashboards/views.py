@@ -16,7 +16,6 @@ from suministros.permissions import EsGestorAlmacen
 from expedientes.permissions import EsGestorAdministracion
 
 
-
 class DashboardResidentesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
 
@@ -74,6 +73,20 @@ class DashboardResidentesView(APIView):
                     2
                 )
 
+        paises = {}
+
+        conteo_paises = residentes_activos.values(
+            'pais'
+        ).annotate(
+            total=Count('id')
+        ).order_by(
+            '-total'
+        )
+
+        for pais in conteo_paises:
+            nombre_pais = pais['pais'] or 'Sin especificar'
+            paises[nombre_pais] = pais['total']
+
         estancias = residentes_inactivos.filter(
             f_alta__isnull=False,
             f_baja__isnull=False
@@ -93,6 +106,30 @@ class DashboardResidentesView(APIView):
                 total_dias / estancias.count(),
                 2
             )
+
+        estancias_por_intervalo = {
+            'Menos de 1 mes': 0,
+            '1-3 meses': 0,
+            '3-6 meses': 0,
+            '6-12 meses': 0,
+            '12 meses o más': 0,
+        }
+
+        for residente in estancias:
+            dias_estancia = (
+                residente.f_baja - residente.f_alta
+            ).days
+
+            if dias_estancia < 30:
+                estancias_por_intervalo['Menos de 1 mes'] += 1
+            elif dias_estancia < 90:
+                estancias_por_intervalo['1-3 meses'] += 1
+            elif dias_estancia < 180:
+                estancias_por_intervalo['3-6 meses'] += 1
+            elif dias_estancia < 365:
+                estancias_por_intervalo['6-12 meses'] += 1
+            else:
+                estancias_por_intervalo['12 meses o más'] += 1
 
         edades = {}
 
@@ -144,6 +181,116 @@ class DashboardResidentesView(APIView):
             else:
                 habitaciones_parciales += 1
 
+        modulos = {}
+
+        for habitacion in Habitacion.objects.select_related(
+            'modulo'
+        ).all():
+            nombre_modulo = habitacion.modulo.nombre
+
+            if nombre_modulo not in modulos:
+                modulos[nombre_modulo] = {
+                    'id': habitacion.modulo.id,
+                    'nombre': nombre_modulo,
+                    'capacidad': 0,
+                    'residentes': 0,
+                }
+
+            residentes_habitacion = habitacion.residentes.filter(
+                activo=True
+            ).count()
+
+            modulos[nombre_modulo]['capacidad'] += habitacion.capacidad
+            modulos[nombre_modulo]['residentes'] += residentes_habitacion
+
+        for modulo in modulos.values():
+            if modulo['capacidad']:
+                modulo['ocupacion_porcentaje'] = round(
+                    (
+                        modulo['residentes'] /
+                        modulo['capacidad']
+                    ) * 100,
+                    2
+                )
+            else:
+                modulo['ocupacion_porcentaje'] = 0
+
+        modulos_mas_poblados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                -modulo['residentes'],
+                modulo['nombre']
+            )
+        )[:3]
+
+        modulos_menos_poblados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                modulo['residentes'],
+                modulo['nombre']
+            )
+        )[:3]
+
+        meses = []
+
+        año = hoy.year
+        mes = hoy.month
+
+        for _ in range(12):
+            meses.append({
+                'año': año,
+                'mes': mes,
+            })
+
+            mes -= 1
+
+            if mes == 0:
+                mes = 12
+                año -= 1
+
+        meses.reverse()
+
+        evolucion_mensual = []
+
+        for periodo in meses:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            altas = Residente.objects.filter(
+                f_alta__gte=inicio_mes,
+                f_alta__lt=inicio_siguiente_mes
+            ).count()
+
+            bajas = Residente.objects.filter(
+                f_baja__gte=inicio_mes,
+                f_baja__lt=inicio_siguiente_mes
+            ).count()
+
+            evolucion_mensual.append({
+                'mes': f'{año}-{mes:02d}',
+                'altas': altas,
+                'bajas': bajas,
+            })
+
         return Response({
             'resumen': {
                 'residentes_actuales': residentes_actuales,
@@ -156,8 +303,11 @@ class DashboardResidentesView(APIView):
                 'altas_ultimos_30_dias': altas_ultimos_30_dias,
                 'bajas_ultimos_30_dias': bajas_ultimos_30_dias,
                 'generos': generos,
+                'paises': paises,
                 'estancia_media_dias': estancia_media_dias,
+                'estancias': estancias_por_intervalo,
                 'edades': edades,
+                'evolucion_mensual': evolucion_mensual,
             },
 
             'habitaciones': {
@@ -166,8 +316,12 @@ class DashboardResidentesView(APIView):
                 'parciales': habitaciones_parciales,
                 'completas': habitaciones_completas,
             },
-        })
 
+            'modulos': {
+                'mas_poblados': modulos_mas_poblados,
+                'menos_poblados': modulos_menos_poblados,
+            },
+        })
 
 
 class DashboardAlmacenView(APIView):
