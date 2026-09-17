@@ -12,6 +12,8 @@ import {
     Legend,
     BarChart,
     Bar,
+    LineChart,
+    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -92,6 +94,7 @@ function DashboardAdministracion() {
 
     const {
         resumen,
+        expedientes,
         pedidos,
         proveedores,
     } = dashboard;
@@ -124,19 +127,19 @@ function DashboardAdministracion() {
             nombre: 'Generales',
             cantidad: pedidos.generales,
         },
-    ];
+    ].filter(
+        tipo => tipo.cantidad > 0
+    );
 
 
     const datosExpedientes = [
         {
             nombre: 'Activos',
-            cantidad: resumen.expedientes_activos,
+            cantidad: expedientes.activos,
         },
         {
             nombre: 'Inactivos',
-            cantidad:
-                resumen.expedientes_totales -
-                resumen.expedientes_activos,
+            cantidad: expedientes.inactivos,
         },
     ].filter(
         estado => estado.cantidad > 0
@@ -153,7 +156,41 @@ function DashboardAdministracion() {
         : [];
 
 
+    const evolucionPedidos = pedidos.evolucion
+        ? pedidos.evolucion.map(
+            periodo => ({
+                ...periodo,
+                mes: periodo.mes.substring(5),
+            })
+        )
+        : [];
+
+
+    const evolucionImporteGenerales =
+        pedidos.evolucion_importe_generales
+            ? pedidos.evolucion_importe_generales.map(
+                periodo => ({
+                    ...periodo,
+                    importe: Number(periodo.importe),
+                    mes: periodo.mes.substring(5),
+                })
+            )
+            : [];
+
+
     const coloresPresupuesto = [
+        '#1B5E20',
+        '#81C784',
+    ];
+
+
+    const coloresExpedientes = [
+        '#1B5E20',
+        '#BDBDBD',
+    ];
+
+
+    const coloresPedidos = [
         '#1B5E20',
         '#81C784',
     ];
@@ -427,6 +464,56 @@ function DashboardAdministracion() {
                             <div className="dashboard-estadistica">
 
                                 <span>
+                                    Presupuesto de referencia
+                                </span>
+
+                                <strong>
+                                    {Number(
+                                        resumen.presupuesto_referencia
+                                    ).toLocaleString(
+                                        'es-ES',
+                                        {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }
+                                    )} €
+                                </strong>
+
+                                <small>
+                                    Presupuesto inicial de gasto corriente
+                                </small>
+
+                            </div>
+
+
+                            <div className="dashboard-estadistica">
+
+                                <span>
+                                    Presupuesto gastado
+                                </span>
+
+                                <strong>
+                                    {Number(
+                                        resumen.presupuesto_gastado_gasto_corriente
+                                    ).toLocaleString(
+                                        'es-ES',
+                                        {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }
+                                    )} €
+                                </strong>
+
+                                <small>
+                                    Importe utilizado del presupuesto de gasto corriente
+                                </small>
+
+                            </div>
+
+
+                            <div className="dashboard-estadistica">
+
+                                <span>
                                     Presupuesto disponible
                                 </span>
 
@@ -443,7 +530,7 @@ function DashboardAdministracion() {
                                 </strong>
 
                                 <small>
-                                    Importe disponible para pedidos generales
+                                    Importe actualmente disponible
                                 </small>
 
                             </div>
@@ -452,65 +539,23 @@ function DashboardAdministracion() {
                             <div className="dashboard-estadistica">
 
                                 <span>
-                                    Importe de pedidos generales
+                                    Porcentaje gastado
                                 </span>
 
                                 <strong>
                                     {Number(
-                                        pedidos.importe_generales
+                                        resumen.porcentaje_gastado_gasto_corriente
                                     ).toLocaleString(
                                         'es-ES',
                                         {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2
                                         }
-                                    )} €
+                                    )} %
                                 </strong>
 
                                 <small>
-                                    Importe acumulado de los pedidos generales
-                                </small>
-
-                            </div>
-
-
-                            <div className="dashboard-estadistica">
-
-                                <span>
-                                    Pedidos generales pendientes
-                                </span>
-
-                                <strong>
-                                    {pedidos.generales_pendientes}
-                                </strong>
-
-                                <small>
-                                    Pedidos generales todavía no recibidos
-                                </small>
-
-                            </div>
-
-
-                            <div className="dashboard-estadistica">
-
-                                <span>
-                                    Importe pendiente de recibir
-                                </span>
-
-                                <strong>
-                                    {Number(
-                                        pedidos.importe_generales_pendientes
-                                    ).toLocaleString(
-                                        'es-ES',
-                                        {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2
-                                        }
-                                    )} €
-                                </strong>
-
-                                <small>
-                                    Importe comprometido en pedidos generales pendientes
+                                    Porcentaje utilizado del presupuesto de referencia
                                 </small>
 
                             </div>
@@ -540,7 +585,7 @@ function DashboardAdministracion() {
                     <div className="dashboard-grafico-header">
 
                         <h2>
-                            Pedidos por tipo
+                            Distribución de pedidos
                         </h2>
 
                     </div>
@@ -548,50 +593,58 @@ function DashboardAdministracion() {
 
                     <div className="dashboard-grafico">
 
-                        <ResponsiveContainer
-                            width="100%"
-                            height={300}
-                        >
+                        {datosPedidos.length > 0 ? (
 
-                            <BarChart
-                                data={datosPedidos}
-                                margin={{
-                                    top: 10,
-                                    right: 20,
-                                    left: 0,
-                                    bottom: 10,
-                                }}
+                            <ResponsiveContainer
+                                width="100%"
+                                height={300}
                             >
 
-                                <CartesianGrid
-                                    strokeDasharray="3 3"
-                                />
+                                <PieChart>
 
-                                <XAxis
-                                    dataKey="nombre"
-                                />
+                                    <Pie
+                                        data={datosPedidos}
+                                        dataKey="cantidad"
+                                        nameKey="nombre"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={95}
+                                        innerRadius={55}
+                                        paddingAngle={3}
+                                        label
+                                    >
 
-                                <YAxis
-                                    allowDecimals={false}
-                                />
+                                        {datosPedidos.map(
+                                            (entry, index) => (
+                                                <Cell
+                                                    key={`pedido-${index}`}
+                                                    fill={
+                                                        coloresPedidos[
+                                                            index %
+                                                            coloresPedidos.length
+                                                        ]
+                                                    }
+                                                />
+                                            )
+                                        )}
 
-                                <Tooltip />
+                                    </Pie>
 
-                                <Bar
-                                    dataKey="cantidad"
-                                    name="Pedidos"
-                                    fill="#1B5E20"
-                                    radius={[
-                                        5,
-                                        5,
-                                        0,
-                                        0,
-                                    ]}
-                                />
+                                    <Tooltip />
 
-                            </BarChart>
+                                    <Legend />
 
-                        </ResponsiveContainer>
+                                </PieChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay pedidos.
+                            </div>
+
+                        )}
 
                     </div>
 
@@ -648,12 +701,12 @@ function DashboardAdministracion() {
                         <div className="dashboard-estadistica">
 
                             <span>
-                                Importe de pedidos generales últimos 30 días
+                                Importe de pedidos generales
                             </span>
 
                             <strong>
                                 {Number(
-                                    pedidos.importe_generales_30_dias
+                                    pedidos.importe_generales
                                 ).toLocaleString(
                                     'es-ES',
                                     {
@@ -664,10 +717,174 @@ function DashboardAdministracion() {
                             </strong>
 
                             <small>
-                                Importe de pedidos generales realizados recientemente
+                                Importe acumulado de los pedidos generales
                             </small>
 
                         </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section className="dashboard-graficos">
+
+                <div className="dashboard-grafico-card dashboard-grafico-card-ancho">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Evolución mensual de pedidos
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {evolucionPedidos.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={320}
+                            >
+
+                                <LineChart
+                                    data={evolucionPedidos}
+                                    margin={{
+                                        top: 10,
+                                        right: 20,
+                                        left: 0,
+                                        bottom: 10,
+                                    }}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        dataKey="mes"
+                                    />
+
+                                    <YAxis
+                                        allowDecimals={false}
+                                    />
+
+                                    <Tooltip />
+
+                                    <Legend />
+
+                                    <Line
+                                        type="monotone"
+                                        dataKey="con_expediente"
+                                        name="Con expediente"
+                                        stroke="#1B5E20"
+                                        strokeWidth={2}
+                                        dot
+                                    />
+
+                                    <Line
+                                        type="monotone"
+                                        dataKey="generales"
+                                        name="Generales"
+                                        stroke="#81C784"
+                                        strokeWidth={2}
+                                        dot
+                                    />
+
+                                </LineChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay datos de pedidos.
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div className="dashboard-grafico-card dashboard-grafico-card-ancho">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Evolución del importe de pedidos generales
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {evolucionImporteGenerales.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={320}
+                            >
+
+                                <LineChart
+                                    data={evolucionImporteGenerales}
+                                    margin={{
+                                        top: 10,
+                                        right: 20,
+                                        left: 0,
+                                        bottom: 10,
+                                    }}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        dataKey="mes"
+                                    />
+
+                                    <YAxis />
+
+                                    <Tooltip
+                                        formatter={
+                                            value =>
+                                                `${Number(value).toLocaleString(
+                                                    'es-ES',
+                                                    {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    }
+                                                )} €`
+                                        }
+                                    />
+
+                                    <Line
+                                        type="monotone"
+                                        dataKey="importe"
+                                        name="Importe"
+                                        stroke="#1B5E20"
+                                        strokeWidth={2}
+                                        dot
+                                    />
+
+                                </LineChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay datos de pedidos generales.
+                            </div>
+
+                        )}
 
                     </div>
 
@@ -726,9 +943,10 @@ function DashboardAdministracion() {
                                                 <Cell
                                                     key={`expediente-${index}`}
                                                     fill={
-                                                        index === 0
-                                                            ? '#1B5E20'
-                                                            : '#BDBDBD'
+                                                        coloresExpedientes[
+                                                            index %
+                                                            coloresExpedientes.length
+                                                        ]
                                                     }
                                                 />
                                             )
@@ -777,7 +995,7 @@ function DashboardAdministracion() {
                             </span>
 
                             <strong>
-                                {resumen.expedientes_activos}
+                                {expedientes.activos}
                             </strong>
 
                             <small>
@@ -794,12 +1012,36 @@ function DashboardAdministracion() {
                             </span>
 
                             <strong>
-                                {resumen.expedientes_totales -
-                                    resumen.expedientes_activos}
+                                {expedientes.inactivos}
                             </strong>
 
                             <small>
                                 Expedientes fuera de su periodo activo
+                            </small>
+
+                        </div>
+
+
+                        <div className="dashboard-estadistica">
+
+                            <span>
+                                Presupuesto gastado
+                            </span>
+
+                            <strong>
+                                {Number(
+                                    expedientes.presupuesto_gastado
+                                ).toLocaleString(
+                                    'es-ES',
+                                    {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    }
+                                )} €
+                            </strong>
+
+                            <small>
+                                Importe utilizado en los expedientes
                             </small>
 
                         </div>
@@ -813,7 +1055,7 @@ function DashboardAdministracion() {
 
                             <strong>
                                 {Number(
-                                    resumen.presupuesto_restante_expedientes
+                                    expedientes.presupuesto_restante
                                 ).toLocaleString(
                                     'es-ES',
                                     {

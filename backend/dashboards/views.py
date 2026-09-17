@@ -14,7 +14,7 @@ from almacen.models import AltaAlmacen, BajaAlmacen
 from expedientes.models import Expediente, Pedido, Proveedor
 from suministros.permissions import EsGestorAlmacen
 from expedientes.permissions import EsGestorAdministracion
-
+from centro.models import Centro
 
 
 class DashboardResidentesView(APIView):
@@ -58,7 +58,7 @@ class DashboardResidentesView(APIView):
         generos = {
             'M': 0,
             'F': 0,
-            'O': 0,
+            'O': 0
         }
 
         if total_generos:
@@ -73,6 +73,20 @@ class DashboardResidentesView(APIView):
                     (genero['total'] / total_generos) * 100,
                     2
                 )
+
+        paises = {}
+
+        conteo_paises = residentes_activos.values(
+            'pais'
+        ).annotate(
+            total=Count('id')
+        ).order_by(
+            '-total'
+        )
+
+        for pais in conteo_paises:
+            nombre_pais = pais['pais'] or 'Sin especificar'
+            paises[nombre_pais] = pais['total']
 
         estancias = residentes_inactivos.filter(
             f_alta__isnull=False,
@@ -93,6 +107,30 @@ class DashboardResidentesView(APIView):
                 total_dias / estancias.count(),
                 2
             )
+
+        estancias_por_intervalo = {
+            'Menos de 1 mes': 0,
+            '1-3 meses': 0,
+            '3-6 meses': 0,
+            '6-12 meses': 0,
+            '12 meses o más': 0
+        }
+
+        for residente in estancias:
+            dias_estancia = (
+                residente.f_baja - residente.f_alta
+            ).days
+
+            if dias_estancia < 30:
+                estancias_por_intervalo['Menos de 1 mes'] += 1
+            elif dias_estancia < 90:
+                estancias_por_intervalo['1-3 meses'] += 1
+            elif dias_estancia < 180:
+                estancias_por_intervalo['3-6 meses'] += 1
+            elif dias_estancia < 365:
+                estancias_por_intervalo['6-12 meses'] += 1
+            else:
+                estancias_por_intervalo['12 meses o más'] += 1
 
         edades = {}
 
@@ -120,7 +158,9 @@ class DashboardResidentesView(APIView):
         edades = dict(
             sorted(
                 edades.items(),
-                key=lambda item: int(item[0].split('-')[0])
+                key=lambda item: int(
+                    item[0].split('-')[0]
+                )
             )
         )
 
@@ -131,18 +171,136 @@ class DashboardResidentesView(APIView):
         habitaciones_completas = 0
 
         for habitacion in Habitacion.objects.all():
-            residentes_actuales_habitacion = habitacion.residentes.filter(
-                activo=True
-            ).count()
+            residentes_actuales_habitacion = (
+                habitacion.residentes.filter(
+                    activo=True
+                ).count()
+            )
 
             if residentes_actuales_habitacion == 0:
                 habitaciones_vacias += 1
-
             elif residentes_actuales_habitacion >= habitacion.capacidad:
                 habitaciones_completas += 1
-
             else:
                 habitaciones_parciales += 1
+
+        modulos = {}
+
+        for habitacion in Habitacion.objects.select_related(
+            'modulo'
+        ).all():
+
+            nombre_modulo = habitacion.modulo.nombre
+
+            if nombre_modulo not in modulos:
+                modulos[nombre_modulo] = {
+                    'id': habitacion.modulo.id,
+                    'nombre': nombre_modulo,
+                    'capacidad': 0,
+                    'residentes': 0
+                }
+
+            residentes_habitacion = (
+                habitacion.residentes.filter(
+                    activo=True
+                ).count()
+            )
+
+            modulos[nombre_modulo]['capacidad'] += (
+                habitacion.capacidad
+            )
+
+            modulos[nombre_modulo]['residentes'] += (
+                residentes_habitacion
+            )
+
+        for modulo in modulos.values():
+            if modulo['capacidad']:
+                modulo['ocupacion_porcentaje'] = round(
+                    (
+                        modulo['residentes']
+                        / modulo['capacidad']
+                    ) * 100,
+                    2
+                )
+            else:
+                modulo['ocupacion_porcentaje'] = 0
+
+        modulos_mas_poblados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                -modulo['residentes'],
+                modulo['nombre']
+            )
+        )[:3]
+
+        modulos_menos_poblados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                modulo['residentes'],
+                modulo['nombre']
+            )
+        )[:3]
+
+        meses = []
+
+        año = hoy.year
+        mes = hoy.month
+
+        for _ in range(12):
+            meses.append({
+                'año': año,
+                'mes': mes
+            })
+
+            mes -= 1
+
+            if mes == 0:
+                mes = 12
+                año -= 1
+
+        meses.reverse()
+
+        evolucion_mensual = []
+
+        for periodo in meses:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            altas = Residente.objects.filter(
+                f_alta__gte=inicio_mes,
+                f_alta__lt=inicio_siguiente_mes
+            ).count()
+
+            bajas = Residente.objects.filter(
+                f_baja__gte=inicio_mes,
+                f_baja__lt=inicio_siguiente_mes
+            ).count()
+
+            evolucion_mensual.append({
+                'mes': f'{año}-{mes:02d}',
+                'altas': altas,
+                'bajas': bajas
+            })
 
         return Response({
             'resumen': {
@@ -156,8 +314,11 @@ class DashboardResidentesView(APIView):
                 'altas_ultimos_30_dias': altas_ultimos_30_dias,
                 'bajas_ultimos_30_dias': bajas_ultimos_30_dias,
                 'generos': generos,
+                'paises': paises,
                 'estancia_media_dias': estancia_media_dias,
+                'estancias': estancias_por_intervalo,
                 'edades': edades,
+                'evolucion_mensual': evolucion_mensual,
             },
 
             'habitaciones': {
@@ -166,8 +327,12 @@ class DashboardResidentesView(APIView):
                 'parciales': habitaciones_parciales,
                 'completas': habitaciones_completas,
             },
-        })
 
+            'modulos': {
+                'mas_poblados': modulos_mas_poblados,
+                'menos_poblados': modulos_menos_poblados,
+            },
+        })
 
 
 class DashboardAlmacenView(APIView):
@@ -243,7 +408,9 @@ class DashboardAlmacenView(APIView):
             )
 
             for alta in altas:
-                cantidades_recibidas[alta['suministro_id']] = alta['total']
+                cantidades_recibidas[alta['suministro_id']] = (
+                    alta['total']
+                )
 
             if cantidades_solicitadas == cantidades_recibidas:
                 pedidos_correctos += 1
@@ -266,7 +433,9 @@ class DashboardAlmacenView(APIView):
         )
 
         for servicio in conteo_servicios:
-            bajas_por_servicio[servicio['servicio']] = servicio['total']
+            bajas_por_servicio[
+                servicio['servicio']
+            ] = servicio['total']
 
         stock_sin_stock = suministros.filter(
             stock=0
@@ -330,7 +499,122 @@ class DashboardAlmacenView(APIView):
         packs_entregados = {}
 
         for pack in entregas_por_pack:
-            packs_entregados[pack['pack__nombre']] = pack['total']
+            packs_entregados[
+                pack['pack__nombre']
+            ] = pack['total']
+
+        bajas_consumo = BajaAlmacen.objects.filter(
+            fecha__gte=hace_30_dias,
+            fecha__lte=hoy
+        )
+
+        suministros_mas_consumidos_query = bajas_consumo.values(
+            'suministro__id',
+            'suministro__nombre',
+            'suministro__unidad'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad',
+            'suministro__nombre'
+        )[:5]
+
+        suministros_mas_consumidos = []
+
+        for suministro in suministros_mas_consumidos_query:
+            suministros_mas_consumidos.append({
+                'id': suministro['suministro__id'],
+                'nombre': suministro['suministro__nombre'],
+                'unidad': suministro['suministro__unidad'],
+                'cantidad': suministro['cantidad'],
+            })
+
+        evolucion_principales = []
+
+        meses_consumo = []
+
+        año = hoy.year
+        mes = hoy.month
+
+        for _ in range(12):
+            meses_consumo.append({
+                'año': año,
+                'mes': mes
+            })
+
+            mes -= 1
+
+            if mes == 0:
+                mes = 12
+                año -= 1
+
+        meses_consumo.reverse()
+
+        for periodo in meses_consumo:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            consumos_mes = []
+
+            for suministro in suministros_mas_consumidos:
+                cantidad = BajaAlmacen.objects.filter(
+                    suministro_id=suministro['id'],
+                    fecha__gte=inicio_mes,
+                    fecha__lt=inicio_siguiente_mes
+                ).aggregate(
+                    total=Sum('cantidad')
+                )['total'] or 0
+
+                consumos_mes.append({
+                    'id': suministro['id'],
+                    'nombre': suministro['nombre'],
+                    'unidad': suministro['unidad'],
+                    'cantidad': cantidad,
+                })
+
+            evolucion_principales.append({
+                'mes': f'{año}-{mes:02d}',
+                'suministros': consumos_mes
+            })
+
+        consumo_por_categoria_query = bajas_consumo.values(
+            'suministro__categoria__nombre'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad'
+        )
+
+        consumo_por_categoria = {}
+
+        for categoria in consumo_por_categoria_query:
+            nombre_categoria = (
+                categoria['suministro__categoria__nombre']
+                or 'Sin asignar'
+            )
+
+            consumo_por_categoria[
+                nombre_categoria
+            ] = categoria['cantidad']
 
         return Response({
             'resumen': {
@@ -369,6 +653,12 @@ class DashboardAlmacenView(APIView):
                 'totales': packs_totales,
                 'entregas_por_pack': packs_entregados,
             },
+
+            'consumo': {
+                'suministros_mas_consumidos': suministros_mas_consumidos,
+                'por_categoria': consumo_por_categoria,
+                'evolucion_principales': evolucion_principales,
+            },
         })
 
 
@@ -378,6 +668,27 @@ class DashboardAdministracionView(APIView):
     def get(self, request):
         hoy = timezone.now().date()
         hace_30_dias = hoy - timedelta(days=30)
+
+        centro = Centro.get_solo()
+
+        presupuesto_referencia = centro.presupuesto_referencia
+        presupuesto_gasto_corriente = centro.presupuesto
+
+        presupuesto_gastado_gasto_corriente = (
+            presupuesto_referencia -
+            presupuesto_gasto_corriente
+        )
+
+        if presupuesto_referencia:
+            porcentaje_gastado_gasto_corriente = round(
+                (
+                    presupuesto_gastado_gasto_corriente /
+                    presupuesto_referencia
+                ) * 100,
+                2
+            )
+        else:
+            porcentaje_gastado_gasto_corriente = 0
 
         presupuesto_total_expedientes = Expediente.objects.aggregate(
             total=Sum('presupuesto')
@@ -403,12 +714,6 @@ class DashboardAdministracionView(APIView):
             expedientes_totales -
             expedientes_activos
         )
-
-        from centro.models import Centro
-
-        centro = Centro.get_solo()
-
-        presupuesto_gasto_corriente = centro.presupuesto
 
         pedidos_totales = Pedido.objects.count()
 
@@ -470,6 +775,87 @@ class DashboardAdministracionView(APIView):
             )['total'] or 0
         )
 
+        meses = []
+
+        año = hoy.year
+        mes = hoy.month
+
+        for _ in range(12):
+            meses.append({
+                'año': año,
+                'mes': mes
+            })
+
+            mes -= 1
+
+            if mes == 0:
+                mes = 12
+                año -= 1
+
+        meses.reverse()
+
+        evolucion_pedidos = []
+        evolucion_importe_generales = []
+
+        for periodo in meses:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            pedidos_expediente_mes = Pedido.objects.filter(
+                tipo_pedido=Pedido.TipoPedido.EXPEDIENTE,
+                fecha__gte=inicio_mes,
+                fecha__lt=inicio_siguiente_mes
+            ).count()
+
+            pedidos_generales_mes = Pedido.objects.filter(
+                tipo_pedido=Pedido.TipoPedido.GENERAL,
+                fecha__gte=inicio_mes,
+                fecha__lt=inicio_siguiente_mes
+            ).count()
+
+            importe_generales_mes = (
+                Pedido.objects.filter(
+                    tipo_pedido=Pedido.TipoPedido.GENERAL,
+                    fecha__gte=inicio_mes,
+                    fecha__lt=inicio_siguiente_mes
+                ).aggregate(
+                    total=Sum(
+                        F('detalles_pedido__cantidad') *
+                        F('detalles_pedido__precio_unidad')
+                    )
+                )['total'] or 0
+            )
+
+            evolucion_pedidos.append({
+                'mes': f'{año}-{mes:02d}',
+                'con_expediente': pedidos_expediente_mes,
+                'generales': pedidos_generales_mes,
+            })
+
+            evolucion_importe_generales.append({
+                'mes': f'{año}-{mes:02d}',
+                'importe': importe_generales_mes,
+            })
+
         proveedores_totales = Proveedor.objects.count()
 
         proveedores_por_importe = (
@@ -508,20 +894,52 @@ class DashboardAdministracionView(APIView):
                 'presupuesto_restante_expedientes':
                     presupuesto_restante_expedientes,
 
+                'presupuesto_referencia':
+                    presupuesto_referencia,
+
+                'presupuesto_gastado_gasto_corriente':
+                    presupuesto_gastado_gasto_corriente,
+
+                'presupuesto_gasto_corriente':
+                    presupuesto_gasto_corriente,
+
+                'porcentaje_gastado_gasto_corriente':
+                    porcentaje_gastado_gasto_corriente,
+
                 'expedientes_totales':
                     expedientes_totales,
 
                 'expedientes_activos':
                     expedientes_activos,
 
+                'expedientes_inactivos':
+                    expedientes_inactivos,
+
                 'pedidos_totales':
                     pedidos_totales,
 
                 'proveedores_totales':
                     proveedores_totales,
+            },
 
-                'presupuesto_gasto_corriente':
-                    presupuesto_gasto_corriente,
+            'expedientes': {
+                'totales':
+                    expedientes_totales,
+
+                'activos':
+                    expedientes_activos,
+
+                'inactivos':
+                    expedientes_inactivos,
+
+                'presupuesto_total':
+                    presupuesto_total_expedientes,
+
+                'presupuesto_gastado':
+                    presupuesto_gastado_expedientes,
+
+                'presupuesto_restante':
+                    presupuesto_restante_expedientes,
             },
 
             'pedidos': {
@@ -551,6 +969,12 @@ class DashboardAdministracionView(APIView):
 
                 'importe_generales_30_dias':
                     importe_pedidos_generales_30_dias,
+
+                'evolucion':
+                    evolucion_pedidos,
+
+                'evolucion_importe_generales':
+                    evolucion_importe_generales,
             },
 
             'proveedores': {

@@ -5,6 +5,7 @@ from solo.models import SingletonModel
 class Centro(SingletonModel):
     nombre = models.CharField(max_length=100)
     logo = models.ImageField(upload_to='centro/', null=True, blank=True)
+    presupuesto_referencia = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     presupuesto = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     correo = models.EmailField(max_length=254)
 

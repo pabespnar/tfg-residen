@@ -25,7 +25,7 @@
 
 .dashboard-resumen {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     margin-bottom: 35px;
 }
@@ -101,6 +101,10 @@
     overflow: hidden;
 }
 
+.dashboard-grafico-card-ancho {
+    grid-column: 1 / -1;
+}
+
 .dashboard-grafico-header {
     padding: 20px 24px 0;
 }
@@ -152,6 +156,57 @@
     font-size: 24px;
 }
 
+.dashboard-modulos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 25px;
+}
+
+.dashboard-modulo {
+    background: #f7f9f7;
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.dashboard-modulo-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.dashboard-modulo-info strong {
+    color: #222;
+    font-size: 16px;
+}
+
+.dashboard-modulo-info span {
+    color: #777;
+    font-size: 13px;
+}
+
+.dashboard-modulo-datos {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+}
+
+.dashboard-modulo-datos span {
+    color: #777;
+    font-size: 13px;
+}
+
+.dashboard-modulo-datos strong {
+    color: #1B5E20;
+    font-size: 18px;
+}
+
 .dashboard-cargando,
 .dashboard-error,
 .dashboard-vacio {
@@ -165,4 +220,12 @@
 
 .dashboard-error {
     color: #c62828;
+}
+
+.dashboard-seccion-movimientos {
+    margin-bottom: 35px;
+}
+
+.dashboard-grafico-movimientos {
+    margin-top: 25px;
 }

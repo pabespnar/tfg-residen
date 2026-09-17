@@ -25,14 +25,9 @@
 
 .dashboard-resumen {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     margin-bottom: 35px;
-}
-
-.dashboard-resumen-secundario {
-    grid-template-columns: repeat(3, 1fr);
-    margin-bottom: 0;
 }
 
 .dashboard-card {
@@ -101,6 +96,10 @@
     overflow: hidden;
 }
 
+.dashboard-grafico-card-ancho {
+    grid-column: 1 / -1;
+}
+
 .dashboard-grafico-header {
     padding: 20px 24px 0;
 }
@@ -150,6 +149,15 @@
 .dashboard-estadistica strong {
     color: #1B5E20;
     font-size: 24px;
+}
+
+.dashboard-estadistica small {
+    color: #888;
+    font-size: 12px;
+}
+
+.dashboard-seccion-evolucion {
+    margin-bottom: 35px;
 }
 
 .dashboard-cargando,
