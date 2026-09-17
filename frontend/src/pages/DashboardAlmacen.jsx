@@ -12,6 +12,8 @@ import {
     Legend,
     BarChart,
     Bar,
+    LineChart,
+    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -97,6 +99,7 @@ function DashboardAlmacen() {
         entradas,
         bajas,
         packs,
+        consumo,
     } = dashboard;
 
 
@@ -158,6 +161,78 @@ function DashboardAlmacen() {
         nombre,
         cantidad,
     }));
+
+
+    const datosSuministrosConsumidos =
+        consumo.suministros_mas_consumidos.map(
+            suministro => ({
+                nombre: suministro.nombre,
+                cantidad: suministro.cantidad,
+                unidad: suministro.unidad,
+            })
+        );
+
+
+    const datosCategorias = Object.entries(
+        consumo.por_categoria
+    ).map(([categoria, cantidad]) => ({
+        categoria,
+        cantidad,
+    }));
+
+
+    const datosEvolucionConsumo =
+        consumo.evolucion_principales.map(
+            periodo => {
+
+                const datosMes = {
+                    mes: periodo.mes,
+                };
+
+                periodo.suministros.forEach(
+                    (suministro, index) => {
+                        datosMes[`suministro_${index}`] =
+                            suministro.cantidad;
+                    }
+                );
+
+                return datosMes;
+            }
+        );
+
+
+    const nombresSuministros =
+        consumo.suministros_mas_consumidos.map(
+            (suministro, index) => ({
+                dataKey: `suministro_${index}`,
+                nombre: suministro.nombre,
+                unidad: suministro.unidad,
+            })
+        );
+
+
+    const formatearMes = mes => {
+        const [año, numeroMes] = mes.split('-');
+
+        const meses = [
+            'Ene',
+            'Feb',
+            'Mar',
+            'Abr',
+            'May',
+            'Jun',
+            'Jul',
+            'Ago',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dic',
+        ];
+
+        return `${meses[
+            parseInt(numeroMes, 10) - 1
+        ]} ${año}`;
+    };
 
 
     const coloresStock = [
@@ -332,77 +407,6 @@ function DashboardAlmacen() {
 
                     </div>
 
-
-                    <div className="dashboard-grafico-card">
-
-                        <div className="dashboard-grafico-header">
-
-                            <h2>
-                                Estado del stock
-                            </h2>
-
-                        </div>
-
-
-                        <div className="dashboard-grafico">
-
-                            {datosStock.length > 0 ? (
-
-                                <ResponsiveContainer
-                                    width="100%"
-                                    height={300}
-                                >
-
-                                    <PieChart>
-
-                                        <Pie
-                                            data={datosStock}
-                                            dataKey="valor"
-                                            nameKey="nombre"
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius={95}
-                                            innerRadius={55}
-                                            paddingAngle={3}
-                                            label
-                                        >
-
-                                            {datosStock.map(
-                                                (entry, index) => (
-                                                    <Cell
-                                                        key={`stock-${index}`}
-                                                        fill={
-                                                            coloresStock[
-                                                                index %
-                                                                coloresStock.length
-                                                            ]
-                                                        }
-                                                    />
-                                                )
-                                            )}
-
-                                        </Pie>
-
-                                        <Tooltip />
-
-                                        <Legend />
-
-                                    </PieChart>
-
-                                </ResponsiveContainer>
-
-                            ) : (
-
-                                <div className="dashboard-grafico-vacio">
-                                    No hay suministros.
-                                </div>
-
-                            )}
-
-                        </div>
-
-                    </div>
-
                 </div>
 
             </section>
@@ -418,6 +422,77 @@ function DashboardAlmacen() {
 
 
             <section className="dashboard-graficos">
+
+                <div className="dashboard-grafico-card">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Estado del stock
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {datosStock.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={300}
+                            >
+
+                                <PieChart>
+
+                                    <Pie
+                                        data={datosStock}
+                                        dataKey="valor"
+                                        nameKey="nombre"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={95}
+                                        innerRadius={55}
+                                        paddingAngle={3}
+                                        label
+                                    >
+
+                                        {datosStock.map(
+                                            (entry, index) => (
+                                                <Cell
+                                                    key={`stock-${index}`}
+                                                    fill={
+                                                        coloresStock[
+                                                            index %
+                                                            coloresStock.length
+                                                        ]
+                                                    }
+                                                />
+                                            )
+                                        )}
+
+                                    </Pie>
+
+                                    <Tooltip />
+
+                                    <Legend />
+
+                                </PieChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay suministros.
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
 
                 <div className="dashboard-grafico-card">
 
@@ -475,39 +550,63 @@ function DashboardAlmacen() {
 
                 </div>
 
+
                 <div className="dashboard-grafico-card">
+
                     <div className="dashboard-grafico-header">
-                        <h2>Suministros sin stock</h2>
+
+                        <h2>
+                            Suministros sin stock
+                        </h2>
+
                     </div>
+
+
                     <div className="dashboard-estadisticas-almacen">
+
                         {stock.suministros_sin_stock.length > 0 ? (
+
                             stock.suministros_sin_stock.map(
                                 suministro => (
+
                                     <div
                                         className="dashboard-estadistica"
                                         key={suministro.id}
                                     >
-                                        <span>{suministro.nombre}</span>
+
+                                        <span>
+                                            {suministro.nombre}
+                                        </span>
+
                                         <strong>
                                             {suministro.stock}
                                             {' '}
                                             {suministro.unidad}
                                         </strong>
+
                                         <small>
                                             Mínimo: {suministro.stock_minimo}
                                             {' '}
                                             {suministro.unidad}
                                         </small>
+
                                     </div>
+
                                 )
                             )
+
                         ) : (
+
                             <div className="dashboard-grafico-vacio">
                                 No hay suministros sin stock.
                             </div>
+
                         )}
+
                     </div>
+
                 </div>
+
             </section>
 
 
@@ -542,7 +641,7 @@ function DashboardAlmacen() {
                         <div className="dashboard-estadistica">
 
                             <span>
-                                Pedidos recibidos sin alta
+                                Pedidos pendientes
                             </span>
 
                             <strong>
@@ -645,7 +744,7 @@ function DashboardAlmacen() {
                     <div className="dashboard-grafico-header">
 
                         <h2>
-                            Bajas por servicio
+                            Suministros más consumidos
                         </h2>
 
                     </div>
@@ -653,7 +752,7 @@ function DashboardAlmacen() {
 
                     <div className="dashboard-grafico">
 
-                        {datosServicios.length > 0 ? (
+                        {datosSuministrosConsumidos.length > 0 ? (
 
                             <ResponsiveContainer
                                 width="100%"
@@ -661,11 +760,12 @@ function DashboardAlmacen() {
                             >
 
                                 <BarChart
-                                    data={datosServicios}
+                                    data={datosSuministrosConsumidos}
+                                    layout="vertical"
                                     margin={{
                                         top: 10,
                                         right: 20,
-                                        left: 0,
+                                        left: 20,
                                         bottom: 10,
                                     }}
                                 >
@@ -675,23 +775,26 @@ function DashboardAlmacen() {
                                     />
 
                                     <XAxis
-                                        dataKey="servicio"
+                                        type="number"
+                                        allowDecimals={false}
                                     />
 
                                     <YAxis
-                                        allowDecimals={false}
+                                        type="category"
+                                        dataKey="nombre"
+                                        width={100}
                                     />
 
                                     <Tooltip />
 
                                     <Bar
                                         dataKey="cantidad"
-                                        name="Bajas"
+                                        name="Cantidad"
                                         fill="#1B5E20"
                                         radius={[
-                                            5,
-                                            5,
                                             0,
+                                            5,
+                                            5,
                                             0,
                                         ]}
                                     />
@@ -703,7 +806,7 @@ function DashboardAlmacen() {
                         ) : (
 
                             <div className="dashboard-grafico-vacio">
-                                No hay bajas por servicio.
+                                No hay consumo de suministros.
                             </div>
 
                         )}
@@ -718,7 +821,7 @@ function DashboardAlmacen() {
                     <div className="dashboard-grafico-header">
 
                         <h2>
-                            Packs más entregados
+                            Consumo por categoría
                         </h2>
 
                     </div>
@@ -726,7 +829,7 @@ function DashboardAlmacen() {
 
                     <div className="dashboard-grafico">
 
-                        {datosPacks.length > 0 ? (
+                        {datosCategorias.length > 0 ? (
 
                             <ResponsiveContainer
                                 width="100%"
@@ -734,7 +837,7 @@ function DashboardAlmacen() {
                             >
 
                                 <BarChart
-                                    data={datosPacks}
+                                    data={datosCategorias}
                                     margin={{
                                         top: 10,
                                         right: 20,
@@ -748,7 +851,7 @@ function DashboardAlmacen() {
                                     />
 
                                     <XAxis
-                                        dataKey="nombre"
+                                        dataKey="categoria"
                                     />
 
                                     <YAxis
@@ -759,7 +862,7 @@ function DashboardAlmacen() {
 
                                     <Bar
                                         dataKey="cantidad"
-                                        name="Entregas"
+                                        name="Cantidad"
                                         fill="#1B5E20"
                                         radius={[
                                             5,
@@ -776,10 +879,259 @@ function DashboardAlmacen() {
                         ) : (
 
                             <div className="dashboard-grafico-vacio">
-                                No hay entregas de packs.
+                                No hay consumo por categoría.
                             </div>
 
                         )}
+
+                    </div>
+
+                </div>
+
+
+                <div className="dashboard-grafico-card dashboard-grafico-card-ancho">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Evolución del consumo de los principales
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {datosEvolucionConsumo.length > 0 &&
+                        nombresSuministros.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={350}
+                            >
+
+                                <LineChart
+                                    data={datosEvolucionConsumo}
+                                    margin={{
+                                        top: 10,
+                                        right: 30,
+                                        left: 0,
+                                        bottom: 10,
+                                    }}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        dataKey="mes"
+                                        tickFormatter={formatearMes}
+                                    />
+
+                                    <YAxis
+                                        allowDecimals={false}
+                                    />
+
+                                    <Tooltip
+                                        labelFormatter={formatearMes}
+                                    />
+
+                                    <Legend />
+
+                                    {nombresSuministros.map(
+                                        suministro => (
+                                            <Line
+                                                key={suministro.dataKey}
+                                                type="monotone"
+                                                dataKey={suministro.dataKey}
+                                                name={suministro.nombre}
+                                                strokeWidth={2}
+                                                dot={{
+                                                    r: 3,
+                                                }}
+                                            />
+                                        )
+                                    )}
+
+                                </LineChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay datos de evolución del consumo.
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section className="dashboard-seccion">
+
+                <div className="dashboard-seccion-header">
+
+                    <h2>
+                        Salidas
+                    </h2>
+
+                    <span>
+                        Últimos 30 días
+                    </span>
+
+                </div>
+
+
+                <div className="dashboard-graficos">
+
+                    <div className="dashboard-grafico-card">
+
+                        <div className="dashboard-grafico-header">
+
+                            <h2>
+                                Bajas por servicio
+                            </h2>
+
+                        </div>
+
+
+                        <div className="dashboard-grafico">
+
+                            {datosServicios.length > 0 ? (
+
+                                <ResponsiveContainer
+                                    width="100%"
+                                    height={300}
+                                >
+
+                                    <BarChart
+                                        data={datosServicios}
+                                        margin={{
+                                            top: 10,
+                                            right: 20,
+                                            left: 0,
+                                            bottom: 10,
+                                        }}
+                                    >
+
+                                        <CartesianGrid
+                                            strokeDasharray="3 3"
+                                        />
+
+                                        <XAxis
+                                            dataKey="servicio"
+                                        />
+
+                                        <YAxis
+                                            allowDecimals={false}
+                                        />
+
+                                        <Tooltip />
+
+                                        <Bar
+                                            dataKey="cantidad"
+                                            name="Bajas"
+                                            fill="#1B5E20"
+                                            radius={[
+                                                5,
+                                                5,
+                                                0,
+                                                0,
+                                            ]}
+                                        />
+
+                                    </BarChart>
+
+                                </ResponsiveContainer>
+
+                            ) : (
+
+                                <div className="dashboard-grafico-vacio">
+                                    No hay bajas por servicio.
+                                </div>
+
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico-card">
+
+                        <div className="dashboard-grafico-header">
+
+                            <h2>
+                                Packs más entregados
+                            </h2>
+
+                        </div>
+
+
+                        <div className="dashboard-grafico">
+
+                            {datosPacks.length > 0 ? (
+
+                                <ResponsiveContainer
+                                    width="100%"
+                                    height={300}
+                                >
+
+                                    <BarChart
+                                        data={datosPacks}
+                                        margin={{
+                                            top: 10,
+                                            right: 20,
+                                            left: 0,
+                                            bottom: 10,
+                                        }}
+                                    >
+
+                                        <CartesianGrid
+                                            strokeDasharray="3 3"
+                                        />
+
+                                        <XAxis
+                                            dataKey="nombre"
+                                        />
+
+                                        <YAxis
+                                            allowDecimals={false}
+                                        />
+
+                                        <Tooltip />
+
+                                        <Bar
+                                            dataKey="cantidad"
+                                            name="Entregas"
+                                            fill="#1B5E20"
+                                            radius={[
+                                                5,
+                                                5,
+                                                0,
+                                                0,
+                                            ]}
+                                        />
+
+                                    </BarChart>
+
+                                </ResponsiveContainer>
+
+                            ) : (
+
+                                <div className="dashboard-grafico-vacio">
+                                    No hay entregas de packs.
+                                </div>
+
+                            )}
+
+                        </div>
 
                     </div>
 

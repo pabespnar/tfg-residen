@@ -57,7 +57,7 @@ class DashboardResidentesView(APIView):
         generos = {
             'M': 0,
             'F': 0,
-            'O': 0,
+            'O': 0
         }
 
         if total_generos:
@@ -112,7 +112,7 @@ class DashboardResidentesView(APIView):
             '1-3 meses': 0,
             '3-6 meses': 0,
             '6-12 meses': 0,
-            '12 meses o más': 0,
+            '12 meses o más': 0
         }
 
         for residente in estancias:
@@ -157,7 +157,9 @@ class DashboardResidentesView(APIView):
         edades = dict(
             sorted(
                 edades.items(),
-                key=lambda item: int(item[0].split('-')[0])
+                key=lambda item: int(
+                    item[0].split('-')[0]
+                )
             )
         )
 
@@ -168,16 +170,16 @@ class DashboardResidentesView(APIView):
         habitaciones_completas = 0
 
         for habitacion in Habitacion.objects.all():
-            residentes_actuales_habitacion = habitacion.residentes.filter(
-                activo=True
-            ).count()
+            residentes_actuales_habitacion = (
+                habitacion.residentes.filter(
+                    activo=True
+                ).count()
+            )
 
             if residentes_actuales_habitacion == 0:
                 habitaciones_vacias += 1
-
             elif residentes_actuales_habitacion >= habitacion.capacidad:
                 habitaciones_completas += 1
-
             else:
                 habitaciones_parciales += 1
 
@@ -186,6 +188,7 @@ class DashboardResidentesView(APIView):
         for habitacion in Habitacion.objects.select_related(
             'modulo'
         ).all():
+
             nombre_modulo = habitacion.modulo.nombre
 
             if nombre_modulo not in modulos:
@@ -193,22 +196,29 @@ class DashboardResidentesView(APIView):
                     'id': habitacion.modulo.id,
                     'nombre': nombre_modulo,
                     'capacidad': 0,
-                    'residentes': 0,
+                    'residentes': 0
                 }
 
-            residentes_habitacion = habitacion.residentes.filter(
-                activo=True
-            ).count()
+            residentes_habitacion = (
+                habitacion.residentes.filter(
+                    activo=True
+                ).count()
+            )
 
-            modulos[nombre_modulo]['capacidad'] += habitacion.capacidad
-            modulos[nombre_modulo]['residentes'] += residentes_habitacion
+            modulos[nombre_modulo]['capacidad'] += (
+                habitacion.capacidad
+            )
+
+            modulos[nombre_modulo]['residentes'] += (
+                residentes_habitacion
+            )
 
         for modulo in modulos.values():
             if modulo['capacidad']:
                 modulo['ocupacion_porcentaje'] = round(
                     (
-                        modulo['residentes'] /
-                        modulo['capacidad']
+                        modulo['residentes']
+                        / modulo['capacidad']
                     ) * 100,
                     2
                 )
@@ -239,7 +249,7 @@ class DashboardResidentesView(APIView):
         for _ in range(12):
             meses.append({
                 'año': año,
-                'mes': mes,
+                'mes': mes
             })
 
             mes -= 1
@@ -288,7 +298,7 @@ class DashboardResidentesView(APIView):
             evolucion_mensual.append({
                 'mes': f'{año}-{mes:02d}',
                 'altas': altas,
-                'bajas': bajas,
+                'bajas': bajas
             })
 
         return Response({
@@ -397,7 +407,9 @@ class DashboardAlmacenView(APIView):
             )
 
             for alta in altas:
-                cantidades_recibidas[alta['suministro_id']] = alta['total']
+                cantidades_recibidas[alta['suministro_id']] = (
+                    alta['total']
+                )
 
             if cantidades_solicitadas == cantidades_recibidas:
                 pedidos_correctos += 1
@@ -420,7 +432,9 @@ class DashboardAlmacenView(APIView):
         )
 
         for servicio in conteo_servicios:
-            bajas_por_servicio[servicio['servicio']] = servicio['total']
+            bajas_por_servicio[
+                servicio['servicio']
+            ] = servicio['total']
 
         stock_sin_stock = suministros.filter(
             stock=0
@@ -484,7 +498,130 @@ class DashboardAlmacenView(APIView):
         packs_entregados = {}
 
         for pack in entregas_por_pack:
-            packs_entregados[pack['pack__nombre']] = pack['total']
+            packs_entregados[
+                pack['pack__nombre']
+            ] = pack['total']
+
+        bajas_consumo = BajaAlmacen.objects.filter(
+            fecha__gte=hace_30_dias,
+            fecha__lte=hoy
+        )
+
+        suministros_mas_consumidos_query = bajas_consumo.values(
+            'suministro__id',
+            'suministro__nombre',
+            'suministro__unidad'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad',
+            'suministro__nombre'
+        )[:5]
+
+        suministros_mas_consumidos = []
+
+        for suministro in suministros_mas_consumidos_query:
+            suministros_mas_consumidos.append({
+                'id': suministro['suministro__id'],
+                'nombre': suministro['suministro__nombre'],
+                'unidad': suministro['suministro__unidad'],
+                'cantidad': suministro['cantidad'],
+            })
+
+        ids_suministros_principales = [
+            suministro['id']
+            for suministro in suministros_mas_consumidos
+        ]
+
+        evolucion_principales = []
+
+        for periodo in meses if 'meses' in locals() else []:
+            pass
+
+        meses_consumo = []
+
+        año = hoy.year
+        mes = hoy.month
+
+        for _ in range(12):
+            meses_consumo.append({
+                'año': año,
+                'mes': mes
+            })
+
+            mes -= 1
+
+            if mes == 0:
+                mes = 12
+                año -= 1
+
+        meses_consumo.reverse()
+
+        for periodo in meses_consumo:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            consumos_mes = []
+
+            for suministro in suministros_mas_consumidos:
+                cantidad = BajaAlmacen.objects.filter(
+                    suministro_id=suministro['id'],
+                    fecha__gte=inicio_mes,
+                    fecha__lt=inicio_siguiente_mes
+                ).aggregate(
+                    total=Sum('cantidad')
+                )['total'] or 0
+
+                consumos_mes.append({
+                    'id': suministro['id'],
+                    'nombre': suministro['nombre'],
+                    'unidad': suministro['unidad'],
+                    'cantidad': cantidad,
+                })
+
+            evolucion_principales.append({
+                'mes': f'{año}-{mes:02d}',
+                'suministros': consumos_mes
+            })
+
+        consumo_por_categoria_query = bajas_consumo.values(
+            'suministro__categoria__nombre'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad'
+        )
+
+        consumo_por_categoria = {}
+
+        for categoria in consumo_por_categoria_query:
+            nombre_categoria = (
+                categoria['suministro__categoria__nombre']
+                or 'Sin asignar'
+            )
+
+            consumo_por_categoria[
+                nombre_categoria
+            ] = categoria['cantidad']
 
         return Response({
             'resumen': {
@@ -522,6 +659,12 @@ class DashboardAlmacenView(APIView):
             'packs': {
                 'totales': packs_totales,
                 'entregas_por_pack': packs_entregados,
+            },
+
+            'consumo': {
+                'suministros_mas_consumidos': suministros_mas_consumidos,
+                'por_categoria': consumo_por_categoria,
+                'evolucion_principales': evolucion_principales,
             },
         })
 
