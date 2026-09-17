@@ -60,7 +60,7 @@ const ModulosYHabitaciones = () => {
 
     const [nombreHabitacionEditar, setNombreHabitacionEditar] = useState("");
     const [infoHabitacionEditar, setInfoHabitacionEditar] = useState("");
-    const [capacidadHabitacionEditar] =
+    const [capacidadHabitacionEditar, setCapacidadHabitacionEditar] =
         useState("");
 
     const [erroresEditarHabitacion, setErroresEditarHabitacion] =
@@ -1779,8 +1779,7 @@ const ModulosYHabitaciones = () => {
 
                             {erroresEditarHabitacion.info && (
                                 <p className="crear-modulo-error">
-                                    {erroresEditarHabitacion.info
-                                    }
+                                    {erroresEditarHabitacion.info}
                                 </p>
                             )}
                         </div>
