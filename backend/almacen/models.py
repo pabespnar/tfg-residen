@@ -30,6 +30,11 @@ class BajaAlmacen(models.Model):
     servicio = models.CharField(max_length=20, choices=Servicio.choices, null=True)
     stock_tras_baja = models.PositiveIntegerField()
 
+    class Meta:
+        verbose_name = 'Baja de almacén'
+        verbose_name_plural = 'Bajas de almacén'
+
+
 
 class AltaAlmacen(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.PROTECT, related_name='altas')
@@ -43,3 +48,7 @@ class AltaAlmacen(models.Model):
 
     def __str__(self):
         return f'{self.suministro.nombre} - {self.cantidad}'
+
+    class Meta:
+        verbose_name = 'Alta de almacén'
+        verbose_name_plural = 'Altas de almacén'

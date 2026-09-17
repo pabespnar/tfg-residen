@@ -22,6 +22,8 @@ class Notificacion(Evento):
 
     class Meta:
         ordering = ['-fecha']
+        verbose_name = 'Notificación'
+        verbose_name_plural = 'Notificaciones'
 
 
 class Historial(Evento):
@@ -35,3 +37,5 @@ class Historial(Evento):
 
     class Meta:
         ordering = ['-fecha']
+        verbose_name = 'Historial'
+        verbose_name_plural = 'Historial'
