@@ -533,11 +533,6 @@ class DashboardAlmacenView(APIView):
             for suministro in suministros_mas_consumidos
         ]
 
-        evolucion_principales = []
-
-        for periodo in meses if 'meses' in locals() else []:
-            pass
-
         meses_consumo = []
 
         año = hoy.year
