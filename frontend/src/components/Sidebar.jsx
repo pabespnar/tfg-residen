@@ -56,6 +56,15 @@ function Sidebar({ setAutenticado, rol }) {
                             <li
                                 className="sideItem"
                                 onClick={() =>
+                                    navigate('/historial')
+                                }
+                            >
+                                Historial
+                            </li>
+
+                            <li
+                                className="sideItem"
+                                onClick={() =>
                                     navigate('/dashboard_residentes')
                                 }
                             >
@@ -96,6 +105,15 @@ function Sidebar({ setAutenticado, rol }) {
                             <li
                                 className="sideItem"
                                 onClick={() =>
+                                    navigate('/historial')
+                                }
+                            >
+                                Historial
+                            </li>
+
+                            <li
+                                className="sideItem"
+                                onClick={() =>
                                     navigate('/dashboard_almacen')
                                 }
                             >
@@ -114,6 +132,7 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Expedientes
                             </li>
+
                             <li
                                 className="sideItem"
                                 onClick={() =>
@@ -122,6 +141,7 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Pedidos
                             </li>
+
                             <li
                                 className="sideItem"
                                 onClick={() =>
@@ -130,6 +150,7 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Proveedores
                             </li>
+
                             <li
                                 className="sideItem"
                                 onClick={() =>
@@ -138,6 +159,16 @@ function Sidebar({ setAutenticado, rol }) {
                             >
                                 Suministros
                             </li>
+
+                            <li
+                                className="sideItem"
+                                onClick={() =>
+                                    navigate('/historial')
+                                }
+                            >
+                                Historial
+                            </li>
+
                             <li
                                 className="sideItem"
                                 onClick={() =>

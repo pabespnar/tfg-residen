@@ -35,6 +35,7 @@ import CrearExpediente from "./pages/CrearExpediente"
 import SuministrosAdministracion from "./pages/SuministrosAdministracion"
 import DashboardAdministracion from './pages/DashboardAdministracion';
 import SuministrosResidentes from "./pages/SuministrosResidentes"
+import Historial from "./pages/Historial"
 
 
 function tokenValido() {
@@ -256,6 +257,11 @@ function App() {
                             element={<CambiarContrasena />}
                         />
 
+                        <Route
+                            path="/historial"
+                            element={<Historial />}
+                        />
+
                         {rol === "residentes" && (
                             <>
                                 <Route
@@ -287,14 +293,17 @@ function App() {
                                     path="/modulos/:moduloId/habitacion/:habitacionId"
                                     element={<VerHabitacion />}
                                 />
+
                                 <Route
                                     path="/historico_residentes"
                                     element={<VerHistoricoResidentes />}
                                 />
+
                                 <Route
                                     path="/suministrosResidentes"
                                     element={<SuministrosResidentes />}
                                 />
+
                                 <Route
                                     path="/dashboard_residentes"
                                     element={<DashboardResidentes />}
@@ -338,6 +347,7 @@ function App() {
                                     path="/almacen/altas"
                                     element={<AltasAlmacen />}
                                 />
+
                                 <Route
                                     path="/dashboard_almacen"
                                     element={<DashboardAlmacen />}
@@ -351,34 +361,41 @@ function App() {
                                     path="/expedientes"
                                     element={<Expedientes />}
                                 />
+
                                 <Route
                                     path="/expedientes/:id"
                                     element={<VerExpediente />}
                                 />
+
                                 <Route
                                     path="/pedidos"
                                     element={<Pedidos />}
                                 />
+
                                 <Route
                                     path="/pedidos/:id"
                                     element={<VerPedido />}
                                 />
+
                                 <Route
                                     path="/proveedores"
                                     element={<Proveedores />}
                                 />
+
                                 <Route
                                     path="/expedientes/nuevo"
                                     element={<CrearExpediente />}
                                 />
+
                                 <Route
                                     path="/suministrosAdministracion"
                                     element={<SuministrosAdministracion />}
                                 />
+
                                 <Route
                                     path="/dashboard_administracion"
                                     element={<DashboardAdministracion />}
-                                />                                    
+                                />
                             </>
                         )}
 
