@@ -9,6 +9,7 @@ from suministros.models import Suministro
 from .serializers import AltaAlmacenSerializer, BajaAlmacenSerializer
 from expedientes.models import Pedido, DetallePedido
 from suministros.permissions import EsGestorAlmacen
+from evento.models import Historial
 
 
 class ListaBajasAlmacenView(APIView):
@@ -152,6 +153,36 @@ class CrearBajaServicioView(APIView):
                 )
 
                 bajas_creadas.append(baja)
+
+            servicio_nombre = dict(
+                BajaAlmacen.Servicio.choices
+            ).get(
+                servicio,
+                servicio
+            )
+
+            contenido_historial = '\n'.join(
+                (
+                    f'{baja.cantidad} '
+                    f'{baja.suministro.unidad} '
+                    f'de {baja.suministro.nombre}.'
+                )
+                for baja in bajas_creadas
+            )
+
+            Historial.objects.create(
+                tipo='Baja de almacén',
+                descripcion=(
+                    f'Se ha realizado una baja de almacén '
+                    f'para el servicio {servicio_nombre}.\n\n'
+                    f'Observaciones:\n'
+                    f'{observaciones.strip()}.\n\n'
+                    f'Suministros retirados:\n'
+                    f'{contenido_historial}'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
 
         serializer = BajaAlmacenSerializer(
             bajas_creadas,
@@ -317,6 +348,34 @@ class CrearAltaAlmacenView(APIView):
 
             pedido.save(
                 update_fields=['recibido']
+            )
+
+            contenido_historial = '\n'.join(
+                (
+                    f'{alta["cantidad"]} '
+                    f'{alta["detalle_pedido"].suministro.unidad} '
+                    f'de {alta["detalle_pedido"].suministro.nombre}.'
+                )
+                for alta in altas
+            )
+
+            resultado_esperado = all(
+                alta['cantidad'] == alta['detalle_pedido'].cantidad
+                for alta in altas
+            )
+
+            Historial.objects.create(
+                tipo='Alta de almacén',
+                descripcion=(
+                    f'Se ha registrado la recepción del pedido '
+                    f'{pedido.nombre}.\n\n'
+                    f'Suministros recibidos:\n'
+                    f'{contenido_historial}\n\n'
+                    f'Resultado esperado: '
+                    f'{"Correcto" if resultado_esperado else "Erróneo"}.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
             )
 
         serializer = AltaAlmacenSerializer(

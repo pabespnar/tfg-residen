@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 import json
 
-
 from .permissions import EsGestorAdministracion, EsGestorAlmacenOAdministracion
 from decimal import Decimal, InvalidOperation
 
@@ -16,6 +15,7 @@ from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSe
 from django.utils import timezone
 from suministros.models import Suministro
 from suministros.serializers import SuministroSerializer
+from evento.models import Historial
 
 
 class ListaExpedientesView(APIView):
@@ -153,6 +153,7 @@ class CrearExpedienteView(APIView):
                     },
                     status=400
                 )
+
             hoy = timezone.now().date()
 
             if DetalleExpediente.objects.filter(
@@ -170,6 +171,7 @@ class CrearExpedienteView(APIView):
                     },
                     status=400
                 )
+
         with transaction.atomic():
 
             expediente = serializer.save(
@@ -189,6 +191,46 @@ class CrearExpedienteView(APIView):
                 detalle_serializer.is_valid(raise_exception=True)
                 detalle_serializer.save()
 
+            contenido_historial = '\n'.join(
+                (
+                    f'{suministro_obj.cantidad if hasattr(suministro_obj, "cantidad") else suministro["precio_unidad"]} '
+                )
+                for suministro_obj, suministro in []
+            )
+
+            detalles_creados = expediente.detalles_expediente.select_related(
+                'suministro'
+            ).all().order_by('id')
+
+            contenido_historial = '\n'.join(
+                (
+                    f'{detalle.suministro.nombre} '
+                    f'a {detalle.precio_unidad:.2f} € por unidad.'
+                )
+                for detalle in detalles_creados
+            )
+
+            Historial.objects.create(
+                tipo='Alta de expediente',
+                descripcion=(
+                    f'Se ha creado el expediente '
+                    f'{expediente.nombre}.\n\n'
+                    f'Detalles:\n'
+                    f'{expediente.detalles}.\n\n'
+                    f'Proveedor:\n'
+                    f'{expediente.proveedor.nombre}.\n\n'
+                    f'Periodo:\n'
+                    f'{expediente.fecha_inicio.strftime("%d/%m/%Y")} - '
+                    f'{expediente.fecha_final.strftime("%d/%m/%Y")}.\n\n'
+                    f'Presupuesto:\n'
+                    f'{expediente.presupuesto:.2f} €.\n\n'
+                    f'Suministros:\n'
+                    f'{contenido_historial}'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
+
         return Response(
             {
                 'expediente': ExpedienteSerializer(
@@ -201,6 +243,7 @@ class CrearExpedienteView(APIView):
             },
             status=201
         )
+
 
 class ListaPedidosView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
@@ -236,7 +279,6 @@ class ListaPedidosRecibidosView(APIView):
         )
 
         return Response(serializer.data)
-
 
 
 class ListaDetallesPedidoView(APIView):
@@ -299,6 +341,8 @@ class VerExpedienteView(APIView):
             'detalles': detalles_serializer.data,
             'pedidos': pedidos_serializer.data,
         })
+
+
 class CrearPedidoExpedienteView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
 
@@ -440,6 +484,33 @@ class CrearPedidoExpedienteView(APIView):
                 update_fields=['presupuesto_restante']
             )
 
+            contenido_historial = '\n'.join(
+                (
+                    f'{detalle["cantidad"]} '
+                    f'{detalle["suministro"].unidad} '
+                    f'de {detalle["suministro"].nombre} '
+                    f'a {detalle["precio_unidad"]:.2f} € por unidad.'
+                )
+                for detalle in detalles_pedido
+            )
+
+            Historial.objects.create(
+                tipo='Alta de pedido',
+                descripcion=(
+                    f'Se ha creado el pedido {pedido.nombre}.\n\n'
+                    f'Expediente:\n'
+                    f'{expediente.nombre}.\n\n'
+                    f'Proveedor:\n'
+                    f'{expediente.proveedor.nombre}.\n\n'
+                    f'Suministros solicitados:\n'
+                    f'{contenido_historial}\n\n'
+                    f'Coste total:\n'
+                    f'{total:.2f} €.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
+
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
             f'Hola, {expediente.proveedor.nombre}.\n\n'
@@ -471,6 +542,7 @@ class CrearPedidoExpedienteView(APIView):
             },
             status=201
         )
+
 
 class VerPedidoView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacenOAdministracion]
@@ -505,6 +577,8 @@ class VerPedidoView(APIView):
             'pedido': pedido_serializer.data,
             'detalles': detalles_serializer.data,
         })
+
+
 class ListaSuministrosDisponiblesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
 
@@ -688,7 +762,7 @@ class CrearPedidoGeneralView(APIView):
             centro = Centro.objects.select_for_update().get(
                 pk=Centro.get_solo().pk
             )
-            
+
             if total > centro.presupuesto:
                 return Response(
                     {
@@ -731,6 +805,33 @@ class CrearPedidoGeneralView(APIView):
                 update_fields=['presupuesto']
             )
 
+            contenido_historial = '\n'.join(
+                (
+                    f'{detalle["cantidad"]} '
+                    f'{detalle["suministro"].unidad} '
+                    f'de {detalle["suministro"].nombre} '
+                    f'a {detalle["precio_unidad"]:.2f} € por unidad.'
+                )
+                for detalle in detalles_pedido
+            )
+
+            Historial.objects.create(
+                tipo='Alta de pedido',
+                descripcion=(
+                    f'Se ha creado el pedido {pedido.nombre}.\n\n'
+                    f'Tipo:\n'
+                    f'Gasto general.\n\n'
+                    f'Proveedor:\n'
+                    f'{proveedor.nombre}.\n\n'
+                    f'Suministros solicitados:\n'
+                    f'{contenido_historial}\n\n'
+                    f'Coste total:\n'
+                    f'{total:.2f} €.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
+
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
             f'Hola, {proveedor.nombre}.\n\n'
@@ -765,6 +866,7 @@ class CrearPedidoGeneralView(APIView):
             status=201
         )
 
+
 class ListaProveedoresView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
 
@@ -781,6 +883,7 @@ class ListaProveedoresView(APIView):
 
         return Response(serializer.data)
 
+
 class EditarProveedorView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
     parser_classes = [MultiPartParser, FormParser]
@@ -795,6 +898,31 @@ class EditarProveedorView(APIView):
                 status=404
             )
 
+        campos = {
+            'nombre': 'Nombre',
+            'cif': 'CIF',
+            'correo': 'Correo',
+            'foto': 'Foto'
+        }
+
+        valores_anteriores = {}
+
+        for campo in campos:
+            if campo in request.data or (
+                campo == 'foto' and campo in request.FILES
+            ):
+                if campo == 'foto':
+                    valores_anteriores[campo] = (
+                        proveedor.foto.name
+                        if proveedor.foto
+                        else None
+                    )
+                else:
+                    valores_anteriores[campo] = getattr(
+                        proveedor,
+                        campo
+                    )
+
         serializer = ProveedorSerializer(
             proveedor,
             data=request.data,
@@ -802,7 +930,69 @@ class EditarProveedorView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+            proveedor = serializer.save()
+
+            cambios = []
+
+            for campo, nombre_campo in campos.items():
+                if campo not in valores_anteriores:
+                    continue
+
+                if campo == 'foto':
+                    valor_nuevo = (
+                        proveedor.foto.name
+                        if proveedor.foto
+                        else None
+                    )
+
+                    if valores_anteriores[campo] != valor_nuevo:
+                        if valor_nuevo:
+                            cambios.append(
+                                f'{nombre_campo}: Foto modificada.'
+                            )
+                        else:
+                            cambios.append(
+                                f'{nombre_campo}: Foto eliminada.'
+                            )
+                else:
+                    valor_nuevo = getattr(
+                        proveedor,
+                        campo
+                    )
+
+                    valor_anterior = valores_anteriores[campo]
+
+                    if str(valor_anterior) != str(valor_nuevo):
+                        if valor_anterior in [None, '']:
+                            valor_anterior = 'Sin especificar'
+
+                        if valor_nuevo in [None, '']:
+                            valor_nuevo = 'Sin especificar'
+
+                        cambios.append(
+                            f'{nombre_campo}: '
+                            f'{valor_anterior} → {valor_nuevo}'
+                        )
+
+            if cambios:
+                descripcion_cambios = '\n'.join(cambios)
+            else:
+                descripcion_cambios = (
+                    'No se han producido cambios en los datos '
+                    'del proveedor.'
+                )
+
+            Historial.objects.create(
+                tipo='Edición de proveedor',
+                descripcion=(
+                    f'Se han modificado los datos del proveedor '
+                    f'{proveedor.nombre}.\n'
+                    f'{descripcion_cambios}'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
+
             return Response(
                 ProveedorSerializer(proveedor).data
             )
@@ -811,6 +1001,7 @@ class EditarProveedorView(APIView):
             serializer.errors,
             status=400
         )
+
 
 class EliminarProveedorView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
@@ -847,12 +1038,26 @@ class EliminarProveedorView(APIView):
                 status=400
             )
 
+        nombre_proveedor = proveedor.nombre
+
         proveedor.delete()
+
+        Historial.objects.create(
+            tipo='Baja de proveedor',
+            descripcion=(
+                f'Se ha eliminado el proveedor '
+                f'{nombre_proveedor}.'
+            ),
+            rol=request.user.rol,
+            usuario=request.user
+        )
 
         return Response(
             {"mensaje": "Proveedor eliminado correctamente."},
             status=200
         )
+
+
 class CrearProveedorView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
     parser_classes = [MultiPartParser, FormParser]
@@ -865,6 +1070,18 @@ class CrearProveedorView(APIView):
 
         if serializer.is_valid():
             proveedor = serializer.save()
+
+            Historial.objects.create(
+                tipo='Alta de proveedor',
+                descripcion=(
+                    f'Se ha creado el proveedor '
+                    f'{proveedor.nombre}.\n'
+                    f'CIF: {proveedor.cif}.\n'
+                    f'Correo: {proveedor.correo}.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
 
             return Response(
                 ProveedorSerializer(proveedor).data,

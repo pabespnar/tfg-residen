@@ -11,6 +11,8 @@ from almacen.models import BajaAlmacen
 from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
 from django.db import transaction
+from evento.models import Historial
+
 
 class ListaSuministrosView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacenOAdministracion]
@@ -57,6 +59,29 @@ class EditarSuministroView(APIView):
                 status=404
             )
 
+        campos = {
+            'detalles': 'Detalles',
+            'stock_minimo': 'Stock mínimo',
+            'categoria': 'Categoría'
+        }
+
+        valores_anteriores = {}
+
+        for campo in campos:
+            if campo in request.data:
+                if campo == 'categoria':
+                    categoria_anterior = suministro.categoria
+                    valores_anteriores[campo] = (
+                        categoria_anterior.nombre
+                        if categoria_anterior
+                        else 'Sin asignar'
+                    )
+                else:
+                    valores_anteriores[campo] = getattr(
+                        suministro,
+                        campo
+                    )
+
         datos = {}
 
         if 'detalles' in request.data:
@@ -64,7 +89,7 @@ class EditarSuministroView(APIView):
 
         if 'stock_minimo' in request.data:
             datos['stock_minimo'] = request.data['stock_minimo']
-                
+
         if 'categoria' in request.data:
             datos['categoria'] = request.data['categoria']
 
@@ -86,7 +111,59 @@ class EditarSuministroView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+            suministro = serializer.save()
+
+            cambios = []
+
+            for campo, nombre_campo in campos.items():
+                if campo not in request.data:
+                    continue
+
+                if campo == 'categoria':
+                    categoria_nueva = suministro.categoria
+                    valor_nuevo = (
+                        categoria_nueva.nombre
+                        if categoria_nueva
+                        else 'Sin asignar'
+                    )
+                else:
+                    valor_nuevo = getattr(
+                        suministro,
+                        campo
+                    )
+
+                valor_anterior = valores_anteriores[campo]
+
+                if str(valor_anterior) != str(valor_nuevo):
+                    if valor_anterior in [None, '']:
+                        valor_anterior = 'Sin especificar'
+
+                    if valor_nuevo in [None, '']:
+                        valor_nuevo = 'Sin especificar'
+
+                    cambios.append(
+                        f'{nombre_campo}: '
+                        f'{valor_anterior} → {valor_nuevo}'
+                    )
+
+            if cambios:
+                descripcion_cambios = '\n'.join(cambios)
+            else:
+                descripcion_cambios = (
+                    'No se han producido cambios en los datos '
+                    'del suministro.'
+                )
+
+            Historial.objects.create(
+                tipo='Edición de suministro',
+                descripcion=(
+                    f'Se han modificado los datos del suministro '
+                    f'{suministro.nombre}.\n'
+                    f'{descripcion_cambios}'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
 
             return Response(serializer.data)
 
@@ -105,7 +182,19 @@ class CrearCategoriaView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+            categoria = serializer.save()
+
+            Historial.objects.create(
+                tipo='Alta de categoría',
+                descripcion=(
+                    f'Se ha creado la categoría '
+                    f'{categoria.nombre}.\n'
+                    f'Descripción: '
+                    f'{categoria.descripcion or "Sin especificar"}.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
 
             return Response(
                 serializer.data,
@@ -150,6 +239,7 @@ class ListaCategoriasView(APIView):
 
         return Response(datos)
 
+
 class ListaPacksView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentesOAlmacen]
 
@@ -163,6 +253,7 @@ class ListaPacksView(APIView):
 
         return Response(serializer.data)
 
+
 class CrearPackView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
@@ -172,7 +263,7 @@ class CrearPackView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+            pack = serializer.save()
 
             return Response(
                 serializer.data,
@@ -183,6 +274,7 @@ class CrearPackView(APIView):
             serializer.errors,
             status=400
         )
+
 
 class CrearContenidoPackView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
@@ -193,7 +285,35 @@ class CrearContenidoPackView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+            contenido = serializer.save()
+
+            if request.data.get('finalizar'):
+                contenidos = ContenidoPack.objects.filter(
+                    pack=contenido.pack
+                ).select_related('suministro')
+
+                contenido_historial = '\n'.join(
+                    (
+                        f'{item.cantidad} '
+                        f'{item.suministro.unidad} '
+                        f'de {item.suministro.nombre}.'
+                    )
+                    for item in contenidos
+                )
+
+                Historial.objects.create(
+                    tipo='Alta de pack',
+                    descripcion=(
+                        f'Se ha creado el pack '
+                        f'{contenido.pack.nombre}.\n'
+                        f'Descripción: '
+                        f'{contenido.pack.descripcion or "Sin especificar"}.\n'
+                        f'Contenido:\n'
+                        f'{contenido_historial}'
+                    ),
+                    rol=request.user.rol,
+                    usuario=request.user
+                )
 
             return Response(
                 serializer.data,
@@ -204,6 +324,7 @@ class CrearContenidoPackView(APIView):
             serializer.errors,
             status=400
         )
+
 
 class CrearEntregaPackView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
@@ -236,12 +357,16 @@ class CrearEntregaPackView(APIView):
                 status=400
             )
 
+        residentes = []
+
         for residente_id in residentes_ids:
 
-            if not Residente.objects.filter(
-                id=residente_id,
-                activo=True
-            ).exists():
+            try:
+                residente = Residente.objects.get(
+                    id=residente_id,
+                    activo=True
+                )
+            except Residente.DoesNotExist:
                 return Response(
                     {
                         "error": (
@@ -264,6 +389,8 @@ class CrearEntregaPackView(APIView):
                     },
                     status=400
                 )
+
+            residentes.append(residente)
 
         numero_residentes = len(residentes_ids)
 
@@ -334,6 +461,33 @@ class CrearEntregaPackView(APIView):
 
                 entregas.append(entrega)
 
+        nombres_residentes = '\n'.join(
+            f'{residente.nombre} {residente.apellido}.'
+            for residente in residentes
+        )
+
+        contenido_historial = '\n'.join(
+            (
+                f'{contenido.cantidad * numero_residentes} '
+                f'{contenido.suministro.unidad} '
+                f'de {contenido.suministro.nombre}.'
+            )
+            for contenido in contenidos
+        )
+
+        Historial.objects.create(
+            tipo='Entrega de pack',
+            descripcion=(
+                f'Se ha asignado el pack "{pack.nombre}".\n\n'
+                f'Residentes:\n'
+                f'{nombres_residentes}\n\n'
+                f'Suministros retirados:\n'
+                f'{contenido_historial}'
+            ),
+            rol=request.user.rol,
+            usuario=request.user
+        )
+
         serializer = EntregaPackSerializer(
             entregas,
             many=True
@@ -343,6 +497,7 @@ class CrearEntregaPackView(APIView):
             serializer.data,
             status=201
         )
+
 
 class EliminarPackView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
@@ -368,12 +523,25 @@ class EliminarPackView(APIView):
                 status=400
             )
 
+        nombre_pack = pack.nombre
+
         pack.delete()
+
+        Historial.objects.create(
+            tipo='Baja de pack',
+            descripcion=(
+                f'Se ha eliminado el pack {nombre_pack}.'
+            ),
+            rol=request.user.rol,
+            usuario=request.user
+        )
 
         return Response(
             {"mensaje": "Pack eliminado correctamente."},
             status=200
         )
+
+
 class EliminarCategoriaView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
@@ -387,12 +555,24 @@ class EliminarCategoriaView(APIView):
                 status=404
             )
 
+        nombre_categoria = categoria.nombre
+
         categoria.delete()
+
+        Historial.objects.create(
+            tipo='Baja de categoría',
+            descripcion=(
+                f'Se ha eliminado la categoría {nombre_categoria}.'
+            ),
+            rol=request.user.rol,
+            usuario=request.user
+        )
 
         return Response(
             {"mensaje": "Categoría eliminada correctamente."},
             status=200
         )
+
 
 class CrearSuministroView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
@@ -411,6 +591,17 @@ class CrearSuministroView(APIView):
         if serializer.is_valid():
             suministro = serializer.save()
 
+            Historial.objects.create(
+                tipo='Alta de suministro',
+                descripcion=(
+                    f'Se ha creado el suministro '
+                    f'{suministro.nombre}.\n'
+                    f'Unidad: {suministro.unidad}.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
+
             return Response(
                 serializer.data,
                 status=201
@@ -420,6 +611,8 @@ class CrearSuministroView(APIView):
             serializer.errors,
             status=400
         )
+
+
 class EliminarSuministroView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
 
@@ -451,7 +644,19 @@ class EliminarSuministroView(APIView):
                 status=400
             )
 
+        nombre_suministro = suministro.nombre
+
         suministro.delete()
+
+        Historial.objects.create(
+            tipo='Baja de suministro',
+            descripcion=(
+                f'Se ha eliminado el suministro '
+                f'{nombre_suministro}.'
+            ),
+            rol=request.user.rol,
+            usuario=request.user
+        )
 
         return Response(
             {

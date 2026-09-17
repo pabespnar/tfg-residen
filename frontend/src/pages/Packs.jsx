@@ -330,13 +330,16 @@ function Packs() {
 
             const packCreado = response.data
 
-            for (const contenido of contenidoPack) {
+            for (let index = 0; index < contenidoPack.length; index++) {
+                const contenido = contenidoPack[index]
+
                 await axios.post(
                     'http://127.0.0.1:8000/api/suministros/crearcontenidopack/',
                     {
                         pack: packCreado.id,
                         suministro: contenido.suministro,
-                        cantidad: Number(contenido.cantidad)
+                        cantidad: Number(contenido.cantidad),
+                        finalizar: index === contenidoPack.length - 1
                     },
                     {
                         headers: {
@@ -919,7 +922,7 @@ function Packs() {
                                                             index
                                                         )
                                                     }
-                                                >
+                                                    >
                                                     −
                                                 </button>
                                             )}
