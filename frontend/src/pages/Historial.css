@@ -184,33 +184,3 @@
 .historial-error {
     color: #c62828;
 }
-
-@media (max-width: 600px) {
-    .historial-container {
-        padding: 20px;
-    }
-
-    .historial-tarjeta {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .historial-autor {
-        width: 100%;
-        min-width: 0;
-        padding-right: 0;
-        padding-bottom: 15px;
-        border-right: none;
-        border-bottom: 1px solid #eeeeee;
-    }
-
-    .historial-tarjeta-cabecera {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .historial-tarjeta-cabecera span {
-        white-space: normal;
-    }
-}
