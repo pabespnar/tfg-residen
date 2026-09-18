@@ -11,7 +11,8 @@ from almacen.models import BajaAlmacen
 from .serializers import CategoriaSerializer, SuministroSerializer, PackSerializer, ContenidoPackSerializer, EntregaPackSerializer
 from .permissions import EsGestorAlmacen
 from django.db import transaction
-from evento.models import Historial
+from evento.models import Historial, Notificacion
+from usuarios.models import Usuario, Rol
 
 
 class ListaSuministrosView(APIView):
@@ -427,8 +428,40 @@ class CrearEntregaPackView(APIView):
 
                 suministro = contenido.suministro
 
+                stock_anterior = suministro.stock
                 suministro.stock -= cantidad_necesaria
                 suministro.save(update_fields=['stock'])
+
+                usuarios_almacen = Usuario.objects.filter(
+                    rol=Rol.ALMACEN
+                )
+
+                if stock_anterior > 0 and suministro.stock == 0:
+                    for usuario in usuarios_almacen:
+                        Notificacion.objects.create(
+                            tipo='Suministro sin stock',
+                            descripcion=(
+                                f'El suministro {suministro.nombre} '
+                                f'ha quedado sin stock.'
+                            ),
+                            usuario=usuario
+                        )
+
+                elif (
+                    stock_anterior > suministro.stock_minimo
+                    and suministro.stock <= suministro.stock_minimo
+                ):
+                    for usuario in usuarios_almacen:
+                        Notificacion.objects.create(
+                            tipo='Suministro por debajo del stock mínimo',
+                            descripcion=(
+                                f'El suministro {suministro.nombre} '
+                                f'ha quedado por debajo de su stock mínimo '
+                                f'({suministro.stock_minimo} '
+                                f'{suministro.unidad}).'
+                            ),
+                            usuario=usuario
+                        )
 
                 BajaAlmacen.objects.create(
                     suministro=suministro,
@@ -487,6 +520,21 @@ class CrearEntregaPackView(APIView):
             rol=request.user.rol,
             usuario=request.user
         )
+
+        usuarios_residentes = Usuario.objects.filter(
+            rol=Rol.RESIDENTES
+        )
+
+        for usuario in usuarios_residentes:
+            Notificacion.objects.create(
+                tipo='Asignación de pack',
+                descripcion=(
+                    f'Se ha asignado el pack "{pack.nombre}" '
+                    f'a {numero_residentes} '
+                    f'{"residente" if numero_residentes == 1 else "residentes"}.'
+                ),
+                usuario=usuario
+            )
 
         serializer = EntregaPackSerializer(
             entregas,

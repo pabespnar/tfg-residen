@@ -36,6 +36,8 @@ import SuministrosAdministracion from "./pages/SuministrosAdministracion"
 import DashboardAdministracion from './pages/DashboardAdministracion';
 import SuministrosResidentes from "./pages/SuministrosResidentes"
 import Historial from "./pages/Historial"
+import Notificaciones from "./pages/Notificaciones"
+
 
 
 function tokenValido() {
@@ -260,6 +262,11 @@ function App() {
                         <Route
                             path="/historial"
                             element={<Historial />}
+                        />
+
+                        <Route
+                            path="/notificaciones"
+                            element={<Notificaciones />}
                         />
 
                         {rol === "residentes" && (

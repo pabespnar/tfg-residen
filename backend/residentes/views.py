@@ -10,7 +10,48 @@ from modulos.models import Habitacion
 from .serializers import ResidenteSerializer
 from modulos.permissions import EsGestorResidentes
 from .permissions import EsGestorResidentesOAlmacen
-from evento.models import Historial
+from evento.models import Historial, Notificacion
+from usuarios.models import Usuario, Rol
+
+
+def generar_notificaciones_ocupacion(habitacion, ocupacion_anterior, ocupacion_nueva):
+    if not habitacion or ocupacion_nueva <= ocupacion_anterior:
+        return
+
+    capacidad = habitacion.capacidad
+
+    if capacidad <= 0:
+        return
+
+    porcentaje_anterior = (ocupacion_anterior / capacidad) * 100
+    porcentaje_nuevo = (ocupacion_nueva / capacidad) * 100
+
+    umbrales = [50, 75, 90]
+
+    umbrales_superados = [
+        umbral
+        for umbral in umbrales
+        if porcentaje_anterior < umbral <= porcentaje_nuevo
+    ]
+
+    if not umbrales_superados:
+        return
+
+    usuarios = Usuario.objects.filter(
+        rol=Rol.RESIDENTES
+    )
+
+    for umbral in umbrales_superados:
+        for usuario in usuarios:
+            Notificacion.objects.create(
+                tipo=f'Ocupación de habitación al {umbral} %',
+                descripcion=(
+                    f'La habitación {habitacion.nombre} del módulo '
+                    f'{habitacion.modulo.nombre} ha alcanzado el '
+                    f'{umbral} % de ocupación.'
+                ),
+                usuario=usuario
+            )
 
 
 class ListaResidentesView(APIView):
@@ -50,6 +91,15 @@ class CrearResidenteView(APIView):
             habitacion = residente.habitacion
 
             if habitacion:
+                ocupacion_anterior = habitacion.residentes.count() - 1
+                ocupacion_nueva = habitacion.residentes.count()
+
+                generar_notificaciones_ocupacion(
+                    habitacion,
+                    ocupacion_anterior,
+                    ocupacion_nueva
+                )
+
                 habitacion_info = (
                     f'{habitacion.nombre}, '
                     f'Módulo {habitacion.modulo.nombre}'
@@ -129,6 +179,15 @@ class EditarResidenteView(APIView):
             'genero': 'Género'
         }
 
+        habitacion_anterior_objeto = residente.habitacion
+
+        ocupacion_anterior = None
+
+        if habitacion_anterior_objeto:
+            ocupacion_anterior = (
+                habitacion_anterior_objeto.residentes.count()
+            )
+
         valores_anteriores = {}
 
         for campo in campos:
@@ -160,6 +219,23 @@ class EditarResidenteView(APIView):
 
         if serializer.is_valid():
             residente = serializer.save()
+
+            habitacion_nueva_objeto = residente.habitacion
+
+            if (
+                'habitacion' in request.data
+                and habitacion_anterior_objeto != habitacion_nueva_objeto
+            ):
+                if habitacion_nueva_objeto:
+                    ocupacion_nueva = (
+                        habitacion_nueva_objeto.residentes.count()
+                    )
+
+                    generar_notificaciones_ocupacion(
+                        habitacion_nueva_objeto,
+                        ocupacion_nueva - 1,
+                        ocupacion_nueva
+                    )
 
             cambios = []
 
@@ -331,10 +407,20 @@ class DarDeAltaResidenteView(APIView):
                 status=400
             )
 
+        ocupacion_anterior = habitacion.residentes.count()
+
         residente.activo = True
         residente.f_alta = timezone.now().date()
         residente.habitacion = habitacion
         residente.save()
+
+        ocupacion_nueva = habitacion.residentes.count()
+
+        generar_notificaciones_ocupacion(
+            habitacion,
+            ocupacion_anterior,
+            ocupacion_nueva
+        )
 
         habitacion_info = (
             f'{habitacion.nombre}, '

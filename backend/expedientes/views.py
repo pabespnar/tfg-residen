@@ -15,7 +15,8 @@ from .serializers import ExpedienteSerializer, PedidoSerializer, DetallePedidoSe
 from django.utils import timezone
 from suministros.models import Suministro
 from suministros.serializers import SuministroSerializer
-from evento.models import Historial
+from evento.models import Historial, Notificacion
+from usuarios.models import Usuario, Rol
 
 
 class ListaExpedientesView(APIView):
@@ -462,6 +463,8 @@ class CrearPedidoExpedienteView(APIView):
 
         with transaction.atomic():
 
+            presupuesto_anterior = expediente.presupuesto_restante
+
             pedido = Pedido.objects.create(
                 nombre=nombre.strip(),
                 expediente=expediente,
@@ -497,7 +500,7 @@ class CrearPedidoExpedienteView(APIView):
             Historial.objects.create(
                 tipo='Alta de pedido',
                 descripcion=(
-                    f'Se ha creado el pedido {pedido.nombre}.\n\n'
+                    f'Se ha solicitado el pedido {pedido.nombre}.\n\n'
                     f'Expediente:\n'
                     f'{expediente.nombre}.\n\n'
                     f'Proveedor:\n'
@@ -510,6 +513,65 @@ class CrearPedidoExpedienteView(APIView):
                 rol=request.user.rol,
                 usuario=request.user
             )
+
+            usuarios_almacen = Usuario.objects.filter(
+                rol=Rol.ALMACEN
+            )
+
+            for usuario in usuarios_almacen:
+                Notificacion.objects.create(
+                    tipo='Nuevo pedido',
+                    descripcion=(
+                        f'Se ha solicitado el pedido '
+                        f'"{pedido.nombre}" y está pendiente de recepción.'
+                    ),
+                    usuario=usuario
+                )
+
+            usuarios_administracion = Usuario.objects.filter(
+                rol=Rol.ADMINISTRACION
+            )
+
+            umbrales_presupuesto = [
+                (50, 'Presupuesto de expediente al 50 %'),
+                (25, 'Presupuesto de expediente al 25 %'),
+                (0, 'Presupuesto de expediente agotado'),
+            ]
+
+            for umbral, tipo_notificacion in umbrales_presupuesto:
+
+                porcentaje_anterior = (
+                    presupuesto_anterior /
+                    expediente.presupuesto
+                ) * 100 if expediente.presupuesto > 0 else 100
+
+                porcentaje_nuevo = (
+                    expediente.presupuesto_restante /
+                    expediente.presupuesto
+                ) * 100 if expediente.presupuesto > 0 else 0
+
+                if (
+                    porcentaje_anterior > umbral
+                    and porcentaje_nuevo <= umbral
+                ):
+                    if umbral == 0:
+                        descripcion = (
+                            f'El presupuesto del expediente '
+                            f'{expediente.nombre} se ha agotado.'
+                        )
+                    else:
+                        descripcion = (
+                            f'El presupuesto restante del expediente '
+                            f'{expediente.nombre} ha alcanzado el '
+                            f'{umbral} %.'
+                        )
+
+                    for usuario in usuarios_administracion:
+                        Notificacion.objects.create(
+                            tipo=tipo_notificacion,
+                            descripcion=descripcion,
+                            usuario=usuario
+                        )
 
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
@@ -779,6 +841,8 @@ class CrearPedidoGeneralView(APIView):
                     status=400
                 )
 
+            presupuesto_anterior = centro.presupuesto
+
             presupuesto_restante = (
                 centro.presupuesto - total
             )
@@ -818,7 +882,7 @@ class CrearPedidoGeneralView(APIView):
             Historial.objects.create(
                 tipo='Alta de pedido',
                 descripcion=(
-                    f'Se ha creado el pedido {pedido.nombre}.\n\n'
+                    f'Se ha solicitado el pedido {pedido.nombre}.\n\n'
                     f'Tipo:\n'
                     f'Gasto general.\n\n'
                     f'Proveedor:\n'
@@ -831,6 +895,66 @@ class CrearPedidoGeneralView(APIView):
                 rol=request.user.rol,
                 usuario=request.user
             )
+
+            usuarios_almacen = Usuario.objects.filter(
+                rol=Rol.ALMACEN
+            )
+
+            for usuario in usuarios_almacen:
+                Notificacion.objects.create(
+                    tipo='Nuevo pedido',
+                    descripcion=(
+                        f'Se ha solicitado el pedido '
+                        f'"{pedido.nombre}" y está pendiente de recepción.'
+                    ),
+                    usuario=usuario
+                )
+
+            usuarios_administracion = Usuario.objects.filter(
+                rol=Rol.ADMINISTRACION
+            )
+
+            if centro.presupuesto_referencia > 0:
+
+                umbrales_presupuesto = [
+                    (50, 'Presupuesto general al 50 %'),
+                    (25, 'Presupuesto general al 25 %'),
+                    (0, 'Presupuesto general agotado'),
+                ]
+
+                for umbral, tipo_notificacion in umbrales_presupuesto:
+
+                    porcentaje_anterior = (
+                        presupuesto_anterior /
+                        centro.presupuesto_referencia
+                    ) * 100
+
+                    porcentaje_nuevo = (
+                        centro.presupuesto /
+                        centro.presupuesto_referencia
+                    ) * 100
+
+                    if (
+                        porcentaje_anterior > umbral
+                        and porcentaje_nuevo <= umbral
+                    ):
+                        if umbral == 0:
+                            descripcion = (
+                                'El presupuesto general del centro '
+                                'se ha agotado.'
+                            )
+                        else:
+                            descripcion = (
+                                'El presupuesto general del centro '
+                                f'ha alcanzado el {umbral} %.'
+                            )
+
+                        for usuario in usuarios_administracion:
+                            Notificacion.objects.create(
+                                tipo=tipo_notificacion,
+                                descripcion=descripcion,
+                                usuario=usuario
+                            )
 
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
