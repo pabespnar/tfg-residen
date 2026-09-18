@@ -5,7 +5,6 @@ import { FaSearch, FaFilter } from 'react-icons/fa';
 
 import './Expedientes.css';
 
-
 function Expedientes() {
 
     const [expedientes, setExpedientes] = useState([]);
@@ -20,6 +19,8 @@ function Expedientes() {
     const [suministro, setSuministro] = useState('');
     const [presupuestoMin, setPresupuestoMin] = useState('');
     const [presupuestoMax, setPresupuestoMax] = useState('');
+    const [porcentajeGastadoMin, setPorcentajeGastadoMin] = useState('');
+    const [porcentajeGastadoMax, setPorcentajeGastadoMax] = useState('');
     const [fechaInicioDesde, setFechaInicioDesde] = useState('');
     const [fechaInicioHasta, setFechaInicioHasta] = useState('');
     const [fechaFinalDesde, setFechaFinalDesde] = useState('');
@@ -28,7 +29,6 @@ function Expedientes() {
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
     const navigate = useNavigate();
-
 
     useEffect(() => {
 
@@ -71,13 +71,11 @@ function Expedientes() {
 
     }, []);
 
-
     const normalizarTexto = (texto) =>
         texto
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
-
 
     const proveedores = expedientes
         .filter(
@@ -104,7 +102,6 @@ function Expedientes() {
         .sort((a, b) =>
             a.nombre.localeCompare(b.nombre)
         );
-
 
     const categorias = expedientes
         .flatMap(
@@ -139,7 +136,6 @@ function Expedientes() {
         .sort((a, b) =>
             a.nombre.localeCompare(b.nombre)
         );
-
 
     const suministros = expedientes
         .flatMap(
@@ -181,7 +177,6 @@ function Expedientes() {
         .sort((a, b) =>
             a.nombre.localeCompare(b.nombre)
         );
-
 
     const expedientesFiltrados = expedientes.filter((expediente) => {
 
@@ -232,6 +227,21 @@ function Expedientes() {
         const presupuesto =
             Number(expediente.presupuesto || 0);
 
+        const presupuestoRestante =
+            Number(expediente.presupuesto_restante || 0);
+
+        const porcentajeGastado =
+            presupuesto > 0
+                ? (
+                    (
+                        presupuesto -
+                        presupuestoRestante
+                    ) /
+                    presupuesto *
+                    100
+                )
+                : 0;
+
         const coincidePresupuestoMin =
             presupuestoMin === '' ||
             presupuesto >= Number(presupuestoMin);
@@ -239,6 +249,14 @@ function Expedientes() {
         const coincidePresupuestoMax =
             presupuestoMax === '' ||
             presupuesto <= Number(presupuestoMax);
+
+        const coincidePorcentajeGastadoMin =
+            porcentajeGastadoMin === '' ||
+            porcentajeGastado >= Number(porcentajeGastadoMin);
+
+        const coincidePorcentajeGastadoMax =
+            porcentajeGastadoMax === '' ||
+            porcentajeGastado <= Number(porcentajeGastadoMax);
 
         const coincideFechaInicioDesde =
             fechaInicioDesde === '' ||
@@ -268,6 +286,8 @@ function Expedientes() {
             coincideSuministro &&
             coincidePresupuestoMin &&
             coincidePresupuestoMax &&
+            coincidePorcentajeGastadoMin &&
+            coincidePorcentajeGastadoMax &&
             coincideFechaInicioDesde &&
             coincideFechaInicioHasta &&
             coincideFechaFinalDesde &&
@@ -275,7 +295,6 @@ function Expedientes() {
             coincideEstado
         );
     });
-
 
     const expedientesOrdenados = [...expedientesFiltrados].sort((a, b) => {
 
@@ -378,7 +397,6 @@ function Expedientes() {
         return 0;
     });
 
-
     useEffect(() => {
         setPaginaExpedientes(1);
     }, [
@@ -389,6 +407,8 @@ function Expedientes() {
         suministro,
         presupuestoMin,
         presupuestoMax,
+        porcentajeGastadoMin,
+        porcentajeGastadoMax,
         fechaInicioDesde,
         fechaInicioHasta,
         fechaFinalDesde,
@@ -396,12 +416,10 @@ function Expedientes() {
         estado
     ]);
 
-
     const cambiarCategoria = (valor) => {
         setCategoria(valor);
         setSuministro('');
     };
-
 
     const restablecerFiltros = () => {
         setProveedor('');
@@ -409,13 +427,14 @@ function Expedientes() {
         setSuministro('');
         setPresupuestoMin('');
         setPresupuestoMax('');
+        setPorcentajeGastadoMin('');
+        setPorcentajeGastadoMax('');
         setFechaInicioDesde('');
         setFechaInicioHasta('');
         setFechaFinalDesde('');
         setFechaFinalHasta('');
         setEstado('');
     };
-
 
     const expedientesPorPagina = 3;
 
@@ -434,7 +453,6 @@ function Expedientes() {
         expedientesOrdenados.length / expedientesPorPagina
     );
 
-
     if (cargando) {
         return (
             <div className="expedientes-cargando">
@@ -443,7 +461,6 @@ function Expedientes() {
         );
     }
 
-
     if (error) {
         return (
             <div className="expedientes-error">
@@ -451,7 +468,6 @@ function Expedientes() {
             </div>
         );
     }
-
 
     return (
 
@@ -471,7 +487,6 @@ function Expedientes() {
 
                 </div>
 
-
                 <button
                     className="expedientes-boton-anadir"
                     onClick={() => navigate('/expedientes/nuevo')}
@@ -480,7 +495,6 @@ function Expedientes() {
                 </button>
 
             </div>
-
 
             {expedientes.length > 0 ? (
 
@@ -731,6 +745,48 @@ function Expedientes() {
 
                                 <div className="expedientes-filtro">
 
+                                    <label>
+                                        Presupuesto gastado
+                                    </label>
+
+                                    <div className="expedientes-filtro-rango">
+
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            step="0.1"
+                                            placeholder="Mínimo %"
+                                            value={porcentajeGastadoMin}
+                                            onChange={(evento) =>
+                                                setPorcentajeGastadoMin(
+                                                    evento.target.value
+                                                )
+                                            }
+                                        />
+
+                                        <span>–</span>
+
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            step="0.1"
+                                            placeholder="Máximo %"
+                                            value={porcentajeGastadoMax}
+                                            onChange={(evento) =>
+                                                setPorcentajeGastadoMax(
+                                                    evento.target.value
+                                                )
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+                                <div className="expedientes-filtro">
+
                                     <label htmlFor="fecha-inicio-desde">
                                         Fecha inicio desde
                                     </label>
@@ -831,6 +887,7 @@ function Expedientes() {
                                         <option value="inactivo">
                                             Inactivos
                                         </option>
+
                                     </select>
 
                                 </div>
@@ -849,7 +906,6 @@ function Expedientes() {
 
                     </div>
 
-
                     {expedientesFiltrados.length === 0 ? (
 
                         <div className="expedientes-vacio">
@@ -864,106 +920,132 @@ function Expedientes() {
 
                             <div className="expedientes-lista">
 
-                                {expedientesActuales.map(expediente => (
+                                {expedientesActuales.map(expediente => {
 
-                                    <div
-                                        className="expediente-card"
-                                        key={expediente.id}
-                                        onClick={() =>
-                                            navigate(
-                                                `/expedientes/${expediente.id}`
-                                            )
-                                        }
-                                    >
+                                    const presupuesto =
+                                        Number(expediente.presupuesto || 0);
 
-                                        <div className="expediente-card-header">
+                                    const presupuestoRestante =
+                                        Number(expediente.presupuesto_restante || 0);
 
-                                            <div>
+                                    const porcentajeGastado =
+                                        presupuesto > 0
+                                            ? (
+                                                (
+                                                    presupuesto -
+                                                    presupuestoRestante
+                                                ) /
+                                                presupuesto *
+                                                100
+                                            ).toFixed(1)
+                                            : '0.0';
 
-                                                <h2>
-                                                    {expediente.nombre}
-                                                </h2>
+                                    return (
 
-                                                <span>
-                                                    Proveedor: {expediente.proveedor_nombre}
+                                        <div
+                                            className="expediente-card"
+                                            key={expediente.id}
+                                            onClick={() =>
+                                                navigate(
+                                                    `/expedientes/${expediente.id}`
+                                                )
+                                            }
+                                        >
+
+                                            <div className="expediente-card-header">
+
+                                                <div>
+
+                                                    <h2>
+                                                        {expediente.nombre}
+                                                    </h2>
+
+                                                    <span>
+                                                        Proveedor: {expediente.proveedor_nombre}
+                                                    </span>
+
+                                                </div>
+
+                                                <span
+                                                    className={
+                                                        expediente.activo
+                                                            ? 'expediente-estado activo'
+                                                            : 'expediente-estado finalizado'
+                                                    }
+                                                >
+                                                    {expediente.activo
+                                                        ? 'Activo'
+                                                        : 'Inactivo'}
                                                 </span>
 
                                             </div>
 
-
-                                            <span
-                                                className={
-                                                    expediente.activo
-                                                        ? 'expediente-estado activo'
-                                                        : 'expediente-estado finalizado'
-                                                }
-                                            >
-                                                {expediente.activo
-                                                    ? 'Activo'
-                                                    : 'Inactivo'}
-                                            </span>
-
-                                        </div>
-
-
-                                        <div className="expediente-card-fechas">
-
-                                            <span>
-                                                {expediente.fecha_inicio}
-                                            </span>
-
-                                            <span>
-                                                —
-                                            </span>
-
-                                            <span>
-                                                {expediente.fecha_final}
-                                            </span>
-
-                                        </div>
-
-
-                                        <div className="expediente-card-economia">
-
-                                            <div>
+                                            <div className="expediente-card-fechas">
 
                                                 <span>
-                                                    Presupuesto
+                                                    {expediente.fecha_inicio}
                                                 </span>
 
-                                                <strong>
-                                                    {Number(
-                                                        expediente.presupuesto
-                                                    ).toFixed(2)}
-                                                    {' €'}
-                                                </strong>
+                                                <span>
+                                                    —
+                                                </span>
+
+                                                <span>
+                                                    {expediente.fecha_final}
+                                                </span>
 
                                             </div>
 
+                                            <div className="expediente-card-economia">
 
-                                            <div>
+                                                <div>
 
-                                                <span>
-                                                    Presupuesto restante
-                                                </span>
+                                                    <span>
+                                                        Presupuesto
+                                                    </span>
 
-                                                <strong>
-                                                    {Number(
-                                                        expediente.presupuesto_restante
-                                                    ).toFixed(2)}
-                                                    {' €'}
-                                                </strong>
+                                                    <strong>
+                                                        {presupuesto.toFixed(2)}
+                                                        {' €'}
+                                                    </strong>
+
+                                                </div>
+
+                                                <div>
+
+                                                    <span>
+                                                        Presupuesto restante
+                                                    </span>
+
+                                                    <strong>
+                                                        {presupuestoRestante.toFixed(2)}
+                                                        {' €'}
+                                                    </strong>
+
+                                                </div>
+
+                                                <div className="expediente-presupuesto-gastado">
+
+                                                    <span className="expediente-presupuesto-gastado-valor">
+                                                        {porcentajeGastado}
+                                                        {' %'}
+                                                    </span>
+
+                                                    <span className="expediente-presupuesto-gastado-texto">
+                                                        gastado
+                                                    </span>
+
+                                                </div>
 
                                             </div>
 
                                         </div>
 
-                                    </div>
+                                    );
 
-                                ))}
+                                })}
 
                             </div>
-
 
                             {totalPaginasExpedientes > 1 && (
 
@@ -1012,9 +1094,7 @@ function Expedientes() {
             ) : (
 
                 <div className="expedientes-vacio">
-
                     No hay expedientes registrados.
-
                 </div>
 
             )}
@@ -1022,6 +1102,5 @@ function Expedientes() {
         </div>
     );
 }
-
 
 export default Expedientes;

@@ -380,3 +380,21 @@
     border-color: #1B5E20;
     color: #1B5E20;
 }
+
+.expediente-presupuesto-gastado {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.expediente-presupuesto-gastado-valor {
+    color: #1B5E20;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.expediente-presupuesto-gastado-texto {
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
+}

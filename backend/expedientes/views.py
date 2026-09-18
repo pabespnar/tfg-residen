@@ -615,7 +615,8 @@ class VerPedidoView(APIView):
                 'expediente',
                 'proveedor'
             ).prefetch_related(
-                'detalles_pedido__suministro'
+                'detalles_pedido__suministro',
+                'altas'
             ).get(
                 pk=pk
             )
@@ -635,11 +636,39 @@ class VerPedidoView(APIView):
             many=True
         )
 
+        detalles = detalles_serializer.data
+
+        if pedido.recibido:
+
+            cantidades_recibidas = {}
+
+            for alta in pedido.altas.all():
+
+                if alta.suministro_id not in cantidades_recibidas:
+                    cantidades_recibidas[alta.suministro_id] = 0
+
+                cantidades_recibidas[alta.suministro_id] += alta.cantidad
+
+            for detalle in detalles:
+
+                cantidad_solicitada = detalle['cantidad']
+
+                cantidad_recibida = cantidades_recibidas.get(
+                    detalle['suministro'],
+                    0
+                )
+
+                if cantidad_solicitada != cantidad_recibida:
+                    detalle['cantidad_recibida'] = cantidad_recibida
+                    detalle['diferencia'] = (
+                        cantidad_recibida -
+                        cantidad_solicitada
+                    )
+
         return Response({
             'pedido': pedido_serializer.data,
-            'detalles': detalles_serializer.data,
+            'detalles': detalles,
         })
-
 
 class ListaSuministrosDisponiblesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]

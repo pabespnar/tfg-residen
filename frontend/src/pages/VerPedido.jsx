@@ -73,6 +73,26 @@ function VerPedido() {
     }
 
 
+    const abrirExpediente = () => {
+
+        if (pedido?.expediente) {
+
+            navigate(
+                `/expedientes/${pedido.expediente}`
+            )
+
+        }
+
+    }
+
+
+    const detallesConDiferencias = detalles.filter(
+        (detalle) =>
+            detalle.cantidad_recibida !== undefined &&
+            detalle.cantidad !== detalle.cantidad_recibida
+    )
+
+
     if (error) {
 
         return (
@@ -127,21 +147,21 @@ function VerPedido() {
                             {pedido.nombre}
                         </h1>
 
-                    <span
-                        className={
-                            !pedido.recibido
-                                ? 'pedido-estado pendiente'
+                        <span
+                            className={
+                                !pedido.recibido
+                                    ? 'pedido-estado pendiente'
+                                    : pedido.correcto
+                                        ? 'pedido-estado correcto'
+                                        : 'pedido-estado incorrecto'
+                            }
+                        >
+                            {!pedido.recibido
+                                ? 'Pendiente'
                                 : pedido.correcto
-                                    ? 'pedido-estado correcto'
-                                    : 'pedido-estado incorrecto'
-                        }
-                    >
-                        {!pedido.recibido
-                            ? 'Pendiente'
-                            : pedido.correcto
-                                ? '✓ Recibido correctamente'
-                                : '✕ Recibido con diferencias'}
-                    </span>
+                                    ? '✓ Recibido correctamente'
+                                    : '✕ Recibido con diferencias'}
+                        </span>
 
                     </div>
 
@@ -200,12 +220,39 @@ function VerPedido() {
                         <div className="ver-pedido-campo">
 
                             <span className="ver-pedido-label">
-                                Expediente
+                                Proveedor
                             </span>
 
                             <span className="ver-pedido-valor">
-                                {pedido.expediente_nombre || '—'}
+                                {pedido.proveedor_nombre || '—'}
                             </span>
+
+                        </div>
+
+
+                        <div className="ver-pedido-campo">
+
+                            <span className="ver-pedido-label">
+                                Expediente
+                            </span>
+
+                            {pedido.expediente ? (
+
+                                <button
+                                    type="button"
+                                    className="ver-pedido-expediente"
+                                    onClick={abrirExpediente}
+                                >
+                                    {pedido.expediente_nombre}
+                                </button>
+
+                            ) : (
+
+                                <span className="ver-pedido-valor">
+                                    —
+                                </span>
+
+                            )}
 
                         </div>
 
@@ -331,6 +378,55 @@ function VerPedido() {
                     )}
 
                 </div>
+
+
+                {pedido.recibido && !pedido.correcto && detallesConDiferencias.length > 0 && (
+
+                    <div className="ver-pedido-diferencias">
+
+                        <h3>
+                            Suministros recibidos con diferencias
+                        </h3>
+
+                        <div className="ver-pedido-diferencias-lista">
+
+                            {detallesConDiferencias.map((detalle) => (
+
+                                <div
+                                    className="ver-pedido-diferencia"
+                                    key={detalle.id}
+                                >
+
+                                    <span className="ver-pedido-diferencia-nombre">
+                                        {detalle.suministro_nombre}
+                                    </span>
+
+                                    <span>
+                                        Solicitado: {detalle.cantidad}{' '}
+                                        {detalle.suministro_unidad}
+                                    </span>
+
+                                    <span>
+                                        Recibido: {detalle.cantidad_recibida}{' '}
+                                        {detalle.suministro_unidad}
+                                    </span>
+
+                                    <span>
+                                        Diferencia:{' '}
+                                        {detalle.diferencia > 0 ? '+' : ''}
+                                        {detalle.diferencia}{' '}
+                                        {detalle.suministro_unidad}
+                                    </span>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    </div>
+
+                )}
 
 
                 <div className="ver-pedido-botones">

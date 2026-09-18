@@ -384,6 +384,29 @@ function VerExpediente() {
                         </div>
 
 
+                        <div className="ver-expediente-campo">
+
+                            <span className="ver-expediente-label">
+                                Presupuesto gastado
+                            </span>
+
+                            <span className="ver-expediente-valor">
+                                {Number(expediente.presupuesto) > 0
+                                    ? (
+                                        (
+                                            Number(expediente.presupuesto) -
+                                            Number(expediente.presupuesto_restante)
+                                        ) /
+                                        Number(expediente.presupuesto) *
+                                        100
+                                    ).toFixed(1)
+                                    : '0.0'}
+                                {' %'}
+                            </span>
+
+                        </div>
+
+
                         <div className="ver-expediente-campo ver-expediente-campo-completo">
 
                             <span className="ver-expediente-label">
@@ -550,21 +573,21 @@ function VerExpediente() {
                                             Estado: 
                                         </span>
 
-                                    <span
-                                        className={
-                                            !pedido.recibido
-                                                ? 'pedido-estado pendiente'
+                                        <span
+                                            className={
+                                                !pedido.recibido
+                                                    ? 'pedido-estado pendiente'
+                                                    : pedido.correcto
+                                                        ? 'pedido-estado correcto'
+                                                        : 'pedido-estado incorrecto'
+                                            }
+                                        >
+                                            {!pedido.recibido
+                                                ? 'Pendiente'
                                                 : pedido.correcto
-                                                    ? 'pedido-estado correcto'
-                                                    : 'pedido-estado incorrecto'
-                                        }
-                                    >
-                                        {!pedido.recibido
-                                            ? 'Pendiente'
-                                            : pedido.correcto
-                                                ? '✓ Recibido correctamente'
-                                                : '✕ Recibido con diferencias'}
-                                    </span>
+                                                    ? '✓ Recibido correctamente'
+                                                    : '✕ Recibido con diferencias'}
+                                        </span>
 
                                     </div>
 
