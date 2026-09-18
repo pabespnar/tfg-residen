@@ -27,13 +27,25 @@ function Inicio({ rol }) {
                     titulo: 'Suministros',
                     descripcion:
                         'Consulta los suministros que recibieron los distintos residentes.',
-                    ruta: '/historico_residentes',
-                },                
+                    ruta: '/suministrosResidentes',
+                },
                 {
                     titulo: 'Histórico de residentes',
                     descripcion:
                         'Consulta las estancias finalizadas y el histórico de residentes dados de baja.',
                     ruta: '/historico_residentes',
+                },
+                {
+                    titulo: 'Alertas',
+                    descripcion:
+                        'Consulta las alertas y notificaciones generadas para la gestión del centro.',
+                    ruta: '/notificaciones',
+                },
+                {
+                    titulo: 'Historial',
+                    descripcion:
+                        'Consulta el historial de acciones realizadas en el sistema.',
+                    ruta: '/historial',
                 },
                 {
                     titulo: 'Dashboard',
@@ -66,6 +78,18 @@ function Inicio({ rol }) {
                     descripcion:
                         'Gestiona las entradas y salidas de suministros del almacén.',
                     ruta: '/almacen',
+                },
+                {
+                    titulo: 'Alertas',
+                    descripcion:
+                        'Consulta las alertas y notificaciones generadas para la gestión del centro.',
+                    ruta: '/notificaciones',
+                },
+                {
+                    titulo: 'Historial',
+                    descripcion:
+                        'Consulta el historial de acciones realizadas en el sistema.',
+                    ruta: '/historial',
                 },
                 {
                     titulo: 'Dashboard',
@@ -104,6 +128,18 @@ function Inicio({ rol }) {
                     descripcion:
                         'Consulta los pedidos registrados en el sistema y a que expedientes pertenecen.',
                     ruta: '/suministrosAdministracion',
+                },
+                {
+                    titulo: 'Alertas',
+                    descripcion:
+                        'Consulta las alertas y notificaciones generadas para la gestión del centro.',
+                    ruta: '/notificaciones',
+                },
+                {
+                    titulo: 'Historial',
+                    descripcion:
+                        'Consulta el historial de acciones realizadas en el sistema.',
+                    ruta: '/historial',
                 },
                 {
                     titulo: 'Dashboard',
