@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone as dt_timezone
 from decimal import Decimal
 
 from django.db import transaction
@@ -22,12 +22,28 @@ from expedientes.models import (
     Pedido,
     DetallePedido,
 )
+from evento.models import Historial, Notificacion
 
 
 HOY = date(2026, 9, 16)
 
 
+def _fijar_fecha(objeto, fecha):
+    """Los modelos de evento.Evento usan auto_now_add, así que la fecha
+    pasada a .objects.create() se ignora. Este helper la fija después,
+    con un UPDATE que no pasa por save() y por tanto no la sobrescribe.
+    `fecha` puede ser date o datetime; si es date se fija a mediodía UTC."""
+    if isinstance(fecha, date) and not isinstance(fecha, datetime):
+        fecha = datetime(
+            fecha.year, fecha.month, fecha.day, 12, 0,
+            tzinfo=dt_timezone.utc,
+        )
+    type(objeto).objects.filter(pk=objeto.pk).update(fecha=fecha)
+
+
 def limpiar_base_datos():
+    Notificacion.objects.all().delete()
+    Historial.objects.all().delete()
     BajaAlmacen.objects.all().delete()
     AltaAlmacen.objects.all().delete()
     EntregaPack.objects.all().delete()
@@ -70,6 +86,16 @@ def crear_usuarios():
         rol=Rol.RESIDENTES,
     )
 
+    usuarios['residentes2'] = Usuario.objects.create_user(
+        email='residentes2@tfg.com',
+        password='Test1234!',
+        nombre='Ana',
+        apellido='Torres Vidal',
+        telefono='600100005',
+        dni='55555555E',
+        rol=Rol.RESIDENTES,
+    )
+
     usuarios['almacen'] = Usuario.objects.create_user(
         email='almacen@tfg.com',
         password='Test1234!',
@@ -80,6 +106,16 @@ def crear_usuarios():
         rol=Rol.ALMACEN,
     )
 
+    usuarios['almacen2'] = Usuario.objects.create_user(
+        email='almacen2@tfg.com',
+        password='Test1234!',
+        nombre='Pedro',
+        apellido='Ibáñez Cruz',
+        telefono='600100006',
+        dni='66666666F',
+        rol=Rol.ALMACEN,
+    )
+
     usuarios['administracion'] = Usuario.objects.create_user(
         email='administracion@tfg.com',
         password='Test1234!',
@@ -87,6 +123,16 @@ def crear_usuarios():
         apellido='Sánchez Díaz',
         telefono='600100003',
         dni='33333333C',
+        rol=Rol.ADMINISTRACION,
+    )
+
+    usuarios['administracion2'] = Usuario.objects.create_user(
+        email='administracion2@tfg.com',
+        password='Test1234!',
+        nombre='Elena',
+        apellido='Roldán Peña',
+        telefono='600100007',
+        dni='77777777G',
         rol=Rol.ADMINISTRACION,
     )
 
@@ -120,6 +166,12 @@ def crear_modulos_y_habitaciones():
         nombre='Módulo C',
         descripcion='Zona residencial de menor capacidad.',
         num_habitaciones_max=2,
+    )
+
+    modulo4 = Modulo.objects.create(
+        nombre='Módulo D',
+        descripcion='Ampliación reciente, en proceso de puesta en marcha.',
+        num_habitaciones_max=3,
     )
 
     habitaciones = {}
@@ -178,6 +230,14 @@ def crear_modulos_y_habitaciones():
         capacidad=2,
         f_alta=date(2024, 3, 20),
         modulo=modulo3,
+    )
+
+    habitaciones['D1'] = Habitacion.objects.create(
+        nombre='Habitación 1',
+        info='Habitación recién acondicionada, pendiente de asignar.',
+        capacidad=3,
+        f_alta=date(2026, 8, 1),
+        modulo=modulo4,
     )
 
     return habitaciones
@@ -338,7 +398,7 @@ def crear_residentes(habitaciones):
             'Túnez',
             'X0000011K',
             True,
-            None,
+            habitaciones['A3'],
             Genero.FEMENINO,
         ),
         (
@@ -352,7 +412,7 @@ def crear_residentes(habitaciones):
             'Marruecos',
             'X0000012L',
             True,
-            None,
+            habitaciones['B2'],
             Genero.MASCULINO,
         ),
         (
@@ -382,6 +442,34 @@ def crear_residentes(habitaciones):
             False,
             None,
             Genero.FEMENINO,
+        ),
+        (
+            'Yusuf',
+            'Camara',
+            '600200015',
+            'yusuf@example.com',
+            date(2000, 2, 2),
+            date(2026, 2, 1),
+            date(2026, 3, 15),
+            'Guinea',
+            'X0000015O',
+            False,
+            None,
+            Genero.MASCULINO,
+        ),
+        (
+            'Kim',
+            'Nguyen',
+            '600200016',
+            'kim@example.com',
+            date(1996, 11, 23),
+            date(2026, 7, 1),
+            None,
+            'Vietnam',
+            'X0000016P',
+            True,
+            habitaciones['C1'],
+            Genero.OTRO,
         ),
     ]
 
@@ -447,6 +535,11 @@ def crear_categorias():
         descripcion='Material sanitario y de protección.',
     )
 
+    categorias['Farmacia'] = Categoria.objects.create(
+        nombre='Farmacia',
+        descripcion='Medicamentos y material de botiquín (pendiente de alta).',
+    )
+
     return categorias
 
 
@@ -474,7 +567,7 @@ def crear_suministros(categorias):
     suministros['cepillo'] = Suministro.objects.create(
         nombre='Cepillo de dientes',
         detalles='Cepillo dental individual.',
-        stock=23,
+        stock=15,
         unidad='unidades',
         stock_minimo=15,
         categoria=categorias['Higiene'],
@@ -483,7 +576,7 @@ def crear_suministros(categorias):
     suministros['papel'] = Suministro.objects.create(
         nombre='Papel higiénico',
         detalles='Rollos de papel higiénico.',
-        stock=1500,
+        stock=1400,
         unidad='rollos',
         stock_minimo=500,
         categoria=categorias['Higiene'],
@@ -510,7 +603,7 @@ def crear_suministros(categorias):
     suministros['detergente'] = Suministro.objects.create(
         nombre='Detergente',
         detalles='Detergente para limpieza general.',
-        stock=750,
+        stock=735,
         unidad='litros',
         stock_minimo=200,
         categoria=categorias['Limpieza'],
@@ -519,12 +612,11 @@ def crear_suministros(categorias):
     suministros['guantes'] = Suministro.objects.create(
         nombre='Guantes desechables',
         detalles='Guantes para tareas de limpieza.',
-        stock=1000,
+        stock=1040,
         unidad='pares',
         stock_minimo=300,
         categoria=categorias['Limpieza'],
     )
-
     suministros['mantas'] = Suministro.objects.create(
         nombre='Mantas',
         detalles='Mantas para residentes.',
@@ -537,7 +629,7 @@ def crear_suministros(categorias):
     suministros['toallas'] = Suministro.objects.create(
         nombre='Toallas',
         detalles='Toallas de baño.',
-        stock=200,
+        stock=190,
         unidad='unidades',
         stock_minimo=50,
         categoria=categorias['Textil'],
@@ -546,7 +638,7 @@ def crear_suministros(categorias):
     suministros['mascarillas'] = Suministro.objects.create(
         nombre='Mascarillas',
         detalles='Mascarillas de protección.',
-        stock=2000,
+        stock=1950,
         unidad='unidades',
         stock_minimo=500,
         categoria=categorias['Sanitario'],
@@ -559,6 +651,15 @@ def crear_suministros(categorias):
         unidad='pares',
         stock_minimo=500,
         categoria=categorias['Sanitario'],
+    )
+
+    suministros['termometros'] = Suministro.objects.create(
+        nombre='Termómetros digitales',
+        detalles='Termómetros de uso individual, pendientes de categorizar.',
+        stock=12,
+        unidad='unidades',
+        stock_minimo=5,
+        categoria=None,
     )
 
     return suministros
@@ -680,7 +781,7 @@ def crear_entregas_y_bajas_packs(
         tipo=BajaAlmacen.TipoBaja.PACK,
         entrega_pack=entrega1,
         observaciones='Baja causada por la asignación de Pack de higiene a 1 residentes.',
-        stock_tras_baja=24,
+        stock_tras_baja=16,
     )
 
     BajaAlmacen.objects.create(
@@ -707,7 +808,7 @@ def crear_entregas_y_bajas_packs(
         tipo=BajaAlmacen.TipoBaja.PACK,
         entrega_pack=entrega2,
         observaciones='Baja causada por la asignación de Pack de higiene a 1 residentes.',
-        stock_tras_baja=23,
+        stock_tras_baja=15,
     )
 
     BajaAlmacen.objects.create(
@@ -727,6 +828,8 @@ def crear_entregas_y_bajas_packs(
         observaciones='Baja causada por la asignación de Pack de alimentación a 1 residentes.',
         stock_tras_baja=98,
     )
+
+    return entrega1, entrega2, entrega3
 
 
 def crear_proveedores():
@@ -756,6 +859,12 @@ def crear_proveedores():
         correo='ventas@ssi.es',
     )
 
+    proveedores['farmacia'] = Proveedor.objects.create(
+        nombre='Farmacéutica Levante S.L.',
+        cif='B10000005',
+        correo='contacto@farmaceuticalevante.es',
+    )
+
     return proveedores
 
 
@@ -767,7 +876,7 @@ def crear_expedientes(proveedores):
         fecha_final=date(2027, 1, 1),
         proveedor=proveedores['limpieza'],
         presupuesto=Decimal('12000.00'),
-        presupuesto_restante=Decimal('4000.00'),
+        presupuesto_restante=Decimal('3900.00'),
     )
 
     expediente2 = Expediente.objects.create(
@@ -777,7 +886,7 @@ def crear_expedientes(proveedores):
         fecha_final=date(2026, 12, 31),
         proveedor=proveedores['textil'],
         presupuesto=Decimal('9000.00'),
-        presupuesto_restante=Decimal('2500.00'),
+        presupuesto_restante=Decimal('2240.00'),
     )
 
     expediente3 = Expediente.objects.create(
@@ -790,13 +899,24 @@ def crear_expedientes(proveedores):
         presupuesto_restante=Decimal('0.00'),
     )
 
-    return expediente1, expediente2, expediente3
+    expediente4 = Expediente.objects.create(
+        nombre='EXP-FARMACIA-2027',
+        detalles='Contrato de suministro de material de botiquín, pendiente de inicio.',
+        fecha_inicio=date(2027, 1, 1),
+        fecha_final=date(2027, 12, 31),
+        proveedor=proveedores['farmacia'],
+        presupuesto=Decimal('3000.00'),
+        presupuesto_restante=Decimal('3000.00'),
+    )
+
+    return expediente1, expediente2, expediente3, expediente4
 
 
 def crear_detalles_expedientes(
     expediente1,
     expediente2,
     expediente3,
+    expediente4,
     suministros,
 ):
     DetalleExpediente.objects.create(
@@ -835,9 +955,15 @@ def crear_detalles_expedientes(
         precio_unidad=Decimal('2.50'),
     )
 
+    DetalleExpediente.objects.create(
+        expediente=expediente4,
+        suministro=suministros['termometros'],
+        precio_unidad=Decimal('6.50'),
+    )
+
 
 def crear_pedidos(proveedores, expedientes):
-    expediente1, expediente2, expediente3 = expedientes
+    expediente1, expediente2, expediente3, expediente4 = expedientes
 
     pedidos = {}
 
@@ -851,6 +977,14 @@ def crear_pedidos(proveedores, expedientes):
 
     pedidos['exp1_2'] = Pedido.objects.create(
         nombre='PED-EXP1-002',
+        expediente=expediente1,
+        proveedor=proveedores['limpieza'],
+        tipo_pedido=Pedido.TipoPedido.EXPEDIENTE,
+        recibido=True,
+    )
+
+    pedidos['exp1_3'] = Pedido.objects.create(
+        nombre='PED-EXP1-003',
         expediente=expediente1,
         proveedor=proveedores['limpieza'],
         tipo_pedido=Pedido.TipoPedido.EXPEDIENTE,
@@ -871,6 +1005,14 @@ def crear_pedidos(proveedores, expedientes):
         proveedor=proveedores['textil'],
         tipo_pedido=Pedido.TipoPedido.EXPEDIENTE,
         recibido=True,
+    )
+
+    pedidos['exp2_3'] = Pedido.objects.create(
+        nombre='PED-EXP2-003',
+        expediente=expediente2,
+        proveedor=proveedores['textil'],
+        tipo_pedido=Pedido.TipoPedido.EXPEDIENTE,
+        recibido=False,
     )
 
     pedidos['exp3_1'] = Pedido.objects.create(
@@ -951,6 +1093,12 @@ def crear_detalles_pedidos(pedidos, suministros):
             Decimal('2.00'),
         ),
         (
+            pedidos['exp1_3'],
+            suministros['guantes'],
+            50,
+            Decimal('2.00'),
+        ),
+        (
             pedidos['exp2_1'],
             suministros['papel'],
             1000,
@@ -973,6 +1121,12 @@ def crear_detalles_pedidos(pedidos, suministros):
             suministros['toallas'],
             100,
             Decimal('12.50'),
+        ),
+        (
+            pedidos['exp2_3'],
+            suministros['toallas'],
+            20,
+            Decimal('13.00'),
         ),
         (
             pedidos['exp3_1'],
@@ -1096,6 +1250,14 @@ def crear_altas_almacen(pedidos, suministros):
             Decimal('2.00'),
             'Albarán EXP1-002',
             1000,
+        ),
+        (
+            pedidos['exp1_3'],
+            suministros['guantes'],
+            40,
+            Decimal('2.00'),
+            'Albarán EXP1-003 (entrega parcial)',
+            1040,
         ),
         (
             pedidos['exp2_1'],
@@ -1222,6 +1384,7 @@ def crear_altas_almacen(pedidos, suministros):
 
 
 def crear_bajas_servicio(suministros):
+
     BajaAlmacen.objects.create(
         suministro=suministros['jabon'],
         cantidad=20,
@@ -1258,13 +1421,333 @@ def crear_bajas_servicio(suministros):
         stock_tras_baja=103,
     )
 
+    BajaAlmacen.objects.create(
+        suministro=suministros['mascarillas'],
+        cantidad=50,
+        tipo=BajaAlmacen.TipoBaja.SERVICIO,
+        servicio=BajaAlmacen.Servicio.SANITARIO,
+        observaciones='Consumo de material de protección en curas rutinarias.',
+        stock_tras_baja=1950,
+    )
+
+    BajaAlmacen.objects.create(
+        suministro=suministros['detergente'],
+        cantidad=15,
+        tipo=BajaAlmacen.TipoBaja.SERVICIO,
+        servicio=BajaAlmacen.Servicio.MANTENIMIENTO,
+        observaciones='Consumo en tareas de mantenimiento general.',
+        stock_tras_baja=735,
+    )
+
+    BajaAlmacen.objects.create(
+        suministro=suministros['toallas'],
+        cantidad=10,
+        tipo=BajaAlmacen.TipoBaja.SERVICIO,
+        servicio=BajaAlmacen.Servicio.LAVANDERIA,
+        observaciones='Reposición del servicio de lavandería.',
+        stock_tras_baja=190,
+    )
+
+    BajaAlmacen.objects.create(
+        suministro=suministros['papel'],
+        cantidad=100,
+        tipo=BajaAlmacen.TipoBaja.SERVICIO,
+        servicio=BajaAlmacen.Servicio.ADMINISTRACION,
+        observaciones='Consumo de oficina del área de administración.',
+        stock_tras_baja=1400,
+    )
+
+    BajaAlmacen.objects.create(
+        suministro=suministros['cepillo'],
+        cantidad=3,
+        tipo=BajaAlmacen.TipoBaja.SERVICIO,
+        servicio=BajaAlmacen.Servicio.ATENCION_RESIDENTES,
+        observaciones='Reparto directo a residentes fuera de pack.',
+        stock_tras_baja=12,
+    )
+
+
+def crear_historial(usuarios, residentes, habitaciones, expedientes, pedidos):
+    expediente1, expediente2, expediente3, expediente4 = expedientes
+
+    entradas = [
+        (
+            date(2026, 6, 1),
+            'Alta de residente',
+            'Se ha dado de alta al residente Amina Khalil en la habitación 1 del Módulo B.',
+            Rol.RESIDENTES,
+            usuarios['residentes'],
+        ),
+        (
+            date(2026, 7, 22),
+            'Baja de residente',
+            'Se ha dado de baja a la residente Leila Boukhris.',
+            Rol.RESIDENTES,
+            usuarios['residentes2'],
+        ),
+        (
+            date(2026, 8, 20),
+            'Alta de residente',
+            'Se ha dado de alta a la residente Sara Mansour en la habitación 3 del Módulo A.',
+            Rol.RESIDENTES,
+            usuarios['residentes'],
+        ),
+        (
+            date(2026, 8, 25),
+            'Movimiento de habitación',
+            'La residente Nadia Said ha sido trasladada de la habitación 2 a la habitación 1 del Módulo B.',
+            Rol.RESIDENTES,
+            usuarios['residentes2'],
+        ),
+        (
+            date(2026, 7, 1),
+            'Alta de residente',
+            'Se ha dado de alta a la residente Kim Nguyen en la habitación 1 del Módulo C.',
+            Rol.RESIDENTES,
+            usuarios['residentes'],
+        ),
+        (
+            date(2026, 6, 10),
+            'Entrega de pack',
+            'Se ha asignado el pack "Pack de higiene" a Ahmed Benali.',
+            Rol.ALMACEN,
+            usuarios['almacen'],
+        ),
+        (
+            date(2026, 6, 12),
+            'Entrega de pack',
+            'Se ha asignado el pack "Pack de alimentación" a Amina Khalil.',
+            Rol.ALMACEN,
+            usuarios['almacen2'],
+        ),
+        (
+            date(2026, 7, 5),
+            'Alta de pack',
+            'Se ha creado el pack "Pack de bienvenida".',
+            Rol.ALMACEN,
+            usuarios['almacen'],
+        ),
+        (
+            date(2026, 8, 1),
+            'Baja de almacén',
+            'Se ha realizado una baja de almacén para el servicio Limpieza.\n\nSuministros retirados:\n20 unidades de Jabón corporal.',
+            Rol.ALMACEN,
+            usuarios['almacen2'],
+        ),
+        (
+            date(2026, 8, 3),
+            'Edición de suministro',
+            'Se han modificado los datos del suministro Mantas.\nStock mínimo: 5 → 10.',
+            Rol.ALMACEN,
+            usuarios['almacen'],
+        ),
+        (
+            date(2026, 5, 15),
+            'Alta de categoría',
+            'Se ha creado la categoría Farmacia.\nDescripción: Medicamentos y material de botiquín (pendiente de alta).',
+            Rol.ALMACEN,
+            usuarios['almacen2'],
+        ),
+        (
+            date(2026, 8, 15),
+            'Alta de suministro',
+            'Se ha creado el suministro Termómetros digitales.\nUnidad: unidades.',
+            Rol.ALMACEN,
+            usuarios['almacen'],
+        ),
+        (
+            date(2026, 1, 1),
+            'Alta de expediente',
+            'Se ha creado el expediente EXP-LIMPIEZA-2026 con el proveedor Higiene Integral S.L.',
+            Rol.ADMINISTRACION,
+            usuarios['administracion'],
+        ),
+        (
+            date(2026, 3, 1),
+            'Alta de expediente',
+            'Se ha creado el expediente EXP-TEXTIL-2026 con el proveedor Textiles Mediterráneo S.L.',
+            Rol.ADMINISTRACION,
+            usuarios['administracion2'],
+        ),
+        (
+            date(2026, 9, 1),
+            'Alta de expediente',
+            'Se ha creado el expediente EXP-FARMACIA-2027 con el proveedor Farmacéutica Levante S.L.',
+            Rol.ADMINISTRACION,
+            usuarios['administracion'],
+        ),
+        (
+            date(2026, 8, 10),
+            'Alta de pedido',
+            'Se ha creado el pedido PED-EXP1-003.\n\nExpediente:\nEXP-LIMPIEZA-2026.\n\nProveedor:\nHigiene Integral S.L.\n\nSuministros solicitados:\n50 pares de Guantes desechables a 2.00 € por unidad.\n\nCoste total:\n100.00 €.',
+            Rol.ADMINISTRACION,
+            usuarios['administracion2'],
+        ),
+        (
+            date(2026, 8, 18),
+            'Alta de almacén',
+            'Se ha registrado la recepción del pedido PED-EXP1-003.\n\nSuministros recibidos:\n40 pares de Guantes desechables.\n\nResultado esperado: Erróneo.',
+            Rol.ALMACEN,
+            usuarios['almacen2'],
+        ),
+        (
+            date(2026, 9, 2),
+            'Alta de pedido',
+            'Se ha creado el pedido PED-EXP2-003.\n\nExpediente:\nEXP-TEXTIL-2026.\n\nProveedor:\nTextiles Mediterráneo S.L.\n\nSuministros solicitados:\n20 unidades de Toallas a 13.00 € por unidad.\n\nCoste total:\n260.00 €.',
+            Rol.ADMINISTRACION,
+            usuarios['administracion'],
+        ),
+        (
+            date(2026, 6, 20),
+            'Edición de proveedor',
+            'Se han modificado los datos del proveedor Alimentos del Sur S.L.\nCorreo: pedidos@alimentossur.antiguo.es → pedidos@alimentossur.es.',
+            Rol.ADMINISTRACION,
+            usuarios['administracion2'],
+        ),
+        (
+            date(2026, 4, 2),
+            'Baja de suministro',
+            'Se ha eliminado el suministro Alcohol en gel (usuario que realizó la acción ya no existe en el sistema).',
+            Rol.ALMACEN,
+            None,
+        ),
+    ]
+
+    for fecha, tipo, descripcion, rol, usuario in entradas:
+        historial = Historial.objects.create(
+            tipo=tipo,
+            descripcion=descripcion,
+            rol=rol,
+            usuario=usuario,
+        )
+        _fijar_fecha(historial, fecha)
+
+
+def crear_notificaciones(usuarios):
+    notificaciones = [
+        (
+            date(2026, 6, 1),
+            'Ocupación de habitación al 50 %',
+            'La habitación 1 del módulo B ha alcanzado el 50 % de ocupación.',
+            usuarios['residentes'],
+            True,
+        ),
+        (
+            date(2026, 6, 1),
+            'Ocupación de habitación al 50 %',
+            'La habitación 1 del módulo B ha alcanzado el 50 % de ocupación.',
+            usuarios['residentes2'],
+            False,
+        ),
+        (
+            date(2026, 6, 12),
+            'Ocupación de habitación al 75 %',
+            'La habitación 1 del módulo B ha alcanzado el 75 % de ocupación.',
+            usuarios['residentes'],
+            True,
+        ),
+        (
+            date(2026, 5, 20),
+            'Ocupación de habitación al 100 %',
+            'La habitación 1 del módulo A ha alcanzado el 100 % de ocupación.',
+            usuarios['residentes'],
+            True,
+        ),
+        (
+            date(2026, 5, 20),
+            'Ocupación de habitación al 100 %',
+            'La habitación 1 del módulo A ha alcanzado el 100 % de ocupación.',
+            usuarios['residentes2'],
+            True,
+        ),
+        (
+            date(2026, 9, 5),
+            'Ocupación de habitación al 90 %',
+            'La habitación 2 del módulo B ha alcanzado el 90 % de ocupación.',
+            usuarios['residentes2'],
+            False,
+        ),
+        (
+            date(2026, 8, 3),
+            'Suministro por debajo del stock mínimo',
+            'El suministro Mantas ha quedado por debajo de su stock mínimo (10 unidades).',
+            usuarios['almacen'],
+            False,
+        ),
+        (
+            date(2026, 8, 3),
+            'Suministro por debajo del stock mínimo',
+            'El suministro Mantas ha quedado por debajo de su stock mínimo (10 unidades).',
+            usuarios['almacen2'],
+            True,
+        ),
+        (
+            date(2026, 8, 3),
+            'Suministro sin stock',
+            'El suministro Mantas ha quedado sin stock.',
+            usuarios['almacen'],
+            False,
+        ),
+        (
+            date(2026, 8, 18),
+            'Diferencia entre pedido y alta de almacén',
+            'La recepción del pedido "PED-EXP1-003" no coincide con las cantidades solicitadas.\n\nDiferencias:\nGuantes desechables: se solicitaron 50 pares y se han recibido 40 pares.',
+            usuarios['administracion'],
+            False,
+        ),
+        (
+            date(2026, 8, 18),
+            'Diferencia entre pedido y alta de almacén',
+            'La recepción del pedido "PED-EXP1-003" no coincide con las cantidades solicitadas.\n\nDiferencias:\nGuantes desechables: se solicitaron 50 pares y se han recibido 40 pares.',
+            usuarios['administracion2'],
+            False,
+        ),
+        (
+            date(2026, 9, 2),
+            'Nuevo pedido',
+            'Se ha solicitado el pedido "PED-EXP2-003" y está pendiente de recepción.',
+            usuarios['administracion'],
+            True,
+        ),
+        (
+            date(2026, 7, 18),
+            'Presupuesto de expediente al 50 %',
+            'El presupuesto restante del expediente EXP-TEXTIL-2026 ha alcanzado el 50 %.',
+            usuarios['administracion'],
+            True,
+        ),
+        (
+            date(2026, 8, 30),
+            'Presupuesto de expediente al 25 %',
+            'El presupuesto restante del expediente EXP-TEXTIL-2026 ha alcanzado el 25 %.',
+            usuarios['administracion2'],
+            False,
+        ),
+        (
+            date(2025, 12, 20),
+            'Presupuesto de expediente agotado',
+            'El presupuesto del expediente EXP-SANITARIO-2025 se ha agotado.',
+            usuarios['administracion'],
+            True,
+        ),
+    ]
+
+    for fecha, tipo, descripcion, usuario, leida in notificaciones:
+        notificacion = Notificacion.objects.create(
+            tipo=tipo,
+            descripcion=descripcion,
+            usuario=usuario,
+            leida=leida,
+        )
+        _fijar_fecha(notificacion, fecha)
+
 
 @transaction.atomic
 def cargar_datos():
     limpiar_base_datos()
 
     crear_centro()
-    crear_usuarios()
+    usuarios = crear_usuarios()
 
     habitaciones = crear_modulos_y_habitaciones()
     residentes = crear_residentes(habitaciones)
@@ -1272,7 +1755,9 @@ def cargar_datos():
     categorias = crear_categorias()
     suministros = crear_suministros(categorias)
 
-    pack_higiene, pack_alimentacion, pack_completo = crear_packs(suministros)
+    pack_higiene, pack_alimentacion, pack_completo = crear_packs(
+        suministros
+    )
 
     crear_entregas_y_bajas_packs(
         pack_higiene,
@@ -1283,18 +1768,21 @@ def cargar_datos():
 
     proveedores = crear_proveedores()
 
-    expediente1, expediente2, expediente3 = crear_expedientes(proveedores)
+    expediente1, expediente2, expediente3, expediente4 = crear_expedientes(
+        proveedores
+    )
 
     crear_detalles_expedientes(
         expediente1,
         expediente2,
         expediente3,
+        expediente4,
         suministros,
     )
 
     pedidos = crear_pedidos(
         proveedores,
-        (expediente1, expediente2, expediente3),
+        (expediente1, expediente2, expediente3, expediente4),
     )
 
     crear_detalles_pedidos(
@@ -1311,6 +1799,18 @@ def cargar_datos():
         suministros,
     )
 
+    crear_historial(
+        usuarios,
+        residentes,
+        habitaciones,
+        (expediente1, expediente2, expediente3, expediente4),
+        pedidos,
+    )
+
+    crear_notificaciones(
+        usuarios,
+    )
+
     print('Sample data cargado correctamente.')
     print(f'Usuarios: {Usuario.objects.count()}')
     print(f'Módulos: {Modulo.objects.count()}')
@@ -1325,6 +1825,8 @@ def cargar_datos():
     print(f'Pedidos: {Pedido.objects.count()}')
     print(f'Altas de almacén: {AltaAlmacen.objects.count()}')
     print(f'Bajas de almacén: {BajaAlmacen.objects.count()}')
+    print(f'Historial: {Historial.objects.count()}')
+    print(f'Notificaciones: {Notificacion.objects.count()}')
 
 
 cargar_datos()
