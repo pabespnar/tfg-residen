@@ -14,6 +14,8 @@ class ExpedienteSerializer(serializers.ModelSerializer):
 
     activo = serializers.SerializerMethodField()
 
+    suministros = serializers.SerializerMethodField()
+
     class Meta:
         model = Expediente
 
@@ -29,18 +31,47 @@ class ExpedienteSerializer(serializers.ModelSerializer):
             'proveedor_nombre',
             'presupuesto',
             'presupuesto_restante',
+            'suministros',
         ]
 
         read_only_fields = [
             'id',
             'proveedor_nombre',
             'presupuesto_restante',
+            'suministros',
         ]
 
     def get_activo(self, obj):
         hoy = timezone.now().date()
 
         return obj.fecha_inicio <= hoy <= obj.fecha_final
+
+    def get_suministros(self, obj):
+        suministros = {}
+
+        for detalle in obj.detalles_expediente.select_related(
+            'suministro__categoria'
+        ).all():
+
+            suministro = detalle.suministro
+
+            if suministro.id not in suministros:
+                suministros[suministro.id] = {
+                    'id': suministro.id,
+                    'nombre': suministro.nombre,
+                    'categoria_id': (
+                        suministro.categoria.id
+                        if suministro.categoria
+                        else None
+                    ),
+                    'categoria_nombre': (
+                        suministro.categoria.nombre
+                        if suministro.categoria
+                        else 'Sin asignar'
+                    )
+                }
+
+        return list(suministros.values())
 
     def validate_nombre(self, value):
         if not value.strip():
@@ -92,6 +123,9 @@ class ProveedorSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True
     )
+
+    suministros_pedidos = serializers.SerializerMethodField()
+
     class Meta:
         model = Proveedor
 
@@ -101,47 +135,42 @@ class ProveedorSerializer(serializers.ModelSerializer):
             'cif',
             'correo',
             'foto',
-            'expedientes'
+            'expedientes',
+            'suministros_pedidos'
         ]
 
         read_only_fields = [
             'id',
             'expedientes',
+            'suministros_pedidos',
         ]
 
-    def validate_nombre(self, value):
-        if not value.strip():
-            raise serializers.ValidationError(
-                "El nombre no puede estar vacío."
-            )
-        if len(value) > 100:
-            raise serializers.ValidationError(
-                "El nombre no puede superar los 100 caracteres."
-            )
+    def get_suministros_pedidos(self, obj):
+        suministros = {}
 
-        return value
+        for pedido in obj.pedidos.all():
+            for detalle in pedido.detalles_pedido.select_related(
+                'suministro__categoria'
+            ).all():
+                suministro = detalle.suministro
 
-    def validate_cif(self, value):
-        if not value.strip():
-            raise serializers.ValidationError(
-                "El CIF no puede estar vacío."
-            )
-        if len(value) != 9:
-            raise serializers.ValidationError(
-                "El CIF debe tener 9 caracteres."
-            )
+                if suministro.id not in suministros:
+                    suministros[suministro.id] = {
+                        'id': suministro.id,
+                        'nombre': suministro.nombre,
+                        'categoria_id': (
+                            suministro.categoria.id
+                            if suministro.categoria
+                            else None
+                        ),
+                        'categoria_nombre': (
+                            suministro.categoria.nombre
+                            if suministro.categoria
+                            else 'Sin asignar'
+                        )
+                    }
 
-        return value
-
-    def validate_correo(self, value):
-        if not value.strip():
-            raise serializers.ValidationError(
-                "El correo no puede estar vacío."
-            )
-
-        return value
-
-
+        return list(suministros.values())
 
 
 class DetalleExpedienteSerializer(serializers.ModelSerializer):
@@ -197,6 +226,8 @@ class PedidoSerializer(serializers.ModelSerializer):
 
     correcto = serializers.SerializerMethodField()
 
+    suministros = serializers.SerializerMethodField()
+
     class Meta:
         model = Pedido
 
@@ -211,6 +242,7 @@ class PedidoSerializer(serializers.ModelSerializer):
             'fecha',
             'recibido',
             'correcto',
+            'suministros',
         ]
 
         read_only_fields = [
@@ -218,7 +250,35 @@ class PedidoSerializer(serializers.ModelSerializer):
             'fecha',
             'expediente_nombre',
             'proveedor_nombre',
+            'suministros',
         ]
+
+    def get_suministros(self, obj):
+        suministros = {}
+
+        for detalle in obj.detalles_pedido.select_related(
+            'suministro__categoria'
+        ).all():
+
+            suministro = detalle.suministro
+
+            if suministro.id not in suministros:
+                suministros[suministro.id] = {
+                    'id': suministro.id,
+                    'nombre': suministro.nombre,
+                    'categoria_id': (
+                        suministro.categoria.id
+                        if suministro.categoria
+                        else None
+                    ),
+                    'categoria_nombre': (
+                        suministro.categoria.nombre
+                        if suministro.categoria
+                        else 'Sin asignar'
+                    )
+                }
+
+        return list(suministros.values())
 
     def get_correcto(self, obj):
 
@@ -251,11 +311,11 @@ class PedidoSerializer(serializers.ModelSerializer):
     def validate_nombre(self, value):
         if not value.strip():
             raise serializers.ValidationError(
-                "El nombre no puede estar vacío."
+                "El nombre del pedido no puede estar vacío."
             )
         if len(value) > 50:
             raise serializers.ValidationError(
-                "El nombre no puede superar los 50 caracteres."
+                "El nombre del pedido no puede superar los 50 caracteres."
             )
 
         return value

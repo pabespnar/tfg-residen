@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { FaSearch, FaFilter } from 'react-icons/fa'
 import './Historial.css'
 
 const Historial = () => {
     const [historial, setHistorial] = useState([])
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [tipoFiltro, setTipoFiltro] = useState('')
+    const [usuarioFiltro, setUsuarioFiltro] = useState('')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [cargando, setCargando] = useState(true)
     const [error, setError] = useState('')
@@ -42,21 +46,79 @@ const Historial = () => {
         obtenerHistorial()
     }, [])
 
+    const tiposFiltro = [...new Set(
+        historial
+            .map((evento) => evento.tipo)
+            .filter((tipo) => tipo)
+    )].sort((a, b) =>
+        normalizarTexto(a).localeCompare(normalizarTexto(b))
+    )
+
+    const usuariosFiltro = [...new Map(
+        historial
+            .filter((evento) => evento.usuario)
+            .map((evento) => [
+                evento.usuario,
+                {
+                    id: evento.usuario,
+                    nombre: evento.usuario_nombre || '',
+                    apellido: evento.usuario_apellido || '',
+                    email: evento.usuario_email || ''
+                }
+            ])
+    ).values()].sort((a, b) => {
+        const nombreA = normalizarTexto(
+            `${a.nombre} ${a.apellido}`
+        )
+
+        const nombreB = normalizarTexto(
+            `${b.nombre} ${b.apellido}`
+        )
+
+        return nombreA.localeCompare(nombreB)
+    })
+
     useEffect(() => {
         setCurrentPage(1)
-    }, [terminoBusqueda])
+    }, [
+        terminoBusqueda,
+        tipoFiltro,
+        usuarioFiltro
+    ])
 
     const historialFiltrado = historial.filter((evento) => {
         const termino = normalizarTexto(terminoBusqueda)
+
+        const tipo = normalizarTexto(
+            evento.tipo || ''
+        )
+
+        const descripcion = normalizarTexto(
+            evento.descripcion || ''
+        )
 
         const autor = normalizarTexto(
             `${evento.usuario_nombre || ''} ${evento.usuario_apellido || ''}`
         )
 
-        return (
-            normalizarTexto(evento.tipo).includes(termino) ||
-            normalizarTexto(evento.descripcion).includes(termino) ||
+        const coincideBusqueda =
+            termino === '' ||
+            tipo.includes(termino) ||
+            descripcion.includes(termino) ||
             autor.includes(termino)
+
+        const coincideTipo =
+            tipoFiltro === '' ||
+            evento.tipo === tipoFiltro
+
+        const coincideUsuario =
+            usuarioFiltro === '' ||
+            String(evento.usuario) === usuarioFiltro
+
+        return (
+            coincideBusqueda &&
+            coincideTipo &&
+            coincideUsuario
         )
     })
 
@@ -80,6 +142,11 @@ const Historial = () => {
             hour: '2-digit',
             minute: '2-digit'
         })
+    }
+
+    const restablecerFiltros = () => {
+        setTipoFiltro('')
+        setUsuarioFiltro('')
     }
 
     if (cargando) {
@@ -112,18 +179,109 @@ const Historial = () => {
             </div>
 
             <div className="historial-controles">
-                <input
-                    type="text"
-                    placeholder="Buscar en el historial..."
-                    value={terminoBusqueda}
-                    onChange={(e) => setTerminoBusqueda(e.target.value)}
-                />
+                <div className="historial-controles-principales">
+                    <div className="historial-buscador">
+                        <FaSearch className="historial-buscador-icono" />
+                        <input
+                            type="text"
+                            placeholder="Buscar en el historial..."
+                            value={terminoBusqueda}
+                            onChange={(e) =>
+                                setTerminoBusqueda(e.target.value)
+                            }
+                        />
+                    </div>
+
+                    <button
+                        type="button"
+                        className="historial-boton-filtros"
+                        onClick={() =>
+                            setMostrarFiltros(
+                                (estadoAnterior) =>
+                                    !estadoAnterior
+                            )
+                        }
+                    >
+                        <FaFilter />
+                        {mostrarFiltros
+                            ? 'Ocultar filtros'
+                            : 'Mostrar filtros'}
+                    </button>
+                </div>
+
+                {mostrarFiltros && (
+                    <div className="historial-panel-filtros">
+                        <div className="historial-filtro">
+                            <label htmlFor="historial-tipo">
+                                Tipo
+                            </label>
+
+                            <select
+                                id="historial-tipo"
+                                value={tipoFiltro}
+                                onChange={(e) =>
+                                    setTipoFiltro(e.target.value)
+                                }
+                            >
+                                <option value="">
+                                    Todos
+                                </option>
+
+                                {tiposFiltro.map((tipo) => (
+                                    <option
+                                        key={tipo}
+                                        value={tipo}
+                                    >
+                                        {tipo}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="historial-filtro">
+                            <label htmlFor="historial-usuario">
+                                Usuario
+                            </label>
+
+                            <select
+                                id="historial-usuario"
+                                value={usuarioFiltro}
+                                onChange={(e) =>
+                                    setUsuarioFiltro(e.target.value)
+                                }
+                            >
+                                <option value="">
+                                    Todos
+                                </option>
+
+                                {usuariosFiltro.map((usuario) => (
+                                    <option
+                                        key={usuario.id}
+                                        value={usuario.id}
+                                    >
+                                        {usuario.nombre} {usuario.apellido}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="historial-restablecer-filtros"
+                            onClick={restablecerFiltros}
+                        >
+                            Restablecer filtros
+                        </button>
+                    </div>
+                )}
             </div>
 
             {historialPaginado.length === 0 ? (
                 <div className="historial-vacio">
-                    {terminoBusqueda
-                        ? 'No se han encontrado resultados.'
+                    {terminoBusqueda ||
+                    tipoFiltro ||
+                    usuarioFiltro
+                        ? 'No se han encontrado resultados que coincidan con los filtros seleccionados.'
                         : 'No hay eventos registrados.'}
                 </div>
             ) : (

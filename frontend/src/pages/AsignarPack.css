@@ -25,9 +25,15 @@
 
 .residentes-controles {
     display: flex;
-    align-items: center;
-    gap: 20px;
+    flex-direction: column;
+    gap: 15px;
     margin-bottom: 25px;
+}
+
+.residentes-controles-principales {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .residentes-buscador {
@@ -62,10 +68,32 @@
     border-color: #1B5E20;
 }
 
+.residentes-boton-filtros {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+    background-color: white;
+    color: #444;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s ease;
+}
+
+.residentes-boton-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
+}
+
 .residentes-ordenacion {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-left: auto;
     flex-shrink: 0;
 }
 
@@ -88,6 +116,64 @@
 
 .residentes-ordenacion select:focus {
     border-color: #1B5E20;
+}
+
+.residentes-panel-filtros {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #e4e4e4;
+    border-radius: 8px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.residentes-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.residentes-filtro label {
+    color: #444;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.residentes-filtro select {
+    min-width: 190px;
+    padding: 10px 12px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+    background-color: white;
+    color: #444;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.residentes-filtro select:focus {
+    border-color: #1B5E20;
+}
+
+.residentes-restablecer-filtros {
+    padding: 10px 14px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+    background-color: white;
+    color: #555;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.residentes-restablecer-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
 }
 
 .tabla-residentes-container {
@@ -215,4 +301,3 @@
     color: #555;
     font-size: 14px;
 }
-

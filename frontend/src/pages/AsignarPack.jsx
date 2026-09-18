@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AsignarPack.css'
-import { FaSearch } from 'react-icons/fa'
+import { FaSearch, FaFilter } from 'react-icons/fa'
 import { useNavigate, useParams } from 'react-router-dom'
 
 function AsignarPack() {
@@ -13,6 +13,8 @@ function AsignarPack() {
     const [residentesSeleccionados, setResidentesSeleccionados] = useState([])
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
+    const [estadoFiltro, setEstadoFiltro] = useState('')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
@@ -33,10 +35,21 @@ function AsignarPack() {
             `${residente.nombre} ${residente.apellido}`
         )
 
-        return (
+        const coincideBusqueda =
             texto === '' ||
             nombreCompleto.includes(texto)
-        )
+
+        let coincideEstado = true
+
+        if (estadoFiltro === 'asignado') {
+            coincideEstado = residente.pack_recibido === true
+        }
+
+        if (estadoFiltro === 'no_asignado') {
+            coincideEstado = residente.pack_recibido === false
+        }
+
+        return coincideBusqueda && coincideEstado
     })
 
     const residentesOrdenados = [...residentesFiltrados].sort((a, b) => {
@@ -136,7 +149,7 @@ function AsignarPack() {
 
     useEffect(() => {
         setCurrentPage(1)
-    }, [terminoBusqueda, orden])
+    }, [terminoBusqueda, orden, estadoFiltro])
 
     const cambiarSeleccionResidente = (id) => {
 
@@ -156,6 +169,10 @@ function AsignarPack() {
             ]
 
         })
+    }
+
+    const restablecerFiltros = () => {
+        setEstadoFiltro('')
     }
 
     const asignarPack = async () => {
@@ -261,24 +278,92 @@ function AsignarPack() {
 
                     <div className="residentes-controles">
 
-                        <div className="residentes-buscador">
+                        <div className="residentes-controles-principales">
 
-                            <div className="residentes-buscador-input">
+                            <div className="residentes-buscador">
 
-                                <FaSearch className="residentes-buscador-icono" />
+                                <div className="residentes-buscador-input">
 
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por nombre o apellido..."
-                                    value={terminoBusqueda}
-                                    onChange={(e) =>
-                                        setTerminoBusqueda(e.target.value)
-                                    }
-                                />
+                                    <FaSearch className="residentes-buscador-icono" />
+
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar por nombre o apellido..."
+                                        value={terminoBusqueda}
+                                        onChange={(e) =>
+                                            setTerminoBusqueda(e.target.value)
+                                        }
+                                    />
+
+                                </div>
 
                             </div>
 
+                            <button
+                                type="button"
+                                className="residentes-boton-filtros"
+                                onClick={() =>
+                                    setMostrarFiltros(
+                                        (estadoAnterior) =>
+                                            !estadoAnterior
+                                    )
+                                }
+                            >
+                                <FaFilter />
+
+                                {mostrarFiltros
+                                    ? 'Ocultar filtros'
+                                    : 'Mostrar filtros'}
+                            </button>
+
                         </div>
+
+                        {mostrarFiltros && (
+
+                            <div className="residentes-panel-filtros">
+
+                                <div className="residentes-filtro">
+
+                                    <label htmlFor="estado-residente">
+                                        Estado
+                                    </label>
+
+                                    <select
+                                        id="estado-residente"
+                                        value={estadoFiltro}
+                                        onChange={(e) =>
+                                            setEstadoFiltro(
+                                                e.target.value
+                                            )
+                                        }
+                                    >
+                                        <option value="">
+                                            Todos
+                                        </option>
+
+                                        <option value="asignado">
+                                            Recibido
+                                        </option>
+
+                                        <option value="no_asignado">
+                                            No recibido
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="residentes-restablecer-filtros"
+                                    onClick={restablecerFiltros}
+                                >
+                                    Restablecer filtros
+                                </button>
+
+                            </div>
+
+                        )}
 
                         <div className="residentes-ordenacion">
 
@@ -327,7 +412,7 @@ function AsignarPack() {
                         <div className="residentes-vacio">
 
                             <p>
-                                No se han encontrado residentes que coincidan con la búsqueda.
+                                No se han encontrado residentes que coincidan con los filtros seleccionados.
                             </p>
 
                         </div>

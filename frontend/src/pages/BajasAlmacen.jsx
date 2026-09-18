@@ -234,9 +234,7 @@ function BajasAlmacen() {
     if (loading) {
         return (
             <div className="bajas-container">
-
                 <p>Cargando bajas...</p>
-
             </div>
         )
     }
@@ -244,11 +242,9 @@ function BajasAlmacen() {
     if (error) {
         return (
             <div className="bajas-container">
-
                 <p className="bajas-error">
                     {error}
                 </p>
-
             </div>
         )
     }
@@ -315,7 +311,9 @@ function BajasAlmacen() {
                                 }
                             >
                                 <FaFilter />
-                                Mostrar filtros
+                                {mostrarFiltros
+                                    ? 'Ocultar filtros'
+                                    : 'Mostrar filtros'}
                             </button>
 
                             <div className="bajas-ordenacion">

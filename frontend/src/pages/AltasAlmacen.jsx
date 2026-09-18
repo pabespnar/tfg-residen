@@ -314,7 +314,9 @@ function AltasAlmacen() {
                                 }
                             >
                                 <FaFilter />
-                                Mostrar filtros
+                                {mostrarFiltros
+                                    ? 'Ocultar filtros'
+                                    : 'Mostrar filtros'}
                             </button>
 
                             <div className="altas-ordenacion">

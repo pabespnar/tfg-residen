@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import './Proveedores.css'
-import { FaPencilAlt, FaTrash, FaSearch } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 
 function Proveedores() {
 
@@ -17,11 +17,94 @@ function Proveedores() {
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
 
+    const [tieneExpediente, setTieneExpediente] = useState('')
+    const [tieneExpedienteActivo, setTieneExpedienteActivo] = useState('')
+    const [tienePedidos, setTienePedidos] = useState('')
+    const [categoriaSuministro, setCategoriaSuministro] = useState('')
+    const [suministroPedido, setSuministroPedido] = useState('')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
+
     const normalizarTexto = (texto) =>
         texto
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
+
+    const categoriasSuministros = proveedores
+        .flatMap((proveedor) =>
+            Array.isArray(proveedor.suministros_pedidos)
+                ? proveedor.suministros_pedidos
+                : []
+        )
+        .reduce((acumulado, suministro) => {
+
+            const categoriaId =
+                suministro.categoria_id === null
+                    ? 'sin-asignar'
+                    : suministro.categoria_id
+
+            const categoriaNombre =
+                suministro.categoria_id === null
+                    ? 'Sin asignar'
+                    : suministro.categoria_nombre
+
+            if (
+                !acumulado.some(
+                    (categoria) =>
+                        categoria.id === categoriaId
+                )
+            ) {
+                acumulado.push({
+                    id: categoriaId,
+                    nombre: categoriaNombre
+                })
+            }
+
+            return acumulado
+        }, [])
+        .sort((a, b) =>
+            a.nombre.localeCompare(b.nombre)
+        )
+
+    const suministrosFiltrables = proveedores
+        .flatMap((proveedor) =>
+            Array.isArray(proveedor.suministros_pedidos)
+                ? proveedor.suministros_pedidos
+                : []
+        )
+        .filter((suministro) => {
+
+            if (categoriaSuministro === '') {
+                return true
+            }
+
+            if (categoriaSuministro === 'sin-asignar') {
+                return suministro.categoria_id === null
+            }
+
+            return (
+                suministro.categoria_id ===
+                Number(categoriaSuministro)
+            )
+        })
+        .reduce((acumulado, suministro) => {
+
+            if (
+                !acumulado.some(
+                    (item) => item.id === suministro.id
+                )
+            ) {
+                acumulado.push({
+                    id: suministro.id,
+                    nombre: suministro.nombre
+                })
+            }
+
+            return acumulado
+        }, [])
+        .sort((a, b) =>
+            a.nombre.localeCompare(b.nombre)
+        )
 
     const proveedoresFiltrados = proveedores.filter((proveedor) => {
 
@@ -39,11 +122,76 @@ function Proveedores() {
             proveedor.correo || ''
         )
 
-        return (
+        const expedientes = Array.isArray(proveedor.expedientes)
+            ? proveedor.expedientes
+            : []
+
+        const suministrosProveedor =
+            Array.isArray(proveedor.suministros_pedidos)
+                ? proveedor.suministros_pedidos
+                : []
+
+        const tieneExpedientes =
+            expedientes.length > 0
+
+        const tieneActivo =
+            expedientes.some(
+                (expediente) => expediente.activo
+            )
+
+        const tienePedidosProveedor =
+            suministrosProveedor.length > 0
+
+        const coincideBusqueda =
             texto === '' ||
             nombreProveedor.includes(texto) ||
             cifProveedor.includes(texto) ||
             correoProveedor.includes(texto)
+
+        const coincideExpediente =
+            tieneExpediente === '' ||
+            (tieneExpediente === 'si' && tieneExpedientes) ||
+            (tieneExpediente === 'no' && !tieneExpedientes)
+
+        const coincideExpedienteActivo =
+            tieneExpedienteActivo === '' ||
+            (tieneExpedienteActivo === 'si' && tieneActivo) ||
+            (tieneExpedienteActivo === 'no' && !tieneActivo)
+
+        const coincidePedidos =
+            tienePedidos === '' ||
+            (tienePedidos === 'si' && tienePedidosProveedor) ||
+            (tienePedidos === 'no' && !tienePedidosProveedor)
+
+        const coincideCategoria =
+            categoriaSuministro === '' ||
+            suministrosProveedor.some((suministro) => {
+
+                if (categoriaSuministro === 'sin-asignar') {
+                    return suministro.categoria_id === null
+                }
+
+                return (
+                    suministro.categoria_id ===
+                    Number(categoriaSuministro)
+                )
+            })
+
+        const coincideSuministro =
+            suministroPedido === '' ||
+            suministrosProveedor.some(
+                (suministro) =>
+                    suministro.id ===
+                    Number(suministroPedido)
+            )
+
+        return (
+            coincideBusqueda &&
+            coincideExpediente &&
+            coincideExpedienteActivo &&
+            coincidePedidos &&
+            coincideCategoria &&
+            coincideSuministro
         )
     })
 
@@ -118,7 +266,23 @@ function Proveedores() {
 
     useEffect(() => {
         setPaginaProveedores(1)
-    }, [terminoBusqueda, orden])
+    }, [
+        terminoBusqueda,
+        orden,
+        tieneExpediente,
+        tieneExpedienteActivo,
+        tienePedidos,
+        categoriaSuministro,
+        suministroPedido
+    ])
+
+    const restablecerFiltros = () => {
+        setTieneExpediente('')
+        setTieneExpedienteActivo('')
+        setTienePedidos('')
+        setCategoriaSuministro('')
+        setSuministroPedido('')
+    }
 
     const proveedoresPorPagina = 4
     const indiceUltimoProveedor = paginaProveedores * proveedoresPorPagina
@@ -618,72 +782,268 @@ function Proveedores() {
 
                 <div className="proveedores-controles">
 
-                    <div className="proveedores-buscador">
+                    <div className="proveedores-controles-principales">
 
-                        <div className="proveedores-buscador-input">
+                        <div className="proveedores-buscador">
 
-                            <FaSearch className="proveedores-buscador-icono" />
+                            <div className="proveedores-buscador-input">
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por proveedor, CIF o correo..."
-                                value={terminoBusqueda}
+                                <FaSearch className="proveedores-buscador-icono" />
+
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por proveedor, CIF o correo..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(evento.target.value)
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            className="proveedores-boton-filtros"
+                            onClick={() =>
+                                setMostrarFiltros(!mostrarFiltros)
+                            }
+                        >
+                            <FaFilter />
+                            {mostrarFiltros
+                                ? 'Ocultar filtros'
+                                : 'Mostrar filtros'}
+                        </button>
+
+                        <div className="proveedores-ordenacion">
+
+                            <label htmlFor="orden-proveedores">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-proveedores"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(evento.target.value)
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="nombre_asc">
+                                    Proveedor A-Z
+                                </option>
+
+                                <option value="nombre_desc">
+                                    Proveedor Z-A
+                                </option>
+
+                                <option value="cif_asc">
+                                    CIF A-Z
+                                </option>
+
+                                <option value="cif_desc">
+                                    CIF Z-A
+                                </option>
+
+                                <option value="correo_asc">
+                                    Correo A-Z
+                                </option>
+
+                                <option value="correo_desc">
+                                    Correo Z-A
+                                </option>
+
+                                <option value="expedientes_asc">
+                                    Número de expedientes: menor a mayor
+                                </option>
+
+                                <option value="expedientes_desc">
+                                    Número de expedientes: mayor a menor
+                                </option>
+                            </select>
 
                         </div>
 
                     </div>
 
-                    <div className="proveedores-ordenacion">
+                    {mostrarFiltros && (
 
-                        <label htmlFor="orden-proveedores">
-                            Ordenar por:
-                        </label>
+                        <div className="proveedores-panel-filtros">
 
-                        <select
-                            id="orden-proveedores"
-                            value={orden}
-                            onChange={(evento) =>
-                                setOrden(evento.target.value)
-                            }
-                        >
-                            <option value="nombre_asc">
-                                Proveedor A-Z
-                            </option>
+                            <div className="proveedores-filtro">
 
-                            <option value="nombre_desc">
-                                Proveedor Z-A
-                            </option>
+                                <label htmlFor="filtro-expediente">
+                                    Expedientes
+                                </label>
 
-                            <option value="cif_asc">
-                                CIF A-Z
-                            </option>
+                                <select
+                                    id="filtro-expediente"
+                                    value={tieneExpediente}
+                                    onChange={(evento) =>
+                                        setTieneExpediente(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
 
-                            <option value="cif_desc">
-                                CIF Z-A
-                            </option>
+                                    <option value="si">
+                                        Con expedientes
+                                    </option>
 
-                            <option value="correo_asc">
-                                Correo A-Z
-                            </option>
+                                    <option value="no">
+                                        Sin expedientes
+                                    </option>
+                                </select>
 
-                            <option value="correo_desc">
-                                Correo Z-A
-                            </option>
+                            </div>
 
-                            <option value="expedientes_asc">
-                                Número de expedientes: menor a mayor
-                            </option>
+                            <div className="proveedores-filtro">
 
-                            <option value="expedientes_desc">
-                                Número de expedientes: mayor a menor
-                            </option>
-                        </select>
+                                <label htmlFor="filtro-expediente-activo">
+                                    Expediente activo
+                                </label>
 
-                    </div>
+                                <select
+                                    id="filtro-expediente-activo"
+                                    value={tieneExpedienteActivo}
+                                    onChange={(evento) =>
+                                        setTieneExpedienteActivo(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    <option value="si">
+                                        Con expediente activo
+                                    </option>
+
+                                    <option value="no">
+                                        Sin expediente activo
+                                    </option>
+                                </select>
+
+                            </div>
+
+                            <div className="proveedores-filtro">
+
+                                <label htmlFor="filtro-pedidos">
+                                    Pedidos
+                                </label>
+
+                                <select
+                                    id="filtro-pedidos"
+                                    value={tienePedidos}
+                                    onChange={(evento) =>
+                                        setTienePedidos(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    <option value="si">
+                                        Con pedidos
+                                    </option>
+
+                                    <option value="no">
+                                        Sin pedidos
+                                    </option>
+                                </select>
+
+                            </div>
+
+                            <div className="proveedores-filtro">
+
+                                <label htmlFor="filtro-categoria-suministro">
+                                    Categoría del suministro
+                                </label>
+
+                                <select
+                                    id="filtro-categoria-suministro"
+                                    value={categoriaSuministro}
+                                    onChange={(evento) => {
+                                        setCategoriaSuministro(
+                                            evento.target.value
+                                        )
+                                        setSuministroPedido('')
+                                    }}
+                                >
+                                    <option value="">
+                                        Todas
+                                    </option>
+
+                                    {categoriasSuministros.map(
+                                        (categoria) => (
+                                            <option
+                                                key={categoria.id}
+                                                value={categoria.id}
+                                            >
+                                                {categoria.nombre}
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+                            </div>
+
+                            <div className="proveedores-filtro">
+
+                                <label htmlFor="filtro-suministro-pedido">
+                                    Suministro pedido
+                                </label>
+
+                                <select
+                                    id="filtro-suministro-pedido"
+                                    value={suministroPedido}
+                                    onChange={(evento) =>
+                                        setSuministroPedido(
+                                            evento.target.value
+                                        )
+                                    }
+                                    disabled={
+                                        categoriaSuministro !== '' &&
+                                        suministrosFiltrables.length === 0
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    {suministrosFiltrables.map(
+                                        (suministro) => (
+                                            <option
+                                                key={suministro.id}
+                                                value={suministro.id}
+                                            >
+                                                {suministro.nombre}
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                className="proveedores-restablecer-filtros"
+                                onClick={restablecerFiltros}
+                            >
+                                Restablecer filtros
+                            </button>
+
+                        </div>
+
+                    )}
 
                 </div>
 
