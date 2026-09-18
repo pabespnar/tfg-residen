@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './SuministrosResidentes.css'
-import { FaSearch } from 'react-icons/fa'
+import { FaSearch, FaFilter } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
 function SuministrosResidentes() {
@@ -11,6 +11,11 @@ function SuministrosResidentes() {
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
     const [paginaPacks, setPaginaPacks] = useState(1)
+
+    const [categoria, setCategoria] = useState('')
+    const [suministro, setSuministro] = useState('')
+    const [porcentaje, setPorcentaje] = useState('')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
     const [packSeleccionado, setPackSeleccionado] = useState(null)
     const [residentesEntrega, setResidentesEntrega] = useState([])
@@ -102,6 +107,57 @@ function SuministrosResidentes() {
         (pack) => Number(pack.residentes_recibidos || 0) > 0
     )
 
+    const categorias = [
+        ...new Set(
+            packsEntregados
+                .flatMap((pack) => pack.contenido || [])
+                .map((contenido) =>
+                    contenido.suministro_categoria_nombre || 'Sin asignar'
+                )
+        )
+    ].sort((a, b) =>
+        normalizarTexto(a).localeCompare(normalizarTexto(b))
+    )
+
+    const suministrosDisponibles = [
+        ...new Map(
+            packsEntregados
+                .flatMap((pack) => pack.contenido || [])
+                .filter((contenido) => {
+                    const categoriaContenido =
+                        contenido.suministro_categoria_nombre ||
+                        'Sin asignar'
+
+                    return (
+                        !categoria ||
+                        categoriaContenido === categoria
+                    )
+                })
+                .map((contenido) => [
+                    contenido.suministro,
+                    {
+                        id: contenido.suministro,
+                        nombre: contenido.suministro_nombre
+                    }
+                ])
+        ).values()
+    ].sort((a, b) =>
+        normalizarTexto(a.nombre).localeCompare(
+            normalizarTexto(b.nombre)
+        )
+    )
+
+    useEffect(() => {
+        if (
+            suministro &&
+            !suministrosDisponibles.some(
+                (item) => String(item.id) === String(suministro)
+            )
+        ) {
+            setSuministro('')
+        }
+    }, [categoria])
+
     const packsFiltrados = packsEntregados.filter((pack) => {
         const texto = normalizarTexto(terminoBusqueda)
 
@@ -113,7 +169,7 @@ function SuministrosResidentes() {
             pack.descripcion || ''
         )
 
-        const coincideSuministro = (
+        const coincideSuministroBusqueda = (
             pack.contenido || []
         ).some((contenido) => {
             const nombreSuministro = normalizarTexto(
@@ -123,11 +179,61 @@ function SuministrosResidentes() {
             return nombreSuministro.includes(texto)
         })
 
-        return (
+        const coincideTexto =
             texto === '' ||
             nombrePack.includes(texto) ||
             descripcionPack.includes(texto) ||
-            coincideSuministro
+            coincideSuministroBusqueda
+
+        const coincideCategoria =
+            categoria === '' ||
+            (pack.contenido || []).some((contenido) => {
+                const categoriaContenido =
+                    contenido.suministro_categoria_nombre ||
+                    'Sin asignar'
+
+                return categoriaContenido === categoria
+            })
+
+        const coincideSuministro =
+            suministro === '' ||
+            (pack.contenido || []).some((contenido) =>
+                String(contenido.suministro) === String(suministro)
+            )
+
+        const porcentajeEntregas = obtenerPorcentajeEntregas(pack)
+
+        let coincidePorcentaje = true
+
+        if (porcentaje === '0_25') {
+            coincidePorcentaje =
+                porcentajeEntregas >= 0 &&
+                porcentajeEntregas <= 25
+        }
+
+        if (porcentaje === '25_50') {
+            coincidePorcentaje =
+                porcentajeEntregas > 25 &&
+                porcentajeEntregas <= 50
+        }
+
+        if (porcentaje === '50_75') {
+            coincidePorcentaje =
+                porcentajeEntregas > 50 &&
+                porcentajeEntregas <= 75
+        }
+
+        if (porcentaje === '75_100') {
+            coincidePorcentaje =
+                porcentajeEntregas > 75 &&
+                porcentajeEntregas <= 100
+        }
+
+        return (
+            coincideTexto &&
+            coincideCategoria &&
+            coincideSuministro &&
+            coincidePorcentaje
         )
     })
 
@@ -170,7 +276,20 @@ function SuministrosResidentes() {
 
     useEffect(() => {
         setPaginaPacks(1)
-    }, [terminoBusqueda, orden])
+    }, [
+        terminoBusqueda,
+        orden,
+        categoria,
+        suministro,
+        porcentaje
+    ])
+
+    const restablecerFiltros = () => {
+        setCategoria('')
+        setSuministro('')
+        setPorcentaje('')
+        setPaginaPacks(1)
+    }
 
     const abrirDetallePack = (pack) => {
         const entregas = []
@@ -239,55 +358,165 @@ function SuministrosResidentes() {
             )}
 
             <div className="suministros-residentes-controles">
-                <div className="suministros-residentes-buscador">
-                    <div className="suministros-residentes-buscador-input">
-                        <FaSearch className="suministros-residentes-buscador-icono" />
-                        <input
-                            type="text"
-                            placeholder="Buscar pack..."
-                            value={terminoBusqueda}
+                <div className="suministros-residentes-controles-principales">
+                    <div className="suministros-residentes-buscador">
+                        <div className="suministros-residentes-buscador-input">
+                            <FaSearch className="suministros-residentes-buscador-icono" />
+                            <input
+                                type="text"
+                                placeholder="Buscar pack..."
+                                value={terminoBusqueda}
+                                onChange={(e) => {
+                                    setTerminoBusqueda(e.target.value)
+                                    setPaginaPacks(1)
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        className="suministros-residentes-boton-filtros"
+                        onClick={() =>
+                            setMostrarFiltros(!mostrarFiltros)
+                        }
+                    >
+                        <FaFilter />
+                        {mostrarFiltros
+                            ? 'Ocultar filtros'
+                            : 'Mostrar filtros'}
+                    </button>
+
+                    <div className="suministros-residentes-ordenacion">
+                        <label>Ordenar por:</label>
+                        <select
+                            value={orden}
                             onChange={(e) => {
-                                setTerminoBusqueda(e.target.value)
+                                setOrden(e.target.value)
                                 setPaginaPacks(1)
                             }}
-                        />
+                        >
+                            <option value="nombre_asc">
+                                Nombre (A-Z)
+                            </option>
+                            <option value="nombre_desc">
+                                Nombre (Z-A)
+                            </option>
+                            <option value="suministros_asc">
+                                Menos suministros
+                            </option>
+                            <option value="suministros_desc">
+                                Más suministros
+                            </option>
+                            <option value="porcentaje_asc">
+                                Menor porcentaje de residentes
+                            </option>
+                            <option value="porcentaje_desc">
+                                Mayor porcentaje de residentes
+                            </option>
+                        </select>
                     </div>
                 </div>
 
-                <div className="suministros-residentes-ordenacion">
-                    <label>Ordenar por:</label>
-                    <select
-                        value={orden}
-                        onChange={(e) => {
-                            setOrden(e.target.value)
-                            setPaginaPacks(1)
-                        }}
-                    >
-                        <option value="nombre_asc">
-                            Nombre (A-Z)
-                        </option>
-                        <option value="nombre_desc">
-                            Nombre (Z-A)
-                        </option>
-                        <option value="suministros_asc">
-                            Menos suministros
-                        </option>
-                        <option value="suministros_desc">
-                            Más suministros
-                        </option>
-                        <option value="porcentaje_asc">
-                            Menor porcentaje de residentes
-                        </option>
-                        <option value="porcentaje_desc">
-                            Mayor porcentaje de residentes
-                        </option>
-                    </select>
-                </div>
+                {mostrarFiltros && (
+                    <div className="suministros-residentes-panel-filtros">
+                        <div className="suministros-residentes-filtro">
+                            <label htmlFor="filtro-categoria">
+                                Categoría
+                            </label>
+                            <select
+                                id="filtro-categoria"
+                                value={categoria}
+                                onChange={(e) => {
+                                    setCategoria(e.target.value)
+                                    setSuministro('')
+                                    setPaginaPacks(1)
+                                }}
+                            >
+                                <option value="">
+                                    Todas
+                                </option>
+
+                                {categorias.map((nombreCategoria) => (
+                                    <option
+                                        key={nombreCategoria}
+                                        value={nombreCategoria}
+                                    >
+                                        {nombreCategoria}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="suministros-residentes-filtro">
+                            <label htmlFor="filtro-suministro">
+                                Suministro
+                            </label>
+                            <select
+                                id="filtro-suministro"
+                                value={suministro}
+                                onChange={(e) => {
+                                    setSuministro(e.target.value)
+                                    setPaginaPacks(1)
+                                }}
+                            >
+                                <option value="">
+                                    Todos
+                                </option>
+
+                                {suministrosDisponibles.map((item) => (
+                                    <option
+                                        key={item.id}
+                                        value={item.id}
+                                    >
+                                        {item.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="suministros-residentes-filtro">
+                            <label htmlFor="filtro-porcentaje">
+                                Porcentaje de residentes
+                            </label>
+                            <select
+                                id="filtro-porcentaje"
+                                value={porcentaje}
+                                onChange={(e) => {
+                                    setPorcentaje(e.target.value)
+                                    setPaginaPacks(1)
+                                }}
+                            >
+                                <option value="">
+                                    Todos
+                                </option>
+                                <option value="0_25">
+                                    0 % – 25 %
+                                </option>
+                                <option value="25_50">
+                                    Más de 25 % – 50 %
+                                </option>
+                                <option value="50_75">
+                                    Más de 50 % – 75 %
+                                </option>
+                                <option value="75_100">
+                                    Más de 75 % – 100 %
+                                </option>
+                            </select>
+                        </div>
+
+                        <button
+                            className="suministros-residentes-restablecer-filtros"
+                            onClick={restablecerFiltros}
+                        >
+                            Restablecer filtros
+                        </button>
+                    </div>
+                )}
             </div>
 
             {packsActuales.length === 0 ? (
                 <div className="suministros-residentes-vacio">
-                    No hay packs entregados.
+                    No hay packs entregados que coincidan con los filtros seleccionados.
                 </div>
             ) : (
                 <div className="suministros-residentes-listado">

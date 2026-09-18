@@ -208,6 +208,11 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    suministro_categoria_nombre = serializers.CharField(
+        source='suministro.categoria.nombre',
+        read_only=True
+    )
+
     class Meta:
         model = ContenidoPack
 
@@ -217,12 +222,14 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             'suministro',
             'suministro_nombre',
             'suministro_unidad',
+            'suministro_categoria_nombre',
             'cantidad',
         ]
 
         read_only_fields = [
             'id',
             'suministro_nombre',
+            'suministro_categoria_nombre',
         ]
 
     def validate_pack(self, value):
@@ -230,7 +237,7 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El pack especificado no existe."
             )
-            
+        
         return value
 
     def validate_suministro(self, value):

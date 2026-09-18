@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './HistoricoResidentes.css'
-import { FaSearch } from 'react-icons/fa'
+import { FaSearch, FaFilter } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
 function HistoricoResidentes() {
     const [residentes, setResidentes] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [pais, setPais] = useState('')
+    const [genero, setGenero] = useState('')
+    const [fechaAltaDesde, setFechaAltaDesde] = useState('')
+    const [fechaAltaHasta, setFechaAltaHasta] = useState('')
+    const [fechaBajaDesde, setFechaBajaDesde] = useState('')
+    const [fechaBajaHasta, setFechaBajaHasta] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
+
     const navigate = useNavigate()
 
     const itemsPerPage = 5
@@ -20,6 +29,30 @@ function HistoricoResidentes() {
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
+
+    const paises = [
+        ...new Set(
+            residentes
+                .map((residente) => residente.pais)
+                .filter(Boolean)
+        )
+    ].sort((a, b) =>
+        normalizarTexto(a).localeCompare(normalizarTexto(b))
+    )
+
+    const generos = [
+        ...new Set(
+            residentes
+                .map((residente) => residente.genero)
+                .filter(Boolean)
+        )
+    ]
+
+    const nombresGenero = {
+        M: 'Masculino',
+        F: 'Femenino',
+        O: 'Otro'
+    }
 
     const residentesFiltrados = residentes.filter((residente) => {
         const texto = normalizarTexto(terminoBusqueda)
@@ -32,20 +65,51 @@ function HistoricoResidentes() {
             residente.dni_nie || ''
         )
 
-        return (
+        const coincideBusqueda =
             texto === '' ||
             nombreCompleto.includes(texto) ||
             dniNie.includes(texto)
+
+        const coincidePais =
+            pais === '' ||
+            residente.pais === pais
+
+        const coincideGenero =
+            genero === '' ||
+            residente.genero === genero
+
+        const coincideFechaAltaDesde =
+            fechaAltaDesde === '' ||
+            residente.f_alta >= fechaAltaDesde
+
+        const coincideFechaAltaHasta =
+            fechaAltaHasta === '' ||
+            residente.f_alta <= fechaAltaHasta
+
+        const coincideFechaBajaDesde =
+            fechaBajaDesde === '' ||
+            residente.f_baja >= fechaBajaDesde
+
+        const coincideFechaBajaHasta =
+            fechaBajaHasta === '' ||
+            residente.f_baja <= fechaBajaHasta
+
+        return (
+            coincideBusqueda &&
+            coincidePais &&
+            coincideGenero &&
+            coincideFechaAltaDesde &&
+            coincideFechaAltaHasta &&
+            coincideFechaBajaDesde &&
+            coincideFechaBajaHasta
         )
     })
 
     const residentesOrdenados = [...residentesFiltrados].sort((a, b) => {
-
         let valorA = ''
         let valorB = ''
 
         switch (orden) {
-
             case 'nombre_asc':
             case 'nombre_desc':
                 valorA = normalizarTexto(a.nombre || '')
@@ -143,7 +207,16 @@ function HistoricoResidentes() {
 
     useEffect(() => {
         setCurrentPage(1)
-    }, [terminoBusqueda, orden])
+    }, [
+        terminoBusqueda,
+        pais,
+        genero,
+        fechaAltaDesde,
+        fechaAltaHasta,
+        fechaBajaDesde,
+        fechaBajaHasta,
+        orden
+    ])
 
     const obtenerGenero = (genero) => {
         if (genero === 'M') {
@@ -181,134 +254,253 @@ function HistoricoResidentes() {
 
     return (
         <div className="residentes-container">
-
             <div className="residentes-header">
-
                 <div>
                     <h1>Histórico de residentes</h1>
-
                     <p>
                         Consulta de los residentes dados de baja del centro
                     </p>
                 </div>
-
             </div>
 
             {residentes.length === 0 ? (
-
                 <div className="residentes-vacio">
                     <p>
                         No hay residentes dados de baja registrados.
                     </p>
                 </div>
-
             ) : (
-
                 <>
-
                     <div className="residentes-controles">
-
-                        <div className="residentes-buscador">
-
-                            <div className="residentes-buscador-input">
-
-                                <FaSearch className="residentes-buscador-icono" />
-
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por nombre, apellido o DNI/NIE..."
-                                    value={terminoBusqueda}
-                                    onChange={(e) =>
-                                        setTerminoBusqueda(e.target.value)
-                                    }
-                                />
-
+                        <div className="residentes-controles-principales">
+                            <div className="residentes-buscador">
+                                <div className="residentes-buscador-input">
+                                    <FaSearch className="residentes-buscador-icono" />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar por nombre, apellido o DNI/NIE..."
+                                        value={terminoBusqueda}
+                                        onChange={(e) =>
+                                            setTerminoBusqueda(e.target.value)
+                                        }
+                                    />
+                                </div>
                             </div>
 
-                        </div>
-
-                        <div className="residentes-ordenacion">
-
-                            <label htmlFor="orden-residentes">
-                                Ordenar por:
-                            </label>
-
-                            <select
-                                id="orden-residentes"
-                                value={orden}
-                                onChange={(e) =>
-                                    setOrden(e.target.value)
+                            <button
+                                type="button"
+                                className={`residentes-boton-filtros ${
+                                    mostrarFiltros
+                                        ? 'residentes-boton-filtros-activo'
+                                        : ''
+                                }`}
+                                onClick={() =>
+                                    setMostrarFiltros((prev) => !prev)
                                 }
                             >
-                                <option value="nombre_asc">
-                                    Nombre A-Z
-                                </option>
+                                <FaFilter />
+                                {mostrarFiltros
+                                    ? 'Ocultar filtros'
+                                    : 'Mostrar filtros'}
+                            </button>
 
-                                <option value="nombre_desc">
-                                    Nombre Z-A
-                                </option>
+                            <div className="residentes-ordenacion">
+                                <label htmlFor="orden-residentes">
+                                    Ordenar por:
+                                </label>
 
-                                <option value="apellido_asc">
-                                    Apellidos A-Z
-                                </option>
-
-                                <option value="apellido_desc">
-                                    Apellidos Z-A
-                                </option>
-
-                                <option value="dni_asc">
-                                    DNI/NIE A-Z
-                                </option>
-
-                                <option value="dni_desc">
-                                    DNI/NIE Z-A
-                                </option>
-
-                                <option value="pais_asc">
-                                    País A-Z
-                                </option>
-
-                                <option value="pais_desc">
-                                    País Z-A
-                                </option>
-
-                                <option value="alta_asc">
-                                    Fecha de alta más antigua
-                                </option>
-
-                                <option value="alta_desc">
-                                    Fecha de alta más reciente
-                                </option>
-
-                                <option value="baja_asc">
-                                    Fecha de baja más antigua
-                                </option>
-
-                                <option value="baja_desc">
-                                    Fecha de baja más reciente
-                                </option>
-                            </select>
-
+                                <select
+                                    id="orden-residentes"
+                                    value={orden}
+                                    onChange={(e) =>
+                                        setOrden(e.target.value)
+                                    }
+                                >
+                                    <option value="nombre_asc">
+                                        Nombre A-Z
+                                    </option>
+                                    <option value="nombre_desc">
+                                        Nombre Z-A
+                                    </option>
+                                    <option value="apellido_asc">
+                                        Apellidos A-Z
+                                    </option>
+                                    <option value="apellido_desc">
+                                        Apellidos Z-A
+                                    </option>
+                                    <option value="dni_asc">
+                                        DNI/NIE A-Z
+                                    </option>
+                                    <option value="dni_desc">
+                                        DNI/NIE Z-A
+                                    </option>
+                                    <option value="pais_asc">
+                                        País A-Z
+                                    </option>
+                                    <option value="pais_desc">
+                                        País Z-A
+                                    </option>
+                                    <option value="alta_asc">
+                                        Fecha de alta más antigua
+                                    </option>
+                                    <option value="alta_desc">
+                                        Fecha de alta más reciente
+                                    </option>
+                                    <option value="baja_asc">
+                                        Fecha de baja más antigua
+                                    </option>
+                                    <option value="baja_desc">
+                                        Fecha de baja más reciente
+                                    </option>
+                                </select>
+                            </div>
                         </div>
 
+                        {mostrarFiltros && (
+                            <div className="residentes-panel-filtros">
+                                <div className="residentes-filtro">
+                                    <label htmlFor="filtro-pais">
+                                        País
+                                    </label>
+
+                                    <select
+                                        id="filtro-pais"
+                                        value={pais}
+                                        onChange={(e) =>
+                                            setPais(e.target.value)
+                                        }
+                                    >
+                                        <option value="">
+                                            Todos los países
+                                        </option>
+
+                                        {paises.map((nombrePais) => (
+                                            <option
+                                                key={nombrePais}
+                                                value={nombrePais}
+                                            >
+                                                {nombrePais}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="residentes-filtro">
+                                    <label htmlFor="filtro-genero">
+                                        Género
+                                    </label>
+
+                                    <select
+                                        id="filtro-genero"
+                                        value={genero}
+                                        onChange={(e) =>
+                                            setGenero(e.target.value)
+                                        }
+                                    >
+                                        <option value="">
+                                            Todos los géneros
+                                        </option>
+
+                                        {generos.map((valorGenero) => (
+                                            <option
+                                                key={valorGenero}
+                                                value={valorGenero}
+                                            >
+                                                {nombresGenero[valorGenero] ||
+                                                    valorGenero}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="residentes-filtro residentes-filtro-fecha">
+                                    <label htmlFor="fecha-alta-desde">
+                                        Fecha de alta desde
+                                    </label>
+
+                                    <input
+                                        id="fecha-alta-desde"
+                                        type="date"
+                                        value={fechaAltaDesde}
+                                        onChange={(e) =>
+                                            setFechaAltaDesde(e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro residentes-filtro-fecha">
+                                    <label htmlFor="fecha-alta-hasta">
+                                        Fecha de alta hasta
+                                    </label>
+
+                                    <input
+                                        id="fecha-alta-hasta"
+                                        type="date"
+                                        value={fechaAltaHasta}
+                                        onChange={(e) =>
+                                            setFechaAltaHasta(e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro residentes-filtro-fecha">
+                                    <label htmlFor="fecha-baja-desde">
+                                        Fecha de baja desde
+                                    </label>
+
+                                    <input
+                                        id="fecha-baja-desde"
+                                        type="date"
+                                        value={fechaBajaDesde}
+                                        onChange={(e) =>
+                                            setFechaBajaDesde(e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro residentes-filtro-fecha">
+                                    <label htmlFor="fecha-baja-hasta">
+                                        Fecha de baja hasta
+                                    </label>
+
+                                    <input
+                                        id="fecha-baja-hasta"
+                                        type="date"
+                                        value={fechaBajaHasta}
+                                        onChange={(e) =>
+                                            setFechaBajaHasta(e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="residentes-restablecer-filtros"
+                                    onClick={() => {
+                                        setPais('')
+                                        setGenero('')
+                                        setFechaAltaDesde('')
+                                        setFechaAltaHasta('')
+                                        setFechaBajaDesde('')
+                                        setFechaBajaHasta('')
+                                    }}
+                                >
+                                    Restablecer filtros
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {residentesFiltrados.length === 0 ? (
-
                         <div className="residentes-vacio">
                             <p>
-                                No se han encontrado residentes que coincidan con la búsqueda.
+                                No se han encontrado residentes que coincidan con los filtros seleccionados.
                             </p>
                         </div>
-
                     ) : (
-
                         <div className="tabla-residentes-container">
-
                             <table className="tabla-residentes">
-
                                 <thead>
-
                                     <tr>
                                         <th>Residente</th>
                                         <th>DNI/NIE</th>
@@ -317,28 +509,24 @@ function HistoricoResidentes() {
                                         <th>Fecha de alta</th>
                                         <th>Fecha de baja</th>
                                     </tr>
-
                                 </thead>
 
                                 <tbody>
-
                                     {residentesActuales.map((residente) => (
-
                                         <tr
                                             key={residente.id}
                                             onClick={() =>
-                                                navigate(`/residentes/${residente.id}`)
+                                                navigate(
+                                                    `/residentes/${residente.id}`
+                                                )
                                             }
                                         >
-
                                             <td>
                                                 <div className="residente-nombre">
-
                                                     <strong>
                                                         {residente.nombre}{' '}
                                                         {residente.apellido}
                                                     </strong>
-
                                                 </div>
                                             </td>
 
@@ -351,7 +539,9 @@ function HistoricoResidentes() {
                                             </td>
 
                                             <td>
-                                                {obtenerGenero(residente.genero)}
+                                                {obtenerGenero(
+                                                    residente.genero
+                                                )}
                                             </td>
 
                                             <td>
@@ -361,24 +551,20 @@ function HistoricoResidentes() {
                                             <td>
                                                 {residente.f_baja}
                                             </td>
-
                                         </tr>
-
                                     ))}
-
                                 </tbody>
-
                             </table>
 
                             {totalPages > 1 && (
-
                                 <div className="residentes-paginacion">
-
                                     <button
                                         type="button"
                                         disabled={currentPage === 1}
                                         onClick={() =>
-                                            setCurrentPage((prev) => prev - 1)
+                                            setCurrentPage(
+                                                (prev) => prev - 1
+                                            )
                                         }
                                     >
                                         Anterior
@@ -390,26 +576,23 @@ function HistoricoResidentes() {
 
                                     <button
                                         type="button"
-                                        disabled={currentPage === totalPages}
+                                        disabled={
+                                            currentPage === totalPages
+                                        }
                                         onClick={() =>
-                                            setCurrentPage((prev) => prev + 1)
+                                            setCurrentPage(
+                                                (prev) => prev + 1
+                                            )
                                         }
                                     >
                                         Siguiente
                                     </button>
-
                                 </div>
-
                             )}
-
                         </div>
-
                     )}
-
                 </>
-
             )}
-
         </div>
     )
 }
