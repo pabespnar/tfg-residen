@@ -49,3 +49,21 @@
     border-color: #1B5E20;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
+
+.inicio-administrador {
+    background-color: #1B5E20;
+    border-color: #1B5E20 !important;
+}
+
+.inicio-administrador h2 {
+    color: white !important;
+}
+
+.inicio-administrador p {
+    color: white;
+}
+
+.inicio-administrador:hover {
+    background-color: #145218;
+    border-color: #145218 !important;
+}

@@ -161,12 +161,12 @@ function Notificaciones() {
         <div className="notificaciones-container">
 
             <div className="notificaciones-header">
-                <h1>Notificaciones</h1>
+                <h1>Alertas</h1>
             </div>
 
             {loading && (
                 <p className="notificaciones-estado">
-                    Cargando notificaciones...
+                    Cargando alertas...
                 </p>
             )}
 
@@ -301,11 +301,11 @@ function Notificaciones() {
 
                     {notificaciones.length === 0 ? (
                         <p className="notificaciones-estado">
-                            No tienes notificaciones.
+                            No tienes alertas.
                         </p>
                     ) : notificacionesPaginadas.length === 0 ? (
                         <div className="notificaciones-estado">
-                            No se han encontrado notificaciones que coincidan con los filtros seleccionados.
+                            No se han encontrado alertas que coincidan con los filtros seleccionados.
                         </div>
                     ) : (
                         <div className="notificaciones-lista">

@@ -193,3 +193,15 @@ main {
     background-color: #e0e0e0;
     color: #333;
 }
+
+.sidebar-administrador {
+    margin-top: 15px;
+    background-color: #1B5E20;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.sidebar-administrador:hover {
+    background-color: #388E3C;
+    color: white;
+}

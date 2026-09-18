@@ -5,6 +5,7 @@ import axios from 'axios'
 function Sidebar({ setAutenticado, rol }) {
     const [logOut, setLogOut] = useState(false)
     const [notificacionesNoLeidas, setNotificacionesNoLeidas] = useState(0)
+    const [usuario, setUsuario] = useState(null)
     const navigate = useNavigate()
 
     const cargarNotificaciones = async () => {
@@ -34,8 +35,32 @@ function Sidebar({ setAutenticado, rol }) {
         }
     }
 
+    const cargarUsuario = async () => {
+        const token = localStorage.getItem('access')
+
+        if (!token) {
+            return
+        }
+
+        try {
+            const response = await axios.get(
+                'http://127.0.0.1:8000/api/usuarios/datosperfil/',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setUsuario(response.data)
+        } catch (error) {
+            setUsuario(null)
+        }
+    }
+
     useEffect(() => {
         cargarNotificaciones()
+        cargarUsuario()
     }, [])
 
     const abrirNotificaciones = () => {
@@ -49,6 +74,8 @@ function Sidebar({ setAutenticado, rol }) {
 
         setAutenticado(false)
     }
+
+    const esSuperusuario = usuario?.is_staff && usuario?.is_superuser
 
     return (
         <aside className="sidebar">
@@ -259,6 +286,20 @@ function Sidebar({ setAutenticado, rol }) {
                                 Dashboard
                             </li>
                         </>
+                    )}
+
+                    {esSuperusuario && (
+                        <li
+                            className="sideItem sidebar-administrador"
+                            onClick={() =>
+                                window.open(
+                                    'http://127.0.0.1:8000/admin/',
+                                    '_blank'
+                                )
+                            }
+                        >
+                            SuperUser
+                        </li>
                     )}
                 </ul>
             </nav>

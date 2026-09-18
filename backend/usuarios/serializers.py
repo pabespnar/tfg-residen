@@ -14,10 +14,14 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'dni',
             'rol',
             'imagen_perfil',
+            'is_staff',
+            'is_superuser',
         ]
         read_only_fields = [
             'id',
             'rol',
+            'is_staff',
+            'is_superuser',
         ]
 
     def validate_email(self, value):
