@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Packs.css'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { FaSearch } from 'react-icons/fa'
+import { FaSearch, FaFilter } from 'react-icons/fa'
 
 function Packs() {
 
@@ -12,9 +12,15 @@ function Packs() {
     const [packs, setPacks] = useState([])
     const [suministros, setSuministros] = useState([])
     const [categorias, setCategorias] = useState([])
+    const [residentes, setResidentes] = useState([])
 
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [categoria, setCategoria] = useState('')
+    const [suministro, setSuministro] = useState('')
+    const [residentesMin, setResidentesMin] = useState('')
+    const [residentesMax, setResidentesMax] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
     const [paginaPacks, setPaginaPacks] = useState(1)
 
@@ -38,6 +44,55 @@ function Packs() {
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
 
+    const categoriasDisponibles = [
+        ...new Set(
+            packs.flatMap((pack) =>
+                (pack.contenido || [])
+                    .map(
+                        (contenido) =>
+                            contenido.suministro_categoria_nombre
+                    )
+                    .filter(Boolean)
+            )
+        )
+    ].sort((a, b) =>
+        normalizarTexto(a).localeCompare(normalizarTexto(b))
+    )
+
+    const suministrosDisponibles = [
+        ...new Map(
+            packs
+                .flatMap((pack) => pack.contenido || [])
+                .filter((contenido) => {
+                    if (!contenido.suministro_nombre) {
+                        return false
+                    }
+
+                    if (
+                        categoria !== '' &&
+                        contenido.suministro_categoria_nombre !== categoria
+                    ) {
+                        return false
+                    }
+
+                    return true
+                })
+                .map((contenido) => [
+                    contenido.suministro,
+                    contenido.suministro_nombre
+                ])
+        )
+    ]
+        .map(([id, nombre]) => ({
+            id,
+            nombre
+        }))
+        .sort((a, b) =>
+            normalizarTexto(a.nombre).localeCompare(
+                normalizarTexto(b.nombre)
+            )
+        )
+
     const packsFiltrados = packs.filter((pack) => {
         const texto = normalizarTexto(terminoBusqueda)
 
@@ -49,7 +104,7 @@ function Packs() {
             pack.descripcion || ''
         )
 
-        const coincideSuministro = (
+        const coincideSuministroBusqueda = (
             pack.contenido || []
         ).some((contenido) => {
             const nombreSuministro = normalizarTexto(
@@ -59,11 +114,49 @@ function Packs() {
             return nombreSuministro.includes(texto)
         })
 
-        return (
+        const coincideBusqueda =
             texto === '' ||
             nombrePack.includes(texto) ||
             descripcionPack.includes(texto) ||
-            coincideSuministro
+            coincideSuministroBusqueda
+
+        const coincideCategoria =
+            categoria === '' ||
+            (pack.contenido || []).some(
+                (contenido) =>
+                    contenido.suministro_categoria_nombre === categoria
+            )
+
+        const coincideSuministro =
+            suministro === '' ||
+            (pack.contenido || []).some(
+                (contenido) =>
+                    String(contenido.suministro) ===
+                    String(suministro)
+            )
+
+        const numeroResidentes =
+            pack.residentes_recibidos || 0
+
+        let coincideResidentes = true
+
+        if (residentesMin !== '') {
+            coincideResidentes =
+                coincideResidentes &&
+                numeroResidentes >= Number(residentesMin)
+        }
+
+        if (residentesMax !== '') {
+            coincideResidentes =
+                coincideResidentes &&
+                numeroResidentes <= Number(residentesMax)
+        }
+
+        return (
+            coincideBusqueda &&
+            coincideCategoria &&
+            coincideSuministro &&
+            coincideResidentes
         )
     })
 
@@ -74,8 +167,8 @@ function Packs() {
         const suministrosA = (a.contenido || []).length
         const suministrosB = (b.contenido || []).length
 
-        const asignacionesA = Number(a.residentes_recibidos || 0)
-        const asignacionesB = Number(b.residentes_recibidos || 0)
+        const residentesA = a.residentes_recibidos || 0
+        const residentesB = b.residentes_recibidos || 0
 
         if (orden === 'nombre_asc') {
             return nombreA.localeCompare(nombreB)
@@ -93,25 +186,37 @@ function Packs() {
             return suministrosB - suministrosA
         }
 
-        if (orden === 'asignaciones_asc') {
-            return asignacionesA - asignacionesB
+        if (orden === 'residentes_asc') {
+            return residentesA - residentesB
         }
 
-        if (orden === 'asignaciones_desc') {
-            return asignacionesB - asignacionesA
+        if (orden === 'residentes_desc') {
+            return residentesB - residentesA
         }
 
         return 0
     })
 
     useEffect(() => {
+        setSuministro('')
+    }, [categoria])
+
+    useEffect(() => {
         setPaginaPacks(1)
-    }, [terminoBusqueda, orden])
+    }, [
+        terminoBusqueda,
+        categoria,
+        suministro,
+        residentesMin,
+        residentesMax,
+        orden
+    ])
 
     useEffect(() => {
         obtenerPacks()
         obtenerSuministros()
         obtenerCategorias()
+        obtenerResidentes()
 
         if (location.state?.mensaje) {
             setMensaje(location.state.mensaje)
@@ -179,6 +284,25 @@ function Packs() {
             setCategorias(response.data)
         } catch (error) {
             console.error('Error al obtener las categorías:', error)
+        }
+    }
+
+    const obtenerResidentes = async () => {
+        const token = localStorage.getItem('access')
+
+        try {
+            const response = await axios.get(
+                'http://127.0.0.1:8000/api/residentes/listaresidentes/',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setResidentes(response.data)
+        } catch (error) {
+            console.error('Error al obtener los residentes:', error)
         }
     }
 
@@ -495,55 +619,185 @@ function Packs() {
 
             {packs.length > 0 && (
                 <div className="packs-controles">
-                    <div className="packs-buscador">
-                        <div className="packs-buscador-input">
-                            <FaSearch className="packs-buscador-icono" />
+                    <div className="packs-controles-principales">
+                        <div className="packs-buscador">
+                            <div className="packs-buscador-input">
+                                <FaSearch className="packs-buscador-icono" />
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por nombre o descripción..."
-                                value={terminoBusqueda}
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre o descripción..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(
+                                            evento.target.value
+                                        )
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            className={`packs-boton-filtros ${
+                                mostrarFiltros
+                                    ? 'packs-boton-filtros-activo'
+                                    : ''
+                            }`}
+                            onClick={() =>
+                                setMostrarFiltros((prev) => !prev)
+                            }
+                        >
+                            <FaFilter />
+                            {mostrarFiltros
+                                ? 'Ocultar filtros'
+                                : 'Mostrar filtros'}
+                        </button>
+
+                        <div className="packs-ordenacion">
+                            <label htmlFor="orden-packs">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-packs"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(
-                                        evento.target.value
-                                    )
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="nombre_asc">
+                                    Nombre A-Z
+                                </option>
+                                <option value="nombre_desc">
+                                    Nombre Z-A
+                                </option>
+                                <option value="suministros_asc">
+                                    Número de suministros: menor a mayor
+                                </option>
+                                <option value="suministros_desc">
+                                    Número de suministros: mayor a menor
+                                </option>
+                                <option value="residentes_asc">
+                                    Residentes con el pack: menor a mayor
+                                </option>
+                                <option value="residentes_desc">
+                                    Residentes con el pack: mayor a menor
+                                </option>
+                            </select>
                         </div>
                     </div>
 
-                    <div className="packs-ordenacion">
-                        <label htmlFor="orden-packs">
-                            Ordenar por:
-                        </label>
+                    {mostrarFiltros && (
+                        <div className="packs-panel-filtros">
+                            <div className="packs-filtro">
+                                <label htmlFor="filtro-categoria-packs">
+                                    Categoría
+                                </label>
 
-                        <select
-                            id="orden-packs"
-                            value={orden}
-                            onChange={(evento) =>
-                                setOrden(evento.target.value)
-                            }
-                        >
-                            <option value="nombre_asc">
-                                Nombre A-Z
-                            </option>
-                            <option value="nombre_desc">
-                                Nombre Z-A
-                            </option>
-                            <option value="suministros_asc">
-                                Número de suministros: menor a mayor
-                            </option>
-                            <option value="suministros_desc">
-                                Número de suministros: mayor a menor
-                            </option>
-                            <option value="asignaciones_asc">
-                                Número de asignaciones: menor a mayor
-                            </option>
-                            <option value="asignaciones_desc">
-                                Número de asignaciones: mayor a menor
-                            </option>
-                        </select>
-                    </div>
+                                <select
+                                    id="filtro-categoria-packs"
+                                    value={categoria}
+                                    onChange={(evento) =>
+                                        setCategoria(evento.target.value)
+                                    }
+                                >
+                                    <option value="">
+                                        Todas las categorías
+                                    </option>
+
+                                    {categoriasDisponibles.map(
+                                        (nombreCategoria) => (
+                                            <option
+                                                key={nombreCategoria}
+                                                value={nombreCategoria}
+                                            >
+                                                {nombreCategoria}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="packs-filtro">
+                                <label htmlFor="filtro-suministro-packs">
+                                    Suministro
+                                </label>
+
+                                <select
+                                    id="filtro-suministro-packs"
+                                    value={suministro}
+                                    onChange={(evento) =>
+                                        setSuministro(evento.target.value)
+                                    }
+                                >
+                                    <option value="">
+                                        Todos los suministros
+                                    </option>
+
+                                    {suministrosDisponibles.map(
+                                        (suministroDisponible) => (
+                                            <option
+                                                key={suministroDisponible.id}
+                                                value={suministroDisponible.id}
+                                            >
+                                                {
+                                                    suministroDisponible.nombre
+                                                }
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="packs-filtro">
+                                <label>
+                                    Residentes con el pack
+                                </label>
+
+                                <div className="packs-filtro-rango">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Mínimo"
+                                        value={residentesMin}
+                                        onChange={(evento) =>
+                                            setResidentesMin(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+
+                                    <span>–</span>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Máximo"
+                                        value={residentesMax}
+                                        onChange={(evento) =>
+                                            setResidentesMax(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="packs-restablecer-filtros"
+                                onClick={() => {
+                                    setCategoria('')
+                                    setSuministro('')
+                                    setResidentesMin('')
+                                    setResidentesMax('')
+                                }}
+                            >
+                                Restablecer filtros
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -556,7 +810,7 @@ function Packs() {
             ) : packsFiltrados.length === 0 ? (
                 <div className="packs-vacio">
                     <p>
-                        No se han encontrado packs que coincidan con la búsqueda.
+                        No se han encontrado packs que coincidan con los filtros seleccionados.
                     </p>
                 </div>
             ) : (
@@ -578,6 +832,8 @@ function Packs() {
                                     {pack.contenido?.length === 1
                                         ? 'suministro'
                                         : 'suministros'}
+                                    {' · '}
+                                    {pack.residentes_recibidos || 0} residentes
                                 </span>
                             </button>
                         ))}
@@ -598,8 +854,7 @@ function Packs() {
                             </button>
 
                             <span>
-                                Página {paginaPacks} de{" "}
-                                {totalPaginasPacks}
+                                Página {paginaPacks} de {totalPaginasPacks}
                             </span>
 
                             <button
@@ -922,7 +1177,7 @@ function Packs() {
                                                             index
                                                         )
                                                     }
-                                                    >
+                                                >
                                                     −
                                                 </button>
                                             )}

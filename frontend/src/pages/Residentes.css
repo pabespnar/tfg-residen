@@ -127,11 +127,37 @@
     color: white;
 }
 
+.residentes-boton-filtros {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #444;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.residentes-boton-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
+}
+
+.residentes-boton-filtros svg {
+    font-size: 13px;
+}
+
 .residentes-ordenacion {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 0;
+    margin-left: auto;
 }
 
 .residentes-ordenacion label {
@@ -141,7 +167,8 @@
 
 .residentes-ordenacion select {
     min-width: 230px;
-    padding: 9px 12px;
+    height: 38px;
+    padding: 8px 12px;
     border: 1px solid #d5d5d5;
     border-radius: 6px;
     background-color: white;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaPencilAlt, FaTrash, FaSearch } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 
 import "./Suministros.css";
 
@@ -13,7 +13,11 @@ const Suministros = () => {
     const [error, setError] = useState(null);
 
     const [terminoBusqueda, setTerminoBusqueda] = useState("");
+    const [categoria, setCategoria] = useState("");
+    const [unidad, setUnidad] = useState("");
+    const [estadoStock, setEstadoStock] = useState("");
     const [orden, setOrden] = useState("nombre_asc");
+    const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
     const [paginaCategorias, setPaginaCategorias] = useState(1);
 
@@ -45,16 +49,76 @@ const Suministros = () => {
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
 
+    const categoriasDisponibles = categorias
+        .map((categoria) => ({
+            id: categoria.id,
+            nombre: categoria.nombre || "",
+        }))
+        .sort((a, b) =>
+            normalizarTexto(a.nombre).localeCompare(
+                normalizarTexto(b.nombre)
+            )
+        );
+
+    const unidadesDisponibles = [
+        ...new Set(
+            categorias.flatMap((categoria) =>
+                (categoria.suministros || []).map(
+                    (suministro) => suministro.unidad || ""
+                )
+            )
+        ),
+    ]
+        .filter((unidad) => unidad !== "")
+        .sort((a, b) =>
+            normalizarTexto(a).localeCompare(normalizarTexto(b))
+        );
+
+    const obtenerNumeroSuministrosCategoria = (categoriaId) => {
+        const categoriaEncontrada = categorias.find(
+            (categoria) => categoria.id === categoriaId
+        );
+
+        return (categoriaEncontrada?.suministros || []).length;
+    };
+
+    const obtenerStockTotalCategoria = (categoriaId) => {
+        const categoriaEncontrada = categorias.find(
+            (categoria) => categoria.id === categoriaId
+        );
+
+        return (categoriaEncontrada?.suministros || []).reduce(
+            (total, suministro) =>
+                total + Number(suministro.stock || 0),
+            0
+        );
+    };
+
+    const comprobarEstadoStock = (suministro) => {
+        const stock = Number(suministro.stock || 0);
+        const stockMinimo = Number(suministro.stock_minimo || 0);
+
+        if (stock === 0) {
+            return "sin_stock";
+        }
+
+        if (stock <= stockMinimo) {
+            return "stock_bajo";
+        }
+
+        return "stock_normal";
+    };
+
     const categoriasFiltradas = categorias
-        .map((categoria) => {
+        .map((categoriaActual) => {
             const texto = normalizarTexto(terminoBusqueda);
 
             const nombreCategoria = normalizarTexto(
-                categoria.nombre || ""
+                categoriaActual.nombre || ""
             );
 
             const descripcionCategoria = normalizarTexto(
-                categoria.descripcion || ""
+                categoriaActual.descripcion || ""
             );
 
             const coincideCategoria =
@@ -62,8 +126,12 @@ const Suministros = () => {
                 nombreCategoria.includes(texto) ||
                 descripcionCategoria.includes(texto);
 
+            const coincideFiltroCategoria =
+                categoria === "" ||
+                String(categoriaActual.id) === String(categoria);
+
             const suministrosFiltrados = (
-                categoria.suministros || []
+                categoriaActual.suministros || []
             ).filter((suministro) => {
                 const nombreSuministro = normalizarTexto(
                     suministro.nombre || ""
@@ -73,23 +141,46 @@ const Suministros = () => {
                     suministro.detalles || ""
                 );
 
-                return (
+                const coincideBusqueda =
                     texto === "" ||
                     nombreSuministro.includes(texto) ||
-                    detallesSuministro.includes(texto)
+                    detallesSuministro.includes(texto);
+
+                const coincideUnidad =
+                    unidad === "" ||
+                    suministro.unidad === unidad;
+
+                const coincideEstadoStock =
+                    estadoStock === "" ||
+                    comprobarEstadoStock(suministro) === estadoStock;
+
+                return (
+                    coincideBusqueda &&
+                    coincideUnidad &&
+                    coincideEstadoStock
                 );
             });
 
-            if (coincideCategoria) {
+            const hayFiltrosDeSuministro =
+                unidad !== "" || estadoStock !== "";
+
+            if (
+                coincideCategoria &&
+                coincideFiltroCategoria &&
+                !hayFiltrosDeSuministro
+            ) {
                 return {
-                    ...categoria,
-                    suministros: categoria.suministros || [],
+                    ...categoriaActual,
+                    suministros: categoriaActual.suministros || [],
                 };
             }
 
-            if (suministrosFiltrados.length > 0) {
+            if (
+                coincideFiltroCategoria &&
+                suministrosFiltrados.length > 0
+            ) {
                 return {
-                    ...categoria,
+                    ...categoriaActual,
                     suministros: suministrosFiltrados,
                 };
             }
@@ -98,20 +189,15 @@ const Suministros = () => {
         })
         .filter(Boolean);
 
-    const obtenerNumeroSuministrosCategoria = (categoriaId) => {
-        const categoria = categorias.find(
-            (categoria) => categoria.id === categoriaId
-        );
-
-        return (categoria?.suministros || []).length;
-    };
-
     const categoriasOrdenadas = [...categoriasFiltradas].sort((a, b) => {
         const nombreA = normalizarTexto(a.nombre || "");
         const nombreB = normalizarTexto(b.nombre || "");
 
         const suministrosA = obtenerNumeroSuministrosCategoria(a.id);
         const suministrosB = obtenerNumeroSuministrosCategoria(b.id);
+
+        const stockA = obtenerStockTotalCategoria(a.id);
+        const stockB = obtenerStockTotalCategoria(b.id);
 
         if (orden === "nombre_asc") {
             return nombreA.localeCompare(nombreB);
@@ -129,12 +215,26 @@ const Suministros = () => {
             return suministrosB - suministrosA;
         }
 
+        if (orden === "stock_asc") {
+            return stockA - stockB;
+        }
+
+        if (orden === "stock_desc") {
+            return stockB - stockA;
+        }
+
         return 0;
     });
 
     useEffect(() => {
         setPaginaCategorias(1);
-    }, [terminoBusqueda, orden]);
+    }, [
+        terminoBusqueda,
+        categoria,
+        unidad,
+        estadoStock,
+        orden,
+    ]);
 
     const obtenerCategorias = async () => {
         try {
@@ -178,6 +278,13 @@ const Suministros = () => {
             ...estadoAnterior,
             [categoriaId]: !estadoAnterior[categoriaId],
         }));
+    };
+
+    const restablecerFiltros = () => {
+        setCategoria("");
+        setUnidad("");
+        setEstadoStock("");
+        setPaginaCategorias(1);
     };
 
     const abrirModalCrearCategoria = () => {
@@ -235,7 +342,6 @@ const Suministros = () => {
             setMostrarEliminarCategoria(false);
             setCategoriaEliminando(null);
             setErrorEliminarCategoria(null);
-
         } catch (error) {
             console.error(
                 "Error al eliminar la categoría:",
@@ -251,7 +357,6 @@ const Suministros = () => {
                     "No se ha podido eliminar la categoría."
                 );
             }
-
         } finally {
             setEliminandoCategoria(false);
         }
@@ -349,7 +454,6 @@ const Suministros = () => {
             setStockMinimoEditar("");
             setDetallesEditar("");
             setErrorEditarSuministro(null);
-
         } catch (error) {
             console.error(
                 "Error al editar el suministro:",
@@ -391,7 +495,6 @@ const Suministros = () => {
                     "No se ha podido editar el suministro."
                 );
             }
-
         } finally {
             setEditandoSuministro(false);
         }
@@ -518,52 +621,188 @@ const Suministros = () => {
 
             {categorias.length > 0 && (
                 <div className="suministros-controles">
-                    <div className="suministros-buscador">
-                        <div className="suministros-buscador-input">
-                            <FaSearch className="suministros-buscador-icono" />
+                    <div className="suministros-controles-principales">
+                        <div className="suministros-buscador">
+                            <div className="suministros-buscador-input">
+                                <FaSearch className="suministros-buscador-icono" />
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por categoría o suministro..."
-                                value={terminoBusqueda}
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por categoría o suministro..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(
+                                            evento.target.value
+                                        )
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="suministros-boton-filtros"
+                            onClick={() =>
+                                setMostrarFiltros(
+                                    (estadoAnterior) =>
+                                        !estadoAnterior
+                                )
+                            }
+                        >
+                            <FaFilter />
+                            {mostrarFiltros
+                                ? "Ocultar filtros"
+                                : "Mostrar filtros"}
+                        </button>
+
+                        <div className="suministros-ordenacion">
+                            <label htmlFor="orden-suministros">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-suministros"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(
-                                        evento.target.value
-                                    )
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="nombre_asc">
+                                    Nombre A-Z
+                                </option>
+
+                                <option value="nombre_desc">
+                                    Nombre Z-A
+                                </option>
+
+                                <option value="suministros_asc">
+                                    Número de suministros: menor a mayor
+                                </option>
+
+                                <option value="suministros_desc">
+                                    Número de suministros: mayor a menor
+                                </option>
+
+                                <option value="stock_asc">
+                                    Stock total: menor a mayor
+                                </option>
+
+                                <option value="stock_desc">
+                                    Stock total: mayor a menor
+                                </option>
+                            </select>
                         </div>
                     </div>
 
-                    <div className="suministros-ordenacion">
-                        <label htmlFor="orden-suministros">
-                            Ordenar por:
-                        </label>
+                    {mostrarFiltros && (
+                        <div className="suministros-panel-filtros">
+                            <div className="suministros-filtro">
+                                <label htmlFor="filtro-categoria">
+                                    Categoría
+                                </label>
 
-                        <select
-                            id="orden-suministros"
-                            value={orden}
-                            onChange={(evento) =>
-                                setOrden(evento.target.value)
-                            }
-                        >
-                            <option value="nombre_asc">
-                                Nombre A-Z
-                            </option>
+                                <select
+                                    id="filtro-categoria"
+                                    value={categoria}
+                                    onChange={(evento) =>
+                                        setCategoria(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todas
+                                    </option>
 
-                            <option value="nombre_desc">
-                                Nombre Z-A
-                            </option>
+                                    {categoriasDisponibles.map(
+                                        (categoriaDisponible) => (
+                                            <option
+                                                key={categoriaDisponible.id}
+                                                value={
+                                                    categoriaDisponible.id
+                                                }
+                                            >
+                                                {
+                                                    categoriaDisponible.nombre
+                                                }
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
 
-                            <option value="suministros_asc">
-                                Número de suministros: menor a mayor
-                            </option>
+                            <div className="suministros-filtro">
+                                <label htmlFor="filtro-unidad">
+                                    Unidad
+                                </label>
 
-                            <option value="suministros_desc">
-                                Número de suministros: mayor a menor
-                            </option>
-                        </select>
-                    </div>
+                                <select
+                                    id="filtro-unidad"
+                                    value={unidad}
+                                    onChange={(evento) =>
+                                        setUnidad(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todas
+                                    </option>
+
+                                    {unidadesDisponibles.map(
+                                        (unidadDisponible) => (
+                                            <option
+                                                key={unidadDisponible}
+                                                value={unidadDisponible}
+                                            >
+                                                {unidadDisponible}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="suministros-filtro">
+                                <label htmlFor="filtro-estado-stock">
+                                    Estado del stock
+                                </label>
+
+                                <select
+                                    id="filtro-estado-stock"
+                                    value={estadoStock}
+                                    onChange={(evento) =>
+                                        setEstadoStock(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    <option value="stock_normal">
+                                        Stock normal
+                                    </option>
+
+                                    <option value="stock_bajo">
+                                        Stock bajo
+                                    </option>
+
+                                    <option value="sin_stock">
+                                        Sin stock
+                                    </option>
+                                </select>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="suministros-restablecer-filtros"
+                                onClick={restablecerFiltros}
+                            >
+                                Restablecer filtros
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -575,25 +814,26 @@ const Suministros = () => {
                         </p>
                     </div>
                 ) : (
-                    categoriasActuales.map((categoria) => {
+                    categoriasActuales.map((categoriaActual) => {
                         const abierta =
-                            categoriasAbiertas[categoria.id] || false;
+                            categoriasAbiertas[categoriaActual.id] || false;
 
                         return (
                             <div
                                 className="suministro-categoria-card"
-                                key={categoria.id}
+                                key={categoriaActual.id}
                             >
                                 <div className="suministro-categoria-cabecera">
-
                                     <button
                                         className="suministro-categoria-boton"
                                         onClick={() =>
-                                            alternarCategoria(categoria.id)
+                                            alternarCategoria(
+                                                categoriaActual.id
+                                            )
                                         }
                                     >
                                         <span>
-                                            {categoria.nombre}
+                                            {categoriaActual.nombre}
                                         </span>
 
                                         <span>
@@ -601,33 +841,34 @@ const Suministros = () => {
                                         </span>
                                     </button>
 
-                                    {categoria.id !== "sin-asignar" && (
+                                    {categoriaActual.id !== "sin-asignar" && (
                                         <div className="suministro-categoria-acciones">
                                             <button
                                                 className="suministro-categoria-eliminar"
                                                 onClick={() =>
                                                     abrirEliminarCategoria(
-                                                        categoria
+                                                        categoriaActual
                                                     )
                                                 }
-                                                disabled={eliminandoCategoria}
+                                                disabled={
+                                                    eliminandoCategoria
+                                                }
                                             >
                                                 <FaTrash />
                                             </button>
                                         </div>
                                     )}
-
                                 </div>
 
                                 {abierta && (
                                     <div className="suministros-categoria-listado">
                                         <p className="suministro-categoria-descripcion">
-                                            {categoria.descripcion ||
+                                            {categoriaActual.descripcion ||
                                                 "Sin descripción"}
                                         </p>
 
-                                        {categoria.suministros.length > 0 ? (
-                                            categoria.suministros.map(
+                                        {categoriaActual.suministros.length > 0 ? (
+                                            categoriaActual.suministros.map(
                                                 (suministro) => (
                                                     <div
                                                         className="suministro-item"
@@ -658,7 +899,7 @@ const Suministros = () => {
                                                                     evento.stopPropagation();
                                                                     abrirEditarSuministro(
                                                                         suministro,
-                                                                        categoria
+                                                                        categoriaActual
                                                                     );
                                                                 }}
                                                                 disabled={
@@ -793,7 +1034,6 @@ const Suministros = () => {
             {mostrarEliminarCategoria && categoriaEliminando && (
                 <div className="eliminar-categoria-overlay">
                     <div className="eliminar-categoria-confirmacion">
-
                         <h2>
                             Eliminar categoría
                         </h2>
@@ -818,7 +1058,6 @@ const Suministros = () => {
                         )}
 
                         <div className="eliminar-categoria-botones">
-
                             <button
                                 type="button"
                                 onClick={eliminarCategoria}
@@ -836,9 +1075,7 @@ const Suministros = () => {
                             >
                                 Cancelar
                             </button>
-
                         </div>
-
                     </div>
                 </div>
             )}
@@ -870,15 +1107,18 @@ const Suministros = () => {
 
                                     {categorias
                                         .filter(
-                                            (categoria) =>
-                                                categoria.id !== "sin-asignar"
+                                            (categoriaActual) =>
+                                                categoriaActual.id !==
+                                                "sin-asignar"
                                         )
-                                        .map((categoria) => (
+                                        .map((categoriaActual) => (
                                             <option
-                                                key={categoria.id}
-                                                value={categoria.id}
+                                                key={categoriaActual.id}
+                                                value={
+                                                    categoriaActual.id
+                                                }
                                             >
-                                                {categoria.nombre}
+                                                {categoriaActual.nombre}
                                             </option>
                                         ))}
                                 </select>

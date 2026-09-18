@@ -66,22 +66,17 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-
     margin-top: 30px;
     padding-top: 25px;
-
     border-top: 1px solid #e5e5e5;
 }
 
 .bajas-volver {
     padding: 10px 18px;
-
     border: 1px solid #ccc;
     border-radius: 6px;
-
     background-color: white;
     color: #555;
-
     font-size: 14px;
     cursor: pointer;
 }
@@ -149,11 +144,16 @@
 
 .bajas-controles {
     margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
+.bajas-controles-principales {
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 20px;
+    gap: 15px;
 }
 
 .bajas-buscador {
@@ -163,19 +163,13 @@
 
 .bajas-buscador-input {
     width: 320px;
-
     display: flex;
     align-items: center;
-
     padding: 0 10px;
-
     border: 1px solid #d5d5d5;
     border-radius: 6px;
-
     background-color: white;
-
     box-sizing: border-box;
-
     transition: 0.2s ease;
 }
 
@@ -187,7 +181,6 @@
 .bajas-buscador-icono {
     color: #888;
     font-size: 14px;
-
     flex-shrink: 0;
     margin-right: 8px;
 }
@@ -196,20 +189,14 @@
     flex: 1;
     min-width: 0;
     width: auto;
-
     padding: 10px 0;
-
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-
     background: transparent !important;
-
     color: #333;
-
     font-family: inherit;
     font-size: 14px;
-
     box-sizing: border-box;
 }
 
@@ -217,33 +204,141 @@
     color: #888;
 }
 
+.bajas-boton-filtros {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.bajas-boton-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
+}
+
 .bajas-ordenacion {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-left: auto;
 }
 
 .bajas-ordenacion label {
-    color: #555;
+    color: #333;
     font-size: 14px;
 }
 
 .bajas-ordenacion select {
     padding: 10px 12px;
-
     border: 1px solid #d5d5d5;
     border-radius: 6px;
-
     background-color: white;
     color: #333;
-
     font-family: inherit;
     font-size: 14px;
-
     outline: none;
+    cursor: pointer;
+    transition: 0.2s ease;
 }
 
 .bajas-ordenacion select:focus {
     border-color: #1B5E20;
     box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.bajas-panel-filtros {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.bajas-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.bajas-filtro label {
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.bajas-filtro select,
+.bajas-filtro input {
+    min-width: 150px;
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.bajas-filtro select {
+    min-width: 180px;
+    cursor: pointer;
+}
+
+.bajas-filtro select:focus,
+.bajas-filtro input:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.bajas-filtro select:disabled {
+    background-color: #f0f0f0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.bajas-filtro-rango {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bajas-filtro-rango input {
+    width: 120px;
+    min-width: 120px;
+}
+
+.bajas-filtro-rango span {
+    color: #555;
+    font-size: 14px;
+}
+
+.bajas-restablecer-filtros {
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: white;
+    color: #555;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.bajas-restablecer-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
 }

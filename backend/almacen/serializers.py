@@ -87,6 +87,16 @@ class AltaAlmacenSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    expediente_id = serializers.IntegerField(
+        source='pedido.expediente.id',
+        read_only=True
+    )
+
+    expediente_nombre = serializers.CharField(
+        source='pedido.expediente.nombre',
+        read_only=True
+    )
+
     suministro_nombre = serializers.CharField(
         source='suministro.nombre',
         read_only=True
@@ -104,6 +114,8 @@ class AltaAlmacenSerializer(serializers.ModelSerializer):
             'pedido',
             'pedido_nombre',
             'pedido_tipo',
+            'expediente_id',
+            'expediente_nombre',
             'suministro',
             'suministro_nombre',
             'suministro_unidad',
@@ -118,6 +130,8 @@ class AltaAlmacenSerializer(serializers.ModelSerializer):
             'id',
             'pedido_nombre',
             'pedido_tipo',
+            'expediente_id',
+            'expediente_nombre',
             'suministro_nombre',
             'suministro_unidad',
             'fecha',

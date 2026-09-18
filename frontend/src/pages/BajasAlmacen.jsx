@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './BajasAlmacen.css'
 import { useNavigate } from 'react-router-dom'
-import { FaSearch } from 'react-icons/fa'
+import { FaSearch, FaFilter } from 'react-icons/fa'
 
 function BajasAlmacen() {
 
@@ -13,7 +13,14 @@ function BajasAlmacen() {
 
     const [paginaBajas, setPaginaBajas] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [tipo, setTipo] = useState('')
+    const [servicio, setServicio] = useState('')
+    const [fechaDesde, setFechaDesde] = useState('')
+    const [fechaHasta, setFechaHasta] = useState('')
+    const [cantidadMin, setCantidadMin] = useState('')
+    const [cantidadMax, setCantidadMax] = useState('')
     const [orden, setOrden] = useState('fecha_desc')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
     const navigate = useNavigate()
 
@@ -68,6 +75,23 @@ function BajasAlmacen() {
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
 
+    const obtenerNombreServicio = (valor) => {
+
+        const servicios = {
+            LIMPIEZA: 'Limpieza',
+            COMIDA: 'Comida',
+            SANITARIO: 'Sanitario',
+            MANTENIMIENTO: 'Mantenimiento',
+            LAVANDERIA: 'Lavandería',
+            ADMINISTRACION: 'Administración',
+            ATENCION_RESIDENTES: 'Atención a residentes',
+            OTROS: 'Otros'
+        }
+
+        return servicios[valor] || valor
+
+    }
+
     const bajasFiltradas = bajas.filter((baja) => {
 
         const texto = normalizarTexto(terminoBusqueda)
@@ -76,9 +100,44 @@ function BajasAlmacen() {
             baja.suministro_nombre || ''
         )
 
-        return (
+        const coincideBusqueda =
             texto === '' ||
             nombreSuministro.includes(texto)
+
+        const coincideTipo =
+            tipo === '' ||
+            baja.tipo === tipo
+
+        const coincideServicio =
+            servicio === '' ||
+            baja.servicio === servicio
+
+        const coincideFechaDesde =
+            fechaDesde === '' ||
+            baja.fecha >= fechaDesde
+
+        const coincideFechaHasta =
+            fechaHasta === '' ||
+            baja.fecha <= fechaHasta
+
+        const cantidad = Number(baja.cantidad || 0)
+
+        const coincideCantidadMin =
+            cantidadMin === '' ||
+            cantidad >= Number(cantidadMin)
+
+        const coincideCantidadMax =
+            cantidadMax === '' ||
+            cantidad <= Number(cantidadMax)
+
+        return (
+            coincideBusqueda &&
+            coincideTipo &&
+            coincideServicio &&
+            coincideFechaDesde &&
+            coincideFechaHasta &&
+            coincideCantidadMin &&
+            coincideCantidadMax
         )
     })
 
@@ -127,7 +186,33 @@ function BajasAlmacen() {
 
     useEffect(() => {
         setPaginaBajas(1)
-    }, [terminoBusqueda, orden])
+    }, [
+        terminoBusqueda,
+        tipo,
+        servicio,
+        fechaDesde,
+        fechaHasta,
+        cantidadMin,
+        cantidadMax,
+        orden
+    ])
+
+    useEffect(() => {
+
+        if (tipo === 'PACK') {
+            setServicio('')
+        }
+
+    }, [tipo])
+
+    const restablecerFiltros = () => {
+        setTipo('')
+        setServicio('')
+        setFechaDesde('')
+        setFechaHasta('')
+        setCantidadMin('')
+        setCantidadMax('')
+    }
 
     const bajasPorPagina = 5
 
@@ -197,66 +282,250 @@ function BajasAlmacen() {
 
                     <div className="bajas-controles">
 
-                        <div className="bajas-buscador">
+                        <div className="bajas-controles-principales">
 
-                            <div className="bajas-buscador-input">
+                            <div className="bajas-buscador">
 
-                                <FaSearch className="bajas-buscador-icono" />
+                                <div className="bajas-buscador-input">
 
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por suministro..."
-                                    value={terminoBusqueda}
+                                    <FaSearch className="bajas-buscador-icono" />
+
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar por suministro..."
+                                        value={terminoBusqueda}
+                                        onChange={(evento) =>
+                                            setTerminoBusqueda(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                className="bajas-boton-filtros"
+                                onClick={() =>
+                                    setMostrarFiltros(
+                                        (valorActual) => !valorActual
+                                    )
+                                }
+                            >
+                                <FaFilter />
+                                Mostrar filtros
+                            </button>
+
+                            <div className="bajas-ordenacion">
+
+                                <label htmlFor="orden-bajas">
+                                    Ordenar por:
+                                </label>
+
+                                <select
+                                    id="orden-bajas"
+                                    value={orden}
                                     onChange={(evento) =>
-                                        setTerminoBusqueda(
-                                            evento.target.value
-                                        )
+                                        setOrden(evento.target.value)
                                     }
-                                />
+                                >
+                                    <option value="fecha_desc">
+                                        Fecha: más reciente
+                                    </option>
+
+                                    <option value="fecha_asc">
+                                        Fecha: más antigua
+                                    </option>
+
+                                    <option value="suministro_asc">
+                                        Suministro A-Z
+                                    </option>
+
+                                    <option value="suministro_desc">
+                                        Suministro Z-A
+                                    </option>
+
+                                    <option value="cantidad_asc">
+                                        Cantidad: menor a mayor
+                                    </option>
+
+                                    <option value="cantidad_desc">
+                                        Cantidad: mayor a menor
+                                    </option>
+                                </select>
 
                             </div>
 
                         </div>
 
-                        <div className="bajas-ordenacion">
+                        {mostrarFiltros && (
+                            <div className="bajas-panel-filtros">
 
-                            <label htmlFor="orden-bajas">
-                                Ordenar por:
-                            </label>
+                                <div className="bajas-filtro">
 
-                            <select
-                                id="orden-bajas"
-                                value={orden}
-                                onChange={(evento) =>
-                                    setOrden(evento.target.value)
-                                }
-                            >
-                                <option value="fecha_desc">
-                                    Fecha: más reciente
-                                </option>
+                                    <label>
+                                        Tipo de baja
+                                    </label>
 
-                                <option value="fecha_asc">
-                                    Fecha: más antigua
-                                </option>
+                                    <select
+                                        value={tipo}
+                                        onChange={(evento) =>
+                                            setTipo(evento.target.value)
+                                        }
+                                    >
+                                        <option value="">
+                                            Todos
+                                        </option>
 
-                                <option value="suministro_asc">
-                                    Suministro A-Z
-                                </option>
+                                        <option value="PACK">
+                                            Pack
+                                        </option>
 
-                                <option value="suministro_desc">
-                                    Suministro Z-A
-                                </option>
+                                        <option value="SERVICIO">
+                                            Servicio
+                                        </option>
+                                    </select>
 
-                                <option value="cantidad_asc">
-                                    Cantidad: menor a mayor
-                                </option>
+                                </div>
 
-                                <option value="cantidad_desc">
-                                    Cantidad: mayor a menor
-                                </option>
-                            </select>
+                                <div className="bajas-filtro">
 
-                        </div>
+                                    <label>
+                                        Servicio
+                                    </label>
+
+                                    <select
+                                        value={servicio}
+                                        onChange={(evento) =>
+                                            setServicio(evento.target.value)
+                                        }
+                                        disabled={tipo === 'PACK'}
+                                    >
+                                        <option value="">
+                                            Todos
+                                        </option>
+
+                                        <option value="LIMPIEZA">
+                                            Limpieza
+                                        </option>
+
+                                        <option value="COMIDA">
+                                            Comida
+                                        </option>
+
+                                        <option value="SANITARIO">
+                                            Sanitario
+                                        </option>
+
+                                        <option value="MANTENIMIENTO">
+                                            Mantenimiento
+                                        </option>
+
+                                        <option value="LAVANDERIA">
+                                            Lavandería
+                                        </option>
+
+                                        <option value="ADMINISTRACION">
+                                            Administración
+                                        </option>
+
+                                        <option value="ATENCION_RESIDENTES">
+                                            Atención a residentes
+                                        </option>
+
+                                        <option value="OTROS">
+                                            Otros
+                                        </option>
+                                    </select>
+
+                                </div>
+
+                                <div className="bajas-filtro">
+
+                                    <label>
+                                        Fecha desde
+                                    </label>
+
+                                    <input
+                                        type="date"
+                                        value={fechaDesde}
+                                        onChange={(evento) =>
+                                            setFechaDesde(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+                                <div className="bajas-filtro">
+
+                                    <label>
+                                        Fecha hasta
+                                    </label>
+
+                                    <input
+                                        type="date"
+                                        value={fechaHasta}
+                                        onChange={(evento) =>
+                                            setFechaHasta(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+                                <div className="bajas-filtro">
+
+                                    <label>
+                                        Cantidad
+                                    </label>
+
+                                    <div className="bajas-filtro-rango">
+
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="Mínimo"
+                                            value={cantidadMin}
+                                            onChange={(evento) =>
+                                                setCantidadMin(
+                                                    evento.target.value
+                                                )
+                                            }
+                                        />
+
+                                        <span>–</span>
+
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="Máximo"
+                                            value={cantidadMax}
+                                            onChange={(evento) =>
+                                                setCantidadMax(
+                                                    evento.target.value
+                                                )
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="bajas-restablecer-filtros"
+                                    onClick={restablecerFiltros}
+                                >
+                                    Restablecer filtros
+                                </button>
+
+                            </div>
+                        )}
 
                     </div>
 
@@ -264,7 +533,7 @@ function BajasAlmacen() {
 
                         <div className="bajas-vacio">
                             <p>
-                                No se han encontrado bajas que coincidan con la búsqueda.
+                                No se han encontrado bajas que coincidan con los filtros seleccionados.
                             </p>
                         </div>
 
@@ -323,7 +592,9 @@ function BajasAlmacen() {
 
                                                 <td>
                                                     {baja.servicio
-                                                        ? baja.servicio
+                                                        ? obtenerNombreServicio(
+                                                            baja.servicio
+                                                        )
                                                         : '—'}
                                                 </td>
 

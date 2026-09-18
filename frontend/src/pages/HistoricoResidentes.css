@@ -128,16 +128,6 @@
     color: #1B5E20;
 }
 
-.residentes-boton-filtros-activo {
-    border-color: #1B5E20;
-    background-color: #1B5E20;
-    color: white;
-}
-
-.residentes-boton-filtros-activo:hover {
-    background-color: #145218;
-    color: white;
-}
 
 .residentes-boton-filtros svg {
     font-size: 13px;

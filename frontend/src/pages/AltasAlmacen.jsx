@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AltasAlmacen.css'
 import { useNavigate } from 'react-router-dom'
-import { FaSearch } from 'react-icons/fa'
+import { FaSearch, FaFilter } from 'react-icons/fa'
 
 function AltasAlmacen() {
 
@@ -14,6 +14,11 @@ function AltasAlmacen() {
     const [paginaAltas, setPaginaAltas] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('fecha_desc')
+    const [tipo, setTipo] = useState('')
+    const [expediente, setExpediente] = useState('')
+    const [fechaDesde, setFechaDesde] = useState('')
+    const [fechaHasta, setFechaHasta] = useState('')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
     const navigate = useNavigate()
 
@@ -80,6 +85,33 @@ function AltasAlmacen() {
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
 
+    const expedientes = altas
+        .filter(
+            (alta) =>
+                alta.pedido_tipo === 'EXPEDIENTE' &&
+                alta.expediente_id &&
+                alta.expediente_nombre
+        )
+        .reduce((acumulado, alta) => {
+
+            if (
+                !acumulado.some(
+                    (item) => item.id === alta.expediente_id
+                )
+            ) {
+                acumulado.push({
+                    id: alta.expediente_id,
+                    nombre: alta.expediente_nombre
+                })
+            }
+
+            return acumulado
+
+        }, [])
+        .sort((a, b) =>
+            a.nombre.localeCompare(b.nombre)
+        )
+
     const altasFiltradas = altas.filter((alta) => {
 
         const texto = normalizarTexto(terminoBusqueda)
@@ -88,9 +120,32 @@ function AltasAlmacen() {
             alta.suministro_nombre || ''
         )
 
-        return (
+        const coincideBusqueda =
             texto === '' ||
             nombreSuministro.includes(texto)
+
+        const coincideTipo =
+            tipo === '' ||
+            alta.pedido_tipo === tipo
+
+        const coincideExpediente =
+            expediente === '' ||
+            alta.expediente_id === Number(expediente)
+
+        const coincideFechaDesde =
+            fechaDesde === '' ||
+            alta.fecha >= fechaDesde
+
+        const coincideFechaHasta =
+            fechaHasta === '' ||
+            alta.fecha <= fechaHasta
+
+        return (
+            coincideBusqueda &&
+            coincideTipo &&
+            coincideExpediente &&
+            coincideFechaDesde &&
+            coincideFechaHasta
         )
     })
 
@@ -139,7 +194,29 @@ function AltasAlmacen() {
 
     useEffect(() => {
         setPaginaAltas(1)
-    }, [terminoBusqueda, orden])
+    }, [
+        terminoBusqueda,
+        orden,
+        tipo,
+        expediente,
+        fechaDesde,
+        fechaHasta
+    ])
+
+    useEffect(() => {
+
+        if (tipo !== 'EXPEDIENTE') {
+            setExpediente('')
+        }
+
+    }, [tipo])
+
+    const restablecerFiltros = () => {
+        setTipo('')
+        setExpediente('')
+        setFechaDesde('')
+        setFechaHasta('')
+    }
 
     const altasPorPagina = 5
 
@@ -202,66 +279,200 @@ function AltasAlmacen() {
 
                     <div className="altas-controles">
 
-                        <div className="altas-buscador">
+                        <div className="altas-controles-principales">
 
-                            <div className="altas-buscador-input">
+                            <div className="altas-buscador">
 
-                                <FaSearch className="altas-buscador-icono" />
+                                <div className="altas-buscador-input">
 
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por suministro..."
-                                    value={terminoBusqueda}
+                                    <FaSearch className="altas-buscador-icono" />
+
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar por suministro..."
+                                        value={terminoBusqueda}
+                                        onChange={(evento) =>
+                                            setTerminoBusqueda(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                className={`altas-boton-filtros ${
+                                    mostrarFiltros
+                                        ? 'altas-boton-filtros-activo'
+                                        : ''
+                                }`}
+                                onClick={() =>
+                                    setMostrarFiltros(!mostrarFiltros)
+                                }
+                            >
+                                <FaFilter />
+                                Mostrar filtros
+                            </button>
+
+                            <div className="altas-ordenacion">
+
+                                <label htmlFor="orden-altas">
+                                    Ordenar por:
+                                </label>
+
+                                <select
+                                    id="orden-altas"
+                                    value={orden}
                                     onChange={(evento) =>
-                                        setTerminoBusqueda(
-                                            evento.target.value
-                                        )
+                                        setOrden(evento.target.value)
                                     }
-                                />
+                                >
+                                    <option value="fecha_desc">
+                                        Fecha: más reciente
+                                    </option>
+
+                                    <option value="fecha_asc">
+                                        Fecha: más antigua
+                                    </option>
+
+                                    <option value="suministro_asc">
+                                        Suministro A-Z
+                                    </option>
+
+                                    <option value="suministro_desc">
+                                        Suministro Z-A
+                                    </option>
+
+                                    <option value="cantidad_asc">
+                                        Cantidad: menor a mayor
+                                    </option>
+
+                                    <option value="cantidad_desc">
+                                        Cantidad: mayor a menor
+                                    </option>
+                                </select>
 
                             </div>
 
                         </div>
 
-                        <div className="altas-ordenacion">
+                        {mostrarFiltros && (
 
-                            <label htmlFor="orden-altas">
-                                Ordenar por:
-                            </label>
+                            <div className="altas-panel-filtros">
 
-                            <select
-                                id="orden-altas"
-                                value={orden}
-                                onChange={(evento) =>
-                                    setOrden(evento.target.value)
-                                }
-                            >
-                                <option value="fecha_desc">
-                                    Fecha: más reciente
-                                </option>
+                                <div className="altas-filtro">
 
-                                <option value="fecha_asc">
-                                    Fecha: más antigua
-                                </option>
+                                    <label htmlFor="filtro-tipo">
+                                        Tipo de pedido
+                                    </label>
 
-                                <option value="suministro_asc">
-                                    Suministro A-Z
-                                </option>
+                                    <select
+                                        id="filtro-tipo"
+                                        value={tipo}
+                                        onChange={(evento) =>
+                                            setTipo(evento.target.value)
+                                        }
+                                    >
+                                        <option value="">
+                                            Todos
+                                        </option>
 
-                                <option value="suministro_desc">
-                                    Suministro Z-A
-                                </option>
+                                        <option value="EXPEDIENTE">
+                                            Con expediente
+                                        </option>
 
-                                <option value="cantidad_asc">
-                                    Cantidad: menor a mayor
-                                </option>
+                                        <option value="GENERAL">
+                                            Gasto general
+                                        </option>
+                                    </select>
 
-                                <option value="cantidad_desc">
-                                    Cantidad: mayor a menor
-                                </option>
-                            </select>
+                                </div>
 
-                        </div>
+                                <div className="altas-filtro">
+
+                                    <label htmlFor="filtro-expediente">
+                                        Expediente
+                                    </label>
+
+                                    <select
+                                        id="filtro-expediente"
+                                        value={expediente}
+                                        onChange={(evento) =>
+                                            setExpediente(
+                                                evento.target.value
+                                            )
+                                        }
+                                        disabled={tipo !== 'EXPEDIENTE'}
+                                    >
+                                        <option value="">
+                                            Todos los expedientes
+                                        </option>
+
+                                        {expedientes.map((item) => (
+                                            <option
+                                                key={item.id}
+                                                value={item.id}
+                                            >
+                                                {item.nombre}
+                                            </option>
+                                        ))}
+
+                                    </select>
+
+                                </div>
+
+                                <div className="altas-filtro">
+
+                                    <label htmlFor="fecha-desde">
+                                        Fecha desde
+                                    </label>
+
+                                    <input
+                                        id="fecha-desde"
+                                        type="date"
+                                        value={fechaDesde}
+                                        onChange={(evento) =>
+                                            setFechaDesde(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+                                <div className="altas-filtro">
+
+                                    <label htmlFor="fecha-hasta">
+                                        Fecha hasta
+                                    </label>
+
+                                    <input
+                                        id="fecha-hasta"
+                                        type="date"
+                                        value={fechaHasta}
+                                        onChange={(evento) =>
+                                            setFechaHasta(
+                                                evento.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="altas-restablecer-filtros"
+                                    onClick={restablecerFiltros}
+                                >
+                                    Restablecer filtros
+                                </button>
+
+                            </div>
+
+                        )}
 
                     </div>
 
@@ -351,6 +562,7 @@ function AltasAlmacen() {
                             </div>
 
                             {totalPaginasAltas > 1 && (
+
                                 <div className="altas-paginacion">
 
                                     <button
@@ -384,6 +596,7 @@ function AltasAlmacen() {
                                     </button>
 
                                 </div>
+
                             )}
 
                         </>
@@ -407,6 +620,7 @@ function AltasAlmacen() {
             </div>
 
             {altaSeleccionada && (
+
                 <div className="crear-modulo-overlay">
 
                     <div className="crear-modulo-confirmacion">
@@ -475,6 +689,7 @@ function AltasAlmacen() {
                     </div>
 
                 </div>
+
             )}
 
         </div>

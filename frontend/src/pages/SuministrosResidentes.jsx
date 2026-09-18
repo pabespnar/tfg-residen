@@ -8,6 +8,7 @@ function SuministrosResidentes() {
 
     const [packs, setPacks] = useState([])
     const [residentes, setResidentes] = useState([])
+    const [residentesActivos, setResidentesActivos] = useState([])
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
     const [paginaPacks, setPaginaPacks] = useState(1)
@@ -73,6 +74,8 @@ function SuministrosResidentes() {
                     )
                 ])
 
+            setResidentesActivos(residentesActivos.data)
+
             setResidentes([
                 ...residentesActivos.data,
                 ...residentesHistorico.data
@@ -89,18 +92,18 @@ function SuministrosResidentes() {
     }, [])
 
     const obtenerPorcentajeEntregas = (pack) => {
-        if (residentes.length === 0) {
+        if (residentesActivos.length === 0) {
             return 0
         }
 
-        const entregas = residentes.filter((residente) =>
+        const entregas = residentesActivos.filter((residente) =>
             (residente.packs_recibidos || []).some(
                 (packRecibido) =>
                     String(packRecibido.id) === String(pack.id)
             )
         ).length
 
-        return (entregas / residentes.length) * 100
+        return (entregas / residentesActivos.length) * 100
     }
 
     const packsEntregados = packs.filter(
