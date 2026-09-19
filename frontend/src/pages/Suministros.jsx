@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 
@@ -7,6 +7,7 @@ import "./Suministros.css";
 
 const Suministros = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [categorias, setCategorias] = useState([]);
     const [categoriasAbiertas, setCategoriasAbiertas] = useState({});
@@ -225,6 +226,18 @@ const Suministros = () => {
 
         return 0;
     });
+
+    useEffect(() => {
+        const estadoStockInicial = location.state?.estadoStock;
+
+        if (!estadoStockInicial) {
+            return;
+        }
+
+        setEstadoStock(estadoStockInicial);
+        setPaginaCategorias(1);
+        setMostrarFiltros(true);
+    }, [location.state]);
 
     useEffect(() => {
         setPaginaCategorias(1);

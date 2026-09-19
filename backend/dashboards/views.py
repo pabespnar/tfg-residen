@@ -436,6 +436,7 @@ class DashboardResidentesView(APIView):
             },
         })
 
+
 class DashboardAlmacenView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
 
@@ -630,6 +631,32 @@ class DashboardAlmacenView(APIView):
                 'cantidad': suministro['cantidad'],
             })
 
+        altas_almacen = AltaAlmacen.objects.filter(
+            fecha__gte=hace_30_dias,
+            fecha__lte=hoy
+        )
+
+        suministros_mas_entradas_query = altas_almacen.values(
+            'suministro__id',
+            'suministro__nombre',
+            'suministro__unidad'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad',
+            'suministro__nombre'
+        )[:5]
+
+        suministros_mas_entradas = []
+
+        for suministro in suministros_mas_entradas_query:
+            suministros_mas_entradas.append({
+                'id': suministro['suministro__id'],
+                'nombre': suministro['suministro__nombre'],
+                'unidad': suministro['suministro__unidad'],
+                'cantidad': suministro['cantidad'],
+            })
+
         evolucion_principales = []
 
         meses_consumo = []
@@ -697,6 +724,54 @@ class DashboardAlmacenView(APIView):
                 'suministros': consumos_mes
             })
 
+        evolucion_entradas_principales = []
+
+        for periodo in meses_consumo:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            entradas_mes = []
+
+            for suministro in suministros_mas_entradas:
+                cantidad = AltaAlmacen.objects.filter(
+                    suministro_id=suministro['id'],
+                    fecha__gte=inicio_mes,
+                    fecha__lt=inicio_siguiente_mes
+                ).aggregate(
+                    total=Sum('cantidad')
+                )['total'] or 0
+
+                entradas_mes.append({
+                    'id': suministro['id'],
+                    'nombre': suministro['nombre'],
+                    'unidad': suministro['unidad'],
+                    'cantidad': cantidad,
+                })
+
+            evolucion_entradas_principales.append({
+                'mes': f'{año}-{mes:02d}',
+                'suministros': entradas_mes
+            })
+
         consumo_por_categoria_query = bajas_consumo.values(
             'suministro__categoria__nombre'
         ).annotate(
@@ -714,6 +789,26 @@ class DashboardAlmacenView(APIView):
             )
 
             consumo_por_categoria[
+                nombre_categoria
+            ] = categoria['cantidad']
+
+        entradas_por_categoria_query = altas_almacen.values(
+            'suministro__categoria__nombre'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad'
+        )
+
+        entradas_por_categoria = {}
+
+        for categoria in entradas_por_categoria_query:
+            nombre_categoria = (
+                categoria['suministro__categoria__nombre']
+                or 'Sin asignar'
+            )
+
+            entradas_por_categoria[
                 nombre_categoria
             ] = categoria['cantidad']
 
@@ -744,6 +839,10 @@ class DashboardAlmacenView(APIView):
                 'pedidos_pendientes_alta': pedidos_pendientes_alta,
                 'pedidos_correctos': pedidos_correctos,
                 'pedidos_incorrectos': pedidos_incorrectos,
+                'suministros_mas_entradas': suministros_mas_entradas,
+                'evolucion_entradas_principales':
+                    evolucion_entradas_principales,
+                'por_categoria': entradas_por_categoria,
             },
 
             'bajas': {

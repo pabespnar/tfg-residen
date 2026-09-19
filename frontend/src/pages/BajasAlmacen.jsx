@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './BajasAlmacen.css'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FaSearch, FaFilter } from 'react-icons/fa'
 
 function BajasAlmacen() {
@@ -22,7 +22,19 @@ function BajasAlmacen() {
     const [orden, setOrden] = useState('fecha_desc')
     const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
+    const location = useLocation()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const servicioInicial = location.state?.servicio
+
+        if (!servicioInicial) {
+            return
+        }
+
+        setServicio(servicioInicial)
+        setPaginaBajas(1)
+    }, [location.state])
 
     useEffect(() => {
 

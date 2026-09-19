@@ -229,6 +229,17 @@ function Packs() {
         }
     }, [])
 
+    useEffect(() => {
+        const ordenInicial = location.state?.orden
+
+        if (!ordenInicial) {
+            return
+        }
+
+        setOrden(ordenInicial)
+        setPaginaPacks(1)
+    }, [location.state])
+
     const obtenerPacks = async () => {
         const token = localStorage.getItem('access')
 
