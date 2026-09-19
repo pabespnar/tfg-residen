@@ -8,6 +8,10 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
+    class Meta:
+        verbose_name = 'Categoría'
+        verbose_name_plural = 'Categorías'
+
 class Suministro(models.Model):
     nombre = models.CharField(max_length=100)
     detalles = models.TextField(blank=True, null=True)
@@ -46,6 +50,10 @@ class ContenidoPack(models.Model):
         return f"{self.cantidad} x {self.suministro.nombre} in {self.pack.nombre}"
 
 
+    class Meta:
+        verbose_name = 'Contenido de pack'
+        verbose_name_plural = 'Contenidos de pack'
+
 class EntregaPack(models.Model):
     pack = models.ForeignKey(Pack, on_delete=models.CASCADE)
     residente = models.ForeignKey('residentes.Residente', on_delete=models.CASCADE)
@@ -53,3 +61,7 @@ class EntregaPack(models.Model):
 
     def __str__(self):
         return f"{self.pack.nombre} delivered to {self.residente.nombre} on {self.fecha_entrega}"
+
+    class Meta:
+        verbose_name = 'Entrega de pack'
+        verbose_name_plural = 'Entregas de pack'

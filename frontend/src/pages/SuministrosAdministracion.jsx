@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { FaTrash, FaSearch } from 'react-icons/fa'
+import { useLocation } from 'react-router-dom'
+import { FaTrash, FaSearch, FaFilter } from 'react-icons/fa'
 import './SuministrosAdministracion.css'
 
 function SuministrosAdministracion() {
+
+    const location = useLocation()
 
     const [suministros, setSuministros] = useState([])
     const [suministrosAbiertos, setSuministrosAbiertos] = useState({})
@@ -13,6 +16,13 @@ function SuministrosAdministracion() {
     const [paginaSuministros, setPaginaSuministros] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
+
+    const [unidadFiltro, setUnidadFiltro] = useState('')
+    const [proveedorFiltro, setProveedorFiltro] = useState('')
+    const [estadoExpedienteFiltro, setEstadoExpedienteFiltro] = useState('')
+    const [expedientesFiltro, setExpedientesFiltro] = useState('')
+    const [pedidosFiltro, setPedidosFiltro] = useState('')
+    const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
     const suministrosPorPagina = 9
 
@@ -28,6 +38,84 @@ function SuministrosAdministracion() {
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
 
+    const unidadesFiltro = suministros
+        .map((suministro) => suministro.unidad)
+        .filter(Boolean)
+        .filter(
+            (unidad, indice, unidades) =>
+                unidades.indexOf(unidad) === indice
+        )
+        .sort((a, b) =>
+            normalizarTexto(a).localeCompare(
+                normalizarTexto(b)
+            )
+        )
+
+    const proveedoresFiltro = suministros
+        .reduce((acumulado, suministro) => {
+
+            const proveedores = []
+
+            ;(suministro.expedientes || []).forEach(
+                (expediente) => {
+
+                    if (
+                        expediente.proveedor_nombre &&
+                        !proveedores.some(
+                            (proveedor) =>
+                                proveedor.nombre ===
+                                expediente.proveedor_nombre
+                        )
+                    ) {
+                        proveedores.push({
+                            nombre: expediente.proveedor_nombre
+                        })
+                    }
+
+                }
+            )
+
+            ;(suministro.pedidos || []).forEach(
+                (pedido) => {
+
+                    if (
+                        pedido.proveedor_nombre &&
+                        !proveedores.some(
+                            (proveedor) =>
+                                proveedor.nombre ===
+                                pedido.proveedor_nombre
+                        )
+                    ) {
+                        proveedores.push({
+                            nombre: pedido.proveedor_nombre
+                        })
+                    }
+
+                }
+            )
+
+            proveedores.forEach((proveedor) => {
+
+                if (
+                    !acumulado.some(
+                        (item) =>
+                            item.nombre === proveedor.nombre
+                    )
+                ) {
+                    acumulado.push(proveedor)
+                }
+
+            })
+
+            return acumulado
+
+        }, [])
+        .sort((a, b) =>
+            normalizarTexto(a.nombre).localeCompare(
+                normalizarTexto(b.nombre)
+            )
+        )
+
     const suministrosFiltrados = suministros.filter((suministro) => {
 
         const texto = normalizarTexto(terminoBusqueda)
@@ -36,9 +124,82 @@ function SuministrosAdministracion() {
             suministro.nombre || ''
         )
 
-        return (
+        const coincideBusqueda =
             texto === '' ||
             nombreSuministro.includes(texto)
+
+        const coincideUnidad =
+            unidadFiltro === '' ||
+            suministro.unidad === unidadFiltro
+
+        const expedientes =
+            suministro.expedientes || []
+
+        const pedidos =
+            suministro.pedidos || []
+
+        const coincideProveedor =
+            proveedorFiltro === '' ||
+            expedientes.some(
+                (expediente) =>
+                    expediente.proveedor_nombre ===
+                    proveedorFiltro
+            ) ||
+            pedidos.some(
+                (pedido) =>
+                    pedido.proveedor_nombre ===
+                    proveedorFiltro
+            )
+
+        let coincideEstadoExpediente = true
+
+        if (estadoExpedienteFiltro === 'activo') {
+            coincideEstadoExpediente =
+                expedientes.some(
+                    (expediente) =>
+                        expediente.activo
+                )
+        }
+
+        if (estadoExpedienteFiltro === 'inactivo') {
+            coincideEstadoExpediente =
+                expedientes.some(
+                    (expediente) =>
+                        !expediente.activo
+                )
+        }
+
+        let coincideExpedientes = true
+
+        if (expedientesFiltro === 'con') {
+            coincideExpedientes =
+                expedientes.length > 0
+        }
+
+        if (expedientesFiltro === 'sin') {
+            coincideExpedientes =
+                expedientes.length === 0
+        }
+
+        let coincidePedidos = true
+
+        if (pedidosFiltro === 'con') {
+            coincidePedidos =
+                pedidos.length > 0
+        }
+
+        if (pedidosFiltro === 'sin') {
+            coincidePedidos =
+                pedidos.length === 0
+        }
+
+        return (
+            coincideBusqueda &&
+            coincideUnidad &&
+            coincideProveedor &&
+            coincideEstadoExpediente &&
+            coincideExpedientes &&
+            coincidePedidos
         )
     })
 
@@ -52,6 +213,9 @@ function SuministrosAdministracion() {
 
         const expedientesA = (a.expedientes || []).length
         const expedientesB = (b.expedientes || []).length
+
+        const importeA = Number(a.importe || 0)
+        const importeB = Number(b.importe || 0)
 
         if (orden === 'nombre_asc') {
             return nombreA.localeCompare(nombreB)
@@ -77,12 +241,37 @@ function SuministrosAdministracion() {
             return expedientesB - expedientesA
         }
 
+        if (orden === 'importe_asc') {
+            return importeA - importeB
+        }
+
+        if (orden === 'importe_desc') {
+            return importeB - importeA
+        }
+
         return 0
     })
 
     useEffect(() => {
         setPaginaSuministros(1)
-    }, [terminoBusqueda, orden])
+    }, [
+        terminoBusqueda,
+        orden,
+        unidadFiltro,
+        proveedorFiltro,
+        estadoExpedienteFiltro,
+        expedientesFiltro,
+        pedidosFiltro
+    ])
+
+    const restablecerFiltros = () => {
+
+        setUnidadFiltro('')
+        setProveedorFiltro('')
+        setEstadoExpedienteFiltro('')
+        setExpedientesFiltro('')
+        setPedidosFiltro('')
+    }
 
     const suministrosActuales = suministrosOrdenados.slice(
         indicePrimerSuministro,
@@ -300,6 +489,12 @@ function SuministrosAdministracion() {
         }
     }
 
+    useEffect(() => {
+        if (location.state?.orden) {
+            setOrden(location.state.orden)
+        }
+    }, [location.state])
+
     return (
         <div className="suministros-administracion-container">
 
@@ -346,66 +541,266 @@ function SuministrosAdministracion() {
 
                 <div className="suministros-administracion-controles">
 
-                    <div className="suministros-administracion-buscador">
+                    <div className="suministros-administracion-controles-principales">
 
-                        <div className="suministros-administracion-buscador-input">
+                        <div className="suministros-administracion-buscador">
 
-                            <FaSearch className="suministros-administracion-buscador-icono" />
+                            <div className="suministros-administracion-buscador-input">
 
-                            <input
-                                type="text"
-                                placeholder="Buscar por suministro..."
-                                value={terminoBusqueda}
+                                <FaSearch className="suministros-administracion-buscador-icono" />
+
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por suministro..."
+                                    value={terminoBusqueda}
+                                    onChange={(evento) =>
+                                        setTerminoBusqueda(
+                                            evento.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            className="suministros-administracion-boton-filtros"
+                            onClick={() =>
+                                setMostrarFiltros(
+                                    (estadoAnterior) =>
+                                        !estadoAnterior
+                                )
+                            }
+                        >
+                            <FaFilter />
+                            {mostrarFiltros
+                                ? 'Ocultar filtros'
+                                : 'Mostrar filtros'}
+                        </button>
+
+                        <div className="suministros-administracion-ordenacion">
+
+                            <label htmlFor="orden-suministros-administracion">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-suministros-administracion"
+                                value={orden}
                                 onChange={(evento) =>
-                                    setTerminoBusqueda(
-                                        evento.target.value
-                                    )
+                                    setOrden(evento.target.value)
                                 }
-                            />
+                            >
+                                <option value="nombre_asc">
+                                    Suministro A-Z
+                                </option>
+
+                                <option value="nombre_desc">
+                                    Suministro Z-A
+                                </option>
+
+                                <option value="unidad_asc">
+                                    Unidad A-Z
+                                </option>
+
+                                <option value="unidad_desc">
+                                    Unidad Z-A
+                                </option>
+
+                                <option value="expedientes_asc">
+                                    Número de expedientes: menor a mayor
+                                </option>
+
+                                <option value="expedientes_desc">
+                                    Número de expedientes: mayor a menor
+                                </option>
+
+                                <option value="importe_asc">
+                                    Gasto acumulado total: menor a mayor
+                                </option>
+
+                                <option value="importe_desc">
+                                    Gasto acumulado total: mayor a menor
+                                </option>
+                            </select>
 
                         </div>
 
                     </div>
 
-                    <div className="suministros-administracion-ordenacion">
+                    {mostrarFiltros && (
 
-                        <label htmlFor="orden-suministros-administracion">
-                            Ordenar por:
-                        </label>
+                        <div className="suministros-administracion-panel-filtros">
 
-                        <select
-                            id="orden-suministros-administracion"
-                            value={orden}
-                            onChange={(evento) =>
-                                setOrden(evento.target.value)
-                            }
-                        >
-                            <option value="nombre_asc">
-                                Suministro A-Z
-                            </option>
+                            <div className="suministros-administracion-filtro">
 
-                            <option value="nombre_desc">
-                                Suministro Z-A
-                            </option>
+                                <label>
+                                    Unidad
+                                </label>
 
-                            <option value="unidad_asc">
-                                Unidad A-Z
-                            </option>
+                                <select
+                                    value={unidadFiltro}
+                                    onChange={(evento) =>
+                                        setUnidadFiltro(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todas
+                                    </option>
 
-                            <option value="unidad_desc">
-                                Unidad Z-A
-                            </option>
+                                    {unidadesFiltro.map(
+                                        (unidad) => (
+                                            <option
+                                                key={unidad}
+                                                value={unidad}
+                                            >
+                                                {unidad}
+                                            </option>
+                                        )
+                                    )}
 
-                            <option value="expedientes_asc">
-                                Número de expedientes: menor a mayor
-                            </option>
+                                </select>
 
-                            <option value="expedientes_desc">
-                                Número de expedientes: mayor a menor
-                            </option>
-                        </select>
+                            </div>
 
-                    </div>
+                            <div className="suministros-administracion-filtro">
+
+                                <label>
+                                    Proveedor
+                                </label>
+
+                                <select
+                                    value={proveedorFiltro}
+                                    onChange={(evento) =>
+                                        setProveedorFiltro(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    {proveedoresFiltro.map(
+                                        (proveedor) => (
+                                            <option
+                                                key={proveedor.nombre}
+                                                value={proveedor.nombre}
+                                            >
+                                                {proveedor.nombre}
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+                            </div>
+
+                            <div className="suministros-administracion-filtro">
+
+                                <label>
+                                    Estado del expediente
+                                </label>
+
+                                <select
+                                    value={estadoExpedienteFiltro}
+                                    onChange={(evento) =>
+                                        setEstadoExpedienteFiltro(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    <option value="activo">
+                                        Activos
+                                    </option>
+
+                                    <option value="inactivo">
+                                        Inactivos
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <div className="suministros-administracion-filtro">
+
+                                <label>
+                                    Expedientes
+                                </label>
+
+                                <select
+                                    value={expedientesFiltro}
+                                    onChange={(evento) =>
+                                        setExpedientesFiltro(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    <option value="con">
+                                        Con expedientes
+                                    </option>
+
+                                    <option value="sin">
+                                        Sin expedientes
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <div className="suministros-administracion-filtro">
+
+                                <label>
+                                    Pedidos
+                                </label>
+
+                                <select
+                                    value={pedidosFiltro}
+                                    onChange={(evento) =>
+                                        setPedidosFiltro(
+                                            evento.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todos
+                                    </option>
+
+                                    <option value="con">
+                                        Con pedidos
+                                    </option>
+
+                                    <option value="sin">
+                                        Sin pedidos
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                className="suministros-administracion-restablecer-filtros"
+                                onClick={restablecerFiltros}
+                            >
+                                Restablecer filtros
+                            </button>
+
+                        </div>
+
+                    )}
 
                 </div>
 
@@ -422,7 +817,7 @@ function SuministrosAdministracion() {
                 ) : suministrosActuales.length === 0 ? (
 
                     <div className="suministros-administracion-vacio">
-                        No se han encontrado suministros que coincidan con la búsqueda.
+                        No se han encontrado suministros que coincidan con los filtros seleccionados.
                     </div>
 
                 ) : (
@@ -465,6 +860,19 @@ function SuministrosAdministracion() {
 
                                                 <p>
                                                     Unidad: {suministro.unidad}
+                                                </p>
+
+                                                <p>
+                                                    Gasto acumulado total:{' '}
+                                                    {Number(
+                                                        suministro.importe || 0
+                                                    ).toLocaleString(
+                                                        'es-ES',
+                                                        {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2
+                                                        }
+                                                    )} €
                                                 </p>
 
                                             </div>
@@ -544,7 +952,6 @@ function SuministrosAdministracion() {
                                                                 </span>
 
                                                             </div>
-
                                                         )
                                                     )}
 

@@ -1,6 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,8 +10,11 @@ from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 
-from .serializers import UsuarioSerializer
+from .serializers import UsuarioSerializer, CrearUsuarioSerializer
 from .models import Usuario
+
+from centro.permissions import EsSuperUsuario
+
 
 class UsuarioActualView(APIView):
     permission_classes = [IsAuthenticated]
@@ -28,6 +30,34 @@ class UsuarioActualView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+
+class CrearUsuarioView(APIView):
+    permission_classes = [IsAuthenticated, EsSuperUsuario]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        serializer = CrearUsuarioSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+
+        if serializer.is_valid():
+            usuario = serializer.save()
+
+            return Response(
+                UsuarioSerializer(
+                    usuario,
+                    context={'request': request}
+                ).data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
 
 class CambiarContrasenaView(APIView):
     permission_classes = [IsAuthenticated]
@@ -73,6 +103,7 @@ class CambiarContrasenaView(APIView):
             {'mensaje': 'Contraseña actualizada correctamente.'}
         )
 
+
 class RecuperarContrasenaView(APIView):
     permission_classes = []
 
@@ -112,15 +143,13 @@ class RecuperarContrasenaView(APIView):
             }
         )
 
+
 class RestablecerContrasenaView(APIView):
     permission_classes = []
 
     def post(self, request, uid, token):
-
-
         try:
             usuario_id = force_str(urlsafe_base64_decode(uid))
-
             usuario = Usuario.objects.get(pk=usuario_id)
 
         except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
@@ -129,11 +158,7 @@ class RestablecerContrasenaView(APIView):
                 status=400
             )
 
-
-
         token_valido = default_token_generator.check_token(usuario, token)
-    
-
 
         if not token_valido:
             return Response(

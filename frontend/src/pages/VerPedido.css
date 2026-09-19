@@ -212,3 +212,67 @@
 .ver-pedido-error button:hover {
     background-color: #145218;
 }
+
+.ver-pedido-expediente {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #1B5E20;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+}
+
+.ver-pedido-expediente:hover {
+    text-decoration: underline;
+}
+
+.ver-pedido-expediente {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #1B5E20;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+}
+
+.ver-pedido-expediente:hover {
+    text-decoration: underline;
+}
+
+.ver-pedido-diferencias {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background-color: #fff8f8;
+    border: 1px solid #e0b4b4;
+    border-radius: 8px;
+}
+
+.ver-pedido-diferencias h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    color: #8b1e1e;
+}
+
+.ver-pedido-diferencias-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ver-pedido-diferencia {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 13px;
+    color: #555;
+}
+
+.ver-pedido-diferencia-nombre {
+    min-width: 180px;
+    font-weight: 600;
+    color: #333;
+}

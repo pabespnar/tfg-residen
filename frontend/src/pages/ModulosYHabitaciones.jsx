@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { FaPencilAlt, FaTrash, FaSearch  } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 
 import "./ModulosYHabitaciones.css";
 
 const ModulosYHabitaciones = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [modulos, setModulos] = useState([]);
     const [habitaciones, setHabitaciones] = useState({});
@@ -14,6 +15,9 @@ const ModulosYHabitaciones = () => {
 
     const [terminoBusqueda, setTerminoBusqueda] = useState("");
     const [orden, setOrden] = useState("nombre_asc");
+    const [ocupacionFiltro, setOcupacionFiltro] = useState("");
+    const [ocupacionHabitacionesFiltro, setOcupacionHabitacionesFiltro] = useState("");
+    const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
     const [paginasHabitaciones, setPaginasHabitaciones] = useState({});
     const [paginaModulos, setPaginaModulos] = useState(1);
@@ -60,7 +64,7 @@ const ModulosYHabitaciones = () => {
 
     const [nombreHabitacionEditar, setNombreHabitacionEditar] = useState("");
     const [infoHabitacionEditar, setInfoHabitacionEditar] = useState("");
-    const [capacidadHabitacionEditar] =
+    const [capacidadHabitacionEditar, setCapacidadHabitacionEditar] =
         useState("");
 
     const [erroresEditarHabitacion, setErroresEditarHabitacion] =
@@ -73,6 +77,33 @@ const ModulosYHabitaciones = () => {
     const [eliminandoHabitacion, setEliminandoHabitacion] = useState(false);
     const [errorEliminarHabitacion, setErrorEliminarHabitacion] =
         useState(null);
+
+    useEffect(() => {
+        const filtroOcupacionHabitaciones =
+            location.state?.filtroOcupacionHabitaciones;
+
+        const ordenRecibido = location.state?.orden;
+
+        if (filtroOcupacionHabitaciones) {
+            setOcupacionHabitacionesFiltro(
+                filtroOcupacionHabitaciones
+            );
+        }
+
+        if (ordenRecibido) {
+            setOrden(ordenRecibido);
+        }
+
+        if (
+            filtroOcupacionHabitaciones ||
+            ordenRecibido
+        ) {
+            navigate(location.pathname, {
+                replace: true,
+                state: null,
+            });
+        }
+    }, [location.state, location.pathname, navigate]);
 
     useEffect(() => {
         const obtenerModulos = async () => {
@@ -179,13 +210,50 @@ const ModulosYHabitaciones = () => {
         return (residentesActuales / capacidadTotal) * 100;
     };
 
+    const obtenerPorcentajeOcupacionHabitacion = (habitacion) => {
+        const capacidad = Number(habitacion.capacidad || 0);
+        const residentesActuales = Number(
+            habitacion.residentes_actuales || 0
+        );
+
+        if (!capacidad) {
+            return 0;
+        }
+
+        return (residentesActuales / capacidad) * 100;
+    };
+
+    const comprobarFiltroOcupacion = (porcentaje, filtro) => {
+        if (filtro === "sin_ocupacion") {
+            return porcentaje === 0;
+        }
+
+        if (filtro === "parcial") {
+            return porcentaje > 0 && porcentaje < 100;
+        }
+
+        if (filtro === "completa") {
+            return porcentaje >= 100;
+        }
+
+        return true;
+    };
+
     const modulosFiltrados = modulos.filter((modulo) => {
         const texto = normalizarTexto(terminoBusqueda);
-
-        return (
+        const coincideBusqueda =
             texto === "" ||
-            normalizarTexto(modulo.nombre).includes(texto)
+            normalizarTexto(modulo.nombre).includes(texto);
+
+        const porcentajeOcupacion =
+            obtenerPorcentajeOcupacionModulo(modulo);
+
+        const coincideOcupacion = comprobarFiltroOcupacion(
+            porcentajeOcupacion,
+            ocupacionFiltro
         );
+
+        return coincideBusqueda && coincideOcupacion;
     });
 
     const modulosOrdenados = [...modulosFiltrados].sort((a, b) => {
@@ -241,7 +309,16 @@ const ModulosYHabitaciones = () => {
 
     useEffect(() => {
         setPaginaModulos(1);
-    }, [terminoBusqueda, orden]);
+    }, [terminoBusqueda, orden, ocupacionFiltro]);
+
+    useEffect(() => {
+        setPaginasHabitaciones({});
+    }, [ocupacionHabitacionesFiltro]);
+
+    const restablecerFiltros = () => {
+        setOcupacionFiltro("");
+        setMostrarFiltros(false);
+    };
 
     const validarFormulario = () => {
         const nuevosErrores = {};
@@ -1022,72 +1099,133 @@ const ModulosYHabitaciones = () => {
 
             {modulos.length > 0 && (
                 <div className="modulos-controles">
-                    <div className="modulos-buscador">
-                        <div className="modulos-buscador-input">
-                            <FaSearch className="modulos-buscador-icono" />
-                            <input
-                                type="text"
-                                placeholder="Buscar módulos..."
-                                value={terminoBusqueda}
+                    <div className="modulos-controles-principales">
+                        <div className="modulos-buscador">
+                            <div className="modulos-buscador-input">
+                                <FaSearch className="modulos-buscador-icono" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar módulos..."
+                                    value={terminoBusqueda}
+                                    onChange={(e) =>
+                                        setTerminoBusqueda(e.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="modulos-boton-filtros"
+                            onClick={() =>
+                                setMostrarFiltros(
+                                    (mostrar) => !mostrar
+                                )
+                            }
+                        >
+                            <FaFilter />
+                            {mostrarFiltros
+                                ? "Ocultar filtros"
+                                : "Mostrar filtros"}
+                        </button>
+
+                        <div className="modulos-ordenacion">
+                            <label htmlFor="orden-modulos">
+                                Ordenar por:
+                            </label>
+
+                            <select
+                                id="orden-modulos"
+                                value={orden}
                                 onChange={(e) =>
-                                    setTerminoBusqueda(e.target.value)
+                                    setOrden(e.target.value)
                                 }
-                            />
+                            >
+                                <option value="nombre_asc">
+                                    Nombre A-Z
+                                </option>
+
+                                <option value="nombre_desc">
+                                    Nombre Z-A
+                                </option>
+
+                                <option value="residentes_asc">
+                                    Residentes actuales: menor a mayor
+                                </option>
+
+                                <option value="residentes_desc">
+                                    Residentes actuales: mayor a menor
+                                </option>
+
+                                <option value="habitaciones_asc">
+                                    Habitaciones actuales: menor a mayor
+                                </option>
+
+                                <option value="habitaciones_desc">
+                                    Habitaciones actuales: mayor a menor
+                                </option>
+
+                                <option value="ocupacion_asc">
+                                    Porcentaje de ocupación: menor a mayor
+                                </option>
+
+                                <option value="ocupacion_desc">
+                                    Porcentaje de ocupación: mayor a menor
+                                </option>
+                            </select>
                         </div>
                     </div>
 
-                    <div className="modulos-ordenacion">
-                        <label htmlFor="orden-modulos">
-                            Ordenar por:
-                        </label>
+                    {mostrarFiltros && (
+                        <div className="modulos-panel-filtros">
+                            <div className="modulos-filtro">
+                                <label htmlFor="filtro-ocupacion-modulos">
+                                    Ocupación
+                                </label>
 
-                        <select
-                            id="orden-modulos"
-                            value={orden}
-                            onChange={(e) =>
-                                setOrden(e.target.value)
-                            }
-                        >
-                            <option value="nombre_asc">
-                                Nombre A-Z
-                            </option>
+                                <select
+                                    id="filtro-ocupacion-modulos"
+                                    value={ocupacionFiltro}
+                                    onChange={(e) =>
+                                        setOcupacionFiltro(
+                                            e.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Todas
+                                    </option>
 
-                            <option value="nombre_desc">
-                                Nombre Z-A
-                            </option>
+                                    <option value="sin_ocupacion">
+                                        Sin ocupación
+                                    </option>
 
-                            <option value="residentes_asc">
-                                Residentes actuales: menor a mayor
-                            </option>
+                                    <option value="parcial">
+                                        Ocupación parcial
+                                    </option>
 
-                            <option value="residentes_desc">
-                                Residentes actuales: mayor a menor
-                            </option>
+                                    <option value="completa">
+                                        Completa
+                                    </option>
+                                </select>
+                            </div>
 
-                            <option value="habitaciones_asc">
-                                Habitaciones actuales: menor a mayor
-                            </option>
-
-                            <option value="habitaciones_desc">
-                                Habitaciones actuales: mayor a menor
-                            </option>
-
-                            <option value="ocupacion_asc">
-                                Porcentaje de ocupación: menor a mayor
-                            </option>
-
-                            <option value="ocupacion_desc">
-                                Porcentaje de ocupación: mayor a menor
-                            </option>
-                        </select>
-                    </div>
+                            <button
+                                type="button"
+                                className="modulos-restablecer-filtros"
+                                onClick={restablecerFiltros}
+                            >
+                                Restablecer filtros
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
             {modulosFiltrados.length === 0 && modulos.length > 0 ? (
                 <div className="modulos-vacio">
                     <p>
-                        No se han encontrado módulos que coincidan con la búsqueda.
+                        No se han encontrado módulos que coincidan con los filtros.
                     </p>
                 </div>
             ) : (
@@ -1095,6 +1233,16 @@ const ModulosYHabitaciones = () => {
                     {modulosActuales.map((modulo) => {
                         const habitacionesModulo =
                             habitaciones[modulo.id] || [];
+
+                        const habitacionesFiltradas =
+                            habitacionesModulo.filter((habitacion) =>
+                                comprobarFiltroOcupacion(
+                                    obtenerPorcentajeOcupacionHabitacion(
+                                        habitacion
+                                    ),
+                                    ocupacionHabitacionesFiltro
+                                )
+                            );
 
                         const paginaActual =
                             paginasHabitaciones[modulo.id] || 1;
@@ -1109,14 +1257,14 @@ const ModulosYHabitaciones = () => {
                             habitacionesPorPagina;
 
                         const habitacionesActuales =
-                            habitacionesModulo.slice(
+                            habitacionesFiltradas.slice(
                                 indicePrimeraHabitacion,
                                 indiceUltimaHabitacion
                             );
 
                         const totalPaginasHabitaciones =
                             Math.ceil(
-                                habitacionesModulo.length /
+                                habitacionesFiltradas.length /
                                     habitacionesPorPagina
                             );
 
@@ -1141,6 +1289,7 @@ const ModulosYHabitaciones = () => {
                                             <span className="modulo-ocupacion-valor">
                                                 {porcentajeOcupacionModulo.toFixed(0)}%
                                             </span>
+
                                             <span className="modulo-ocupacion-texto">
                                                 Ocupación
                                             </span>
@@ -1189,9 +1338,43 @@ const ModulosYHabitaciones = () => {
 
                                 <div className="modulo-contenido">
                                     <div className="habitaciones-titulo">
-                                        <h3>
-                                            Habitaciones
-                                        </h3>
+                                        <div className="habitaciones-titulo-contenido">
+                                            <h3>
+                                                Habitaciones
+                                            </h3>
+
+                                            <div className="habitaciones-filtro">
+                                                <label htmlFor={`filtro-habitaciones-${modulo.id}`}>
+                                                    Ocupación:
+                                                </label>
+
+                                                <select
+                                                    id={`filtro-habitaciones-${modulo.id}`}
+                                                    value={ocupacionHabitacionesFiltro}
+                                                    onChange={(e) =>
+                                                        setOcupacionHabitacionesFiltro(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                >
+                                                    <option value="">
+                                                        Todas
+                                                    </option>
+
+                                                    <option value="sin_ocupacion">
+                                                        Sin ocupación
+                                                    </option>
+
+                                                    <option value="parcial">
+                                                        Ocupación parcial
+                                                    </option>
+
+                                                    <option value="completa">
+                                                        Completa
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
 
                                         <button
                                             type="button"
@@ -1216,9 +1399,9 @@ const ModulosYHabitaciones = () => {
                                     </div>
 
                                     <div className="habitaciones-bloques">
-                                        {habitacionesModulo.length === 0 ? (
+                                        {habitacionesFiltradas.length === 0 ? (
                                             <p className="habitaciones-bloques-vacio">
-                                                No hay habitaciones en este módulo.
+                                                No hay habitaciones que coincidan con el filtro.
                                             </p>
                                         ) : (
                                             habitacionesActuales.map(
@@ -1779,8 +1962,7 @@ const ModulosYHabitaciones = () => {
 
                             {erroresEditarHabitacion.info && (
                                 <p className="crear-modulo-error">
-                                    {erroresEditarHabitacion.info
-                                    }
+                                    {erroresEditarHabitacion.info}
                                 </p>
                             )}
                         </div>

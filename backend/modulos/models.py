@@ -10,6 +10,10 @@ class Modulo(models.Model):
     def __str__(self):
         return self.nombre
 
+    class Meta:
+        verbose_name = 'Módulo'
+        verbose_name_plural = 'Módulos'
+
 class Habitacion(models.Model):
 
     nombre = models.CharField(max_length=100)
@@ -31,6 +35,8 @@ class Habitacion(models.Model):
                 name='unique_habitacion_por_modulo'
             )
         ]
+        verbose_name = 'Habitación'
+        verbose_name_plural = 'Habitaciones'
 
     def __str__(self):
         return self.nombre

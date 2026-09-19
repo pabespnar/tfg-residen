@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import './Almacen.css'
 
 function Almacen() {
 
     const navigate = useNavigate()
+    const location = useLocation()
 
     const [mostrarNuevaBaja, setMostrarNuevaBaja] = useState(false)
     const [mostrarNuevaAlta, setMostrarNuevaAlta] = useState(false)
@@ -629,6 +630,18 @@ function Almacen() {
             setCreandoAlta(false)
         }
     }
+
+    useEffect(() => {
+        if (!location.state?.abrirNuevaAlta) {
+            return
+        }
+
+        abrirNuevaAlta()
+        navigate('/almacen', {
+            replace: true,
+            state: {}
+        })
+    }, [location.state])
 
     return (
         <div className="almacen-container">

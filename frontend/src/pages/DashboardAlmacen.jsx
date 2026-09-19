@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import './DashboardAlmacen.css';
 
@@ -21,6 +22,8 @@ import {
 
 
 function DashboardAlmacen() {
+
+    const navigate = useNavigate();
 
     const [dashboard, setDashboard] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -69,6 +72,70 @@ function DashboardAlmacen() {
     }, []);
 
 
+    const navegarSuministros = () => {
+        navigate('/suministros');
+    };
+
+
+    const navegarSuministrosSinStock = () => {
+        navigate('/suministros', {
+            state: {
+                estadoStock: 'sin_stock',
+            },
+        });
+    };
+
+
+    const navegarSuministrosBajoMinimo = () => {
+        navigate('/suministros', {
+            state: {
+                estadoStock: 'stock_bajo',
+            },
+        });
+    };
+
+
+    const navegarSuministrosStockNormal = () => {
+        navigate('/suministros', {
+            state: {
+                estadoStock: 'stock_normal',
+            },
+        });
+    };
+
+
+    const navegarPacks = () => {
+        navigate('/packs');
+    };
+
+
+    const navegarPacksMasEntregados = () => {
+        navigate('/packs', {
+            state: {
+                orden: 'residentes_desc',
+            },
+        });
+    };
+
+
+    const navegarNuevaAlta = () => {
+        navigate('/almacen', {
+            state: {
+                abrirNuevaAlta: true,
+            },
+        });
+    };
+
+
+    const navegarBajasPorServicio = (servicio) => {
+        navigate('/almacen/bajas', {
+            state: {
+                servicio,
+            },
+        });
+    };
+
+
     if (cargando) {
         return (
             <div className="dashboard-cargando">
@@ -107,14 +174,17 @@ function DashboardAlmacen() {
         {
             nombre: 'Sin stock',
             valor: stock.sin_stock,
+            estado: 'sin_stock',
         },
         {
             nombre: 'Bajo mínimo',
             valor: stock.bajo_minimo,
+            estado: 'stock_bajo',
         },
         {
             nombre: 'Correcto',
             valor: stock.correcto,
+            estado: 'stock_normal',
         },
     ].filter(estado => estado.valor > 0);
 
@@ -173,8 +243,26 @@ function DashboardAlmacen() {
         );
 
 
+    const datosSuministrosEntradas =
+        entradas.suministros_mas_entradas.map(
+            suministro => ({
+                nombre: suministro.nombre,
+                cantidad: suministro.cantidad,
+                unidad: suministro.unidad,
+            })
+        );
+
+
     const datosCategorias = Object.entries(
         consumo.por_categoria
+    ).map(([categoria, cantidad]) => ({
+        categoria,
+        cantidad,
+    }));
+
+
+    const datosCategoriasEntradas = Object.entries(
+        entradas.por_categoria
     ).map(([categoria, cantidad]) => ({
         categoria,
         cantidad,
@@ -205,6 +293,36 @@ function DashboardAlmacen() {
         consumo.suministros_mas_consumidos.map(
             (suministro, index) => ({
                 dataKey: `suministro_${index}`,
+                nombre: suministro.nombre,
+                unidad: suministro.unidad,
+            })
+        );
+
+
+    const datosEvolucionEntradas =
+        entradas.evolucion_entradas_principales.map(
+            periodo => {
+
+                const datosMes = {
+                    mes: periodo.mes,
+                };
+
+                periodo.suministros.forEach(
+                    (suministro, index) => {
+                        datosMes[`suministro_entrada_${index}`] =
+                            suministro.cantidad;
+                    }
+                );
+
+                return datosMes;
+            }
+        );
+
+
+    const nombresSuministrosEntradas =
+        entradas.suministros_mas_entradas.map(
+            (suministro, index) => ({
+                dataKey: `suministro_entrada_${index}`,
                 nombre: suministro.nombre,
                 unidad: suministro.unidad,
             })
@@ -274,7 +392,10 @@ function DashboardAlmacen() {
 
             <section className="dashboard-resumen">
 
-                <div className="dashboard-card">
+                <div
+                    className="dashboard-card"
+                    onClick={navegarSuministros}
+                >
 
                     <span className="dashboard-card-titulo">
                         Suministros
@@ -287,7 +408,10 @@ function DashboardAlmacen() {
                 </div>
 
 
-                <div className="dashboard-card">
+                <div
+                    className="dashboard-card"
+                    onClick={navegarSuministrosSinStock}
+                >
 
                     <span className="dashboard-card-titulo">
                         Suministros sin stock
@@ -300,7 +424,10 @@ function DashboardAlmacen() {
                 </div>
 
 
-                <div className="dashboard-card">
+                <div
+                    className="dashboard-card"
+                    onClick={navegarSuministrosBajoMinimo}
+                >
 
                     <span className="dashboard-card-titulo">
                         Suministros bajo mínimo
@@ -313,7 +440,10 @@ function DashboardAlmacen() {
                 </div>
 
 
-                <div className="dashboard-card">
+                <div
+                    className="dashboard-card"
+                    onClick={navegarPacks}
+                >
 
                     <span className="dashboard-card-titulo">
                         Packs disponibles
@@ -467,6 +597,31 @@ function DashboardAlmacen() {
                                                             coloresStock.length
                                                         ]
                                                     }
+                                                    onClick={() => {
+                                                        if (
+                                                            entry.estado ===
+                                                            'sin_stock'
+                                                        ) {
+                                                            navegarSuministrosSinStock();
+                                                        }
+
+                                                        if (
+                                                            entry.estado ===
+                                                            'stock_bajo'
+                                                        ) {
+                                                            navegarSuministrosBajoMinimo();
+                                                        }
+
+                                                        if (
+                                                            entry.estado ===
+                                                            'stock_normal'
+                                                        ) {
+                                                            navegarSuministrosStockNormal();
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                    }}
                                                 />
                                             )
                                         )}
@@ -515,6 +670,9 @@ function DashboardAlmacen() {
                                     <div
                                         className="dashboard-estadistica"
                                         key={suministro.id}
+                                        onClick={
+                                            navegarSuministrosBajoMinimo
+                                        }
                                     >
 
                                         <span>
@@ -572,6 +730,9 @@ function DashboardAlmacen() {
                                     <div
                                         className="dashboard-estadistica"
                                         key={suministro.id}
+                                        onClick={
+                                            navegarSuministrosSinStock
+                                        }
                                     >
 
                                         <span>
@@ -625,7 +786,13 @@ function DashboardAlmacen() {
 
             <section className="dashboard-graficos">
 
-                <div className="dashboard-grafico-card">
+                <div
+                    className="dashboard-grafico-card"
+                    onClick={navegarNuevaAlta}
+                    style={{
+                        cursor: 'pointer',
+                    }}
+                >
 
                     <div className="dashboard-grafico-header">
 
@@ -727,7 +894,7 @@ function DashboardAlmacen() {
             <div className="dashboard-seccion-header">
 
                 <h2>
-                    Consumo
+                    Suministros con mas movimientos
                 </h2>
 
                 <span>
@@ -821,6 +988,83 @@ function DashboardAlmacen() {
                     <div className="dashboard-grafico-header">
 
                         <h2>
+                            Suministros más introducidos
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {datosSuministrosEntradas.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={300}
+                            >
+
+                                <BarChart
+                                    data={datosSuministrosEntradas}
+                                    layout="vertical"
+                                    margin={{
+                                        top: 10,
+                                        right: 20,
+                                        left: 20,
+                                        bottom: 10,
+                                    }}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        type="number"
+                                        allowDecimals={false}
+                                    />
+
+                                    <YAxis
+                                        type="category"
+                                        dataKey="nombre"
+                                        width={100}
+                                    />
+
+                                    <Tooltip />
+
+                                    <Bar
+                                        dataKey="cantidad"
+                                        name="Cantidad"
+                                        fill="#1B5E20"
+                                        radius={[
+                                            0,
+                                            5,
+                                            5,
+                                            0,
+                                        ]}
+                                    />
+
+                                </BarChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay entradas de suministros.
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div className="dashboard-grafico-card">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
                             Consumo por categoría
                         </h2>
 
@@ -880,6 +1124,79 @@ function DashboardAlmacen() {
 
                             <div className="dashboard-grafico-vacio">
                                 No hay consumo por categoría.
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div className="dashboard-grafico-card">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Altas por categoría
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {datosCategoriasEntradas.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={300}
+                            >
+
+                                <BarChart
+                                    data={datosCategoriasEntradas}
+                                    margin={{
+                                        top: 10,
+                                        right: 20,
+                                        left: 0,
+                                        bottom: 10,
+                                    }}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        dataKey="categoria"
+                                    />
+
+                                    <YAxis
+                                        allowDecimals={false}
+                                    />
+
+                                    <Tooltip />
+
+                                    <Bar
+                                        dataKey="cantidad"
+                                        name="Cantidad"
+                                        fill="#1B5E20"
+                                        radius={[
+                                            5,
+                                            5,
+                                            0,
+                                            0,
+                                        ]}
+                                    />
+
+                                </BarChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay altas por categoría.
                             </div>
 
                         )}
@@ -970,6 +1287,88 @@ function DashboardAlmacen() {
 
                 </div>
 
+
+                <div className="dashboard-grafico-card dashboard-grafico-card-ancho">
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Evolución de las entradas de los principales
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {datosEvolucionEntradas.length > 0 &&
+                        nombresSuministrosEntradas.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={350}
+                            >
+
+                                <LineChart
+                                    data={datosEvolucionEntradas}
+                                    margin={{
+                                        top: 10,
+                                        right: 30,
+                                        left: 0,
+                                        bottom: 10,
+                                    }}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        dataKey="mes"
+                                        tickFormatter={formatearMes}
+                                    />
+
+                                    <YAxis
+                                        allowDecimals={false}
+                                    />
+
+                                    <Tooltip
+                                        labelFormatter={formatearMes}
+                                    />
+
+                                    <Legend />
+
+                                    {nombresSuministrosEntradas.map(
+                                        suministro => (
+                                            <Line
+                                                key={suministro.dataKey}
+                                                type="monotone"
+                                                dataKey={suministro.dataKey}
+                                                name={suministro.nombre}
+                                                strokeWidth={2}
+                                                dot={{
+                                                    r: 3,
+                                                }}
+                                            />
+                                        )
+                                    )}
+
+                                </LineChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay datos de evolución de las entradas.
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
             </section>
 
 
@@ -1044,6 +1443,11 @@ function DashboardAlmacen() {
                                                 0,
                                                 0,
                                             ]}
+                                            onClick={(datos) => {
+                                                navegarBajasPorServicio(
+                                                    datos.servicio
+                                                );
+                                            }}
                                         />
 
                                     </BarChart>
@@ -1117,6 +1521,9 @@ function DashboardAlmacen() {
                                                 0,
                                                 0,
                                             ]}
+                                            onClick={
+                                                navegarPacksMasEntregados
+                                            }
                                         />
 
                                     </BarChart>

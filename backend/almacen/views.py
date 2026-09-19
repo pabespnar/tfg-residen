@@ -9,6 +9,8 @@ from suministros.models import Suministro
 from .serializers import AltaAlmacenSerializer, BajaAlmacenSerializer
 from expedientes.models import Pedido, DetallePedido
 from suministros.permissions import EsGestorAlmacen
+from evento.models import Historial, Notificacion
+from usuarios.models import Usuario, Rol
 
 
 class ListaBajasAlmacenView(APIView):
@@ -136,11 +138,43 @@ class CrearBajaServicioView(APIView):
                 suministro = datos_suministro['suministro']
                 cantidad = datos_suministro['cantidad']
 
+                stock_anterior = suministro.stock
                 suministro.stock -= cantidad
 
                 suministro.save(
                     update_fields=['stock']
                 )
+
+                usuarios_almacen = Usuario.objects.filter(
+                    rol=Rol.ALMACEN
+                )
+
+                if stock_anterior > 0 and suministro.stock == 0:
+                    for usuario in usuarios_almacen:
+                        Notificacion.objects.create(
+                            tipo='Suministro sin stock',
+                            descripcion=(
+                                f'El suministro {suministro.nombre} '
+                                f'ha quedado sin stock.'
+                            ),
+                            usuario=usuario
+                        )
+
+                elif (
+                    stock_anterior > suministro.stock_minimo
+                    and suministro.stock <= suministro.stock_minimo
+                ):
+                    for usuario in usuarios_almacen:
+                        Notificacion.objects.create(
+                            tipo='Suministro por debajo del stock mínimo',
+                            descripcion=(
+                                f'El suministro {suministro.nombre} '
+                                f'ha quedado por debajo de su stock mínimo '
+                                f'({suministro.stock_minimo} '
+                                f'{suministro.unidad}).'
+                            ),
+                            usuario=usuario
+                        )
 
                 baja = BajaAlmacen.objects.create(
                     suministro=suministro,
@@ -152,6 +186,36 @@ class CrearBajaServicioView(APIView):
                 )
 
                 bajas_creadas.append(baja)
+
+            servicio_nombre = dict(
+                BajaAlmacen.Servicio.choices
+            ).get(
+                servicio,
+                servicio
+            )
+
+            contenido_historial = '\n'.join(
+                (
+                    f'{baja.cantidad} '
+                    f'{baja.suministro.unidad} '
+                    f'de {baja.suministro.nombre}.'
+                )
+                for baja in bajas_creadas
+            )
+
+            Historial.objects.create(
+                tipo='Baja de almacén',
+                descripcion=(
+                    f'Se ha realizado una baja de almacén '
+                    f'para el servicio {servicio_nombre}.\n\n'
+                    f'Observaciones:\n'
+                    f'{observaciones.strip()}.\n\n'
+                    f'Suministros retirados:\n'
+                    f'{contenido_historial}'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
 
         serializer = BajaAlmacenSerializer(
             bajas_creadas,
@@ -285,6 +349,32 @@ class CrearAltaAlmacenView(APIView):
 
         observaciones = f'Pertenece al pedido "{pedido.nombre}".'
 
+        cantidades_recibidas = {
+            alta['detalle_pedido'].suministro_id: alta['cantidad']
+            for alta in altas
+        }
+
+        diferencias = []
+
+        for detalle_pedido in detalles_pedido:
+
+            cantidad_recibida = cantidades_recibidas.get(
+                detalle_pedido.suministro_id,
+                0
+            )
+
+            if cantidad_recibida != detalle_pedido.cantidad:
+                diferencias.append(
+                    (
+                        detalle_pedido.suministro.nombre,
+                        detalle_pedido.cantidad,
+                        cantidad_recibida,
+                        detalle_pedido.suministro.unidad
+                    )
+                )
+
+        resultado_esperado = not diferencias
+
         with transaction.atomic():
 
             altas_creadas = []
@@ -318,6 +408,60 @@ class CrearAltaAlmacenView(APIView):
             pedido.save(
                 update_fields=['recibido']
             )
+
+            contenido_historial = '\n'.join(
+                (
+                    f'{alta["cantidad"]} '
+                    f'{alta["detalle_pedido"].suministro.unidad} '
+                    f'de {alta["detalle_pedido"].suministro.nombre}.'
+                )
+                for alta in altas
+            )
+
+            Historial.objects.create(
+                tipo='Alta de almacén',
+                descripcion=(
+                    f'Se ha registrado la recepción del pedido '
+                    f'{pedido.nombre}.\n\n'
+                    f'Suministros recibidos:\n'
+                    f'{contenido_historial}\n\n'
+                    f'Resultado esperado: '
+                    f'{"Correcto" if resultado_esperado else "Erróneo"}.'
+                ),
+                rol=request.user.rol,
+                usuario=request.user
+            )
+
+            if diferencias:
+                contenido_diferencias = '\n'.join(
+                    (
+                        f'{nombre}: solicitado {cantidad_solicitada} '
+                        f'{unidad}, recibido {cantidad_recibida} '
+                        f'{unidad}.'
+                    )
+                    for (
+                        nombre,
+                        cantidad_solicitada,
+                        cantidad_recibida,
+                        unidad
+                    ) in diferencias
+                )
+
+                usuarios_administracion = Usuario.objects.filter(
+                    rol=Rol.ADMINISTRACION
+                )
+
+                for usuario in usuarios_administracion:
+                    Notificacion.objects.create(
+                        tipo='Diferencia entre pedido y alta de almacén',
+                        descripcion=(
+                            f'La recepción del pedido "{pedido.nombre}" '
+                            f'no coincide con las cantidades solicitadas.\n\n'
+                            f'Diferencias:\n'
+                            f'{contenido_diferencias}'
+                        ),
+                        usuario=usuario
+                    )
 
         serializer = AltaAlmacenSerializer(
             altas_creadas,

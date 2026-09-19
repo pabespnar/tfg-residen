@@ -11,6 +11,9 @@ class Proveedor(models.Model):
     def __str__(self):
         return self.nombre
 
+    class Meta:
+        verbose_name = 'Proveedor'
+        verbose_name_plural = 'Proveedores'
 
 class Expediente(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
@@ -33,6 +36,10 @@ class DetalleExpediente(models.Model):
 
     def __str__(self):
         return f'{self.suministro.nombre}'
+
+    class Meta:
+        verbose_name = 'Detalle de expediente'
+        verbose_name_plural = 'Detalles de expediente'
 
 
 class Pedido(models.Model):
@@ -61,3 +68,7 @@ class DetallePedido(models.Model):
 
     def __str__(self):
         return f'{self.suministro.nombre} - {self.cantidad}'
+
+    class Meta:
+        verbose_name = 'Detalle de pedido'
+        verbose_name_plural = 'Detalles de pedido'

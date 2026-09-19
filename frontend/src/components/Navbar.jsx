@@ -66,7 +66,11 @@ function Navbar() {
             <div className="center-info">
                 <div>
                     <img
-                        src={centro?.logo || logoSinTexto}
+                        src={
+                            centro?.logo
+                                ? `http://127.0.0.1:8000${centro.logo}`
+                                : logoSinTexto
+                        }
                         alt="Logo del centro"
                         className="foto"
                     />

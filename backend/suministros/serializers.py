@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
+from django.db.models import Sum, F
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 
@@ -17,9 +18,12 @@ class SuministroSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    importe = serializers.SerializerMethodField()
+
     packs = serializers.SerializerMethodField()
     expediente_activo = serializers.SerializerMethodField()
     expedientes = serializers.SerializerMethodField()
+    pedidos = serializers.SerializerMethodField()
 
     class Meta:
         model = Suministro
@@ -34,19 +38,30 @@ class SuministroSerializer(serializers.ModelSerializer):
             'categoria',
             'categoria_nombre',
             'f_alta',
+            'importe',
             'packs',
             'expediente_activo',
             'expedientes',
+            'pedidos',
         ]
 
         read_only_fields = [
             'id',
             'categoria_nombre',
             'f_alta',
+            'importe',
             'packs',
             'expediente_activo',
             'expedientes',
+            'pedidos',
         ]
+
+    def get_importe(self, obj):
+        return obj.detalles_pedido.aggregate(
+            total=Sum(
+                F('cantidad') * F('precio_unidad')
+            )
+        )['total'] or 0
 
     def get_packs(self, obj):
         contenidos = ContenidoPack.objects.filter(
@@ -104,6 +119,48 @@ class SuministroSerializer(serializers.ModelSerializer):
                     detalle.expediente.fecha_inicio <= hoy <=
                     detalle.expediente.fecha_final
                 ),
+            }
+            for detalle in detalles
+        ]
+
+    def get_pedidos(self, obj):
+        detalles = obj.detalles_pedido.select_related(
+            'pedido',
+            'pedido__expediente',
+            'pedido__proveedor'
+        ).order_by(
+            '-pedido__fecha'
+        )
+
+        return [
+            {
+                'id': detalle.pedido.id,
+                'nombre': detalle.pedido.nombre,
+                'tipo_pedido': detalle.pedido.tipo_pedido,
+                'expediente_id': (
+                    detalle.pedido.expediente.id
+                    if detalle.pedido.expediente
+                    else None
+                ),
+                'expediente_nombre': (
+                    detalle.pedido.expediente.nombre
+                    if detalle.pedido.expediente
+                    else None
+                ),
+                'proveedor_id': (
+                    detalle.pedido.proveedor.id
+                    if detalle.pedido.proveedor
+                    else None
+                ),
+                'proveedor_nombre': (
+                    detalle.pedido.proveedor.nombre
+                    if detalle.pedido.proveedor
+                    else None
+                ),
+                'fecha': detalle.pedido.fecha,
+                'recibido': detalle.pedido.recibido,
+                'cantidad': detalle.cantidad,
+                'precio_unidad': detalle.precio_unidad,
             }
             for detalle in detalles
         ]
@@ -202,9 +259,14 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
         source='suministro.nombre',
         read_only=True
     )
-    
+
     suministro_unidad = serializers.CharField(
         source='suministro.unidad',
+        read_only=True
+    )
+
+    suministro_categoria_nombre = serializers.CharField(
+        source='suministro.categoria.nombre',
         read_only=True
     )
 
@@ -217,12 +279,14 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             'suministro',
             'suministro_nombre',
             'suministro_unidad',
+            'suministro_categoria_nombre',
             'cantidad',
         ]
 
         read_only_fields = [
             'id',
             'suministro_nombre',
+            'suministro_categoria_nombre',
         ]
 
     def validate_pack(self, value):
@@ -230,7 +294,7 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El pack especificado no existe."
             )
-            
+
         return value
 
     def validate_suministro(self, value):

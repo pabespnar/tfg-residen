@@ -17,6 +17,25 @@ from expedientes.permissions import EsGestorAdministracion
 from centro.models import Centro
 
 
+from datetime import timedelta
+
+from django.db.models import Count, Sum, F
+from django.utils import timezone
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from residentes.models import Residente
+from modulos.models import Habitacion
+from modulos.permissions import EsGestorResidentes
+from suministros.models import Suministro, Categoria, Pack, EntregaPack
+from almacen.models import AltaAlmacen, BajaAlmacen
+from expedientes.models import Expediente, Pedido, Proveedor
+from suministros.permissions import EsGestorAlmacen
+from expedientes.permissions import EsGestorAdministracion
+from centro.models import Centro
+
+
 class DashboardResidentesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
 
@@ -226,6 +245,22 @@ class DashboardResidentesView(APIView):
             else:
                 modulo['ocupacion_porcentaje'] = 0
 
+        modulos_mas_ocupados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                -modulo['ocupacion_porcentaje'],
+                modulo['nombre']
+            )
+        )[:3]
+
+        modulos_menos_ocupados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                modulo['ocupacion_porcentaje'],
+                modulo['nombre']
+            )
+        )[:3]
+
         modulos_mas_poblados = sorted(
             modulos.values(),
             key=lambda modulo: (
@@ -239,6 +274,66 @@ class DashboardResidentesView(APIView):
             key=lambda modulo: (
                 modulo['residentes'],
                 modulo['nombre']
+            )
+        )[:3]
+
+        packs_entregas = {}
+
+        entregas_por_pack = EntregaPack.objects.filter(
+            fecha_entrega__gte=hace_30_dias,
+            fecha_entrega__lte=hoy
+        ).values(
+            'pack__id',
+            'pack__nombre'
+        ).annotate(
+            total=Count('id')
+        )
+
+        for pack in entregas_por_pack:
+            packs_entregas[pack['pack__id']] = {
+                'id': pack['pack__id'],
+                'nombre': pack['pack__nombre'],
+                'entregas': pack['total']
+            }
+
+        packs_estadisticas = []
+
+        for pack in Pack.objects.all():
+            entregas = packs_entregas.get(
+                pack.id,
+                {
+                    'entregas': 0
+                }
+            )['entregas']
+
+            if residentes_actuales:
+                porcentaje = round(
+                    (entregas / residentes_actuales) * 100,
+                    2
+                )
+            else:
+                porcentaje = 0
+
+            packs_estadisticas.append({
+                'id': pack.id,
+                'nombre': pack.nombre,
+                'entregas': entregas,
+                'porcentaje': porcentaje
+            })
+
+        packs_mas_entregados = sorted(
+            packs_estadisticas,
+            key=lambda pack: (
+                -pack['porcentaje'],
+                pack['nombre']
+            )
+        )[:3]
+
+        packs_menos_entregados = sorted(
+            packs_estadisticas,
+            key=lambda pack: (
+                pack['porcentaje'],
+                pack['nombre']
             )
         )[:3]
 
@@ -329,8 +424,15 @@ class DashboardResidentesView(APIView):
             },
 
             'modulos': {
+                'mas_ocupados': modulos_mas_ocupados,
+                'menos_ocupados': modulos_menos_ocupados,
                 'mas_poblados': modulos_mas_poblados,
                 'menos_poblados': modulos_menos_poblados,
+            },
+
+            'packs': {
+                'mas_entregados': packs_mas_entregados,
+                'menos_entregados': packs_menos_entregados,
             },
         })
 
@@ -529,6 +631,32 @@ class DashboardAlmacenView(APIView):
                 'cantidad': suministro['cantidad'],
             })
 
+        altas_almacen = AltaAlmacen.objects.filter(
+            fecha__gte=hace_30_dias,
+            fecha__lte=hoy
+        )
+
+        suministros_mas_entradas_query = altas_almacen.values(
+            'suministro__id',
+            'suministro__nombre',
+            'suministro__unidad'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad',
+            'suministro__nombre'
+        )[:5]
+
+        suministros_mas_entradas = []
+
+        for suministro in suministros_mas_entradas_query:
+            suministros_mas_entradas.append({
+                'id': suministro['suministro__id'],
+                'nombre': suministro['suministro__nombre'],
+                'unidad': suministro['suministro__unidad'],
+                'cantidad': suministro['cantidad'],
+            })
+
         evolucion_principales = []
 
         meses_consumo = []
@@ -596,6 +724,54 @@ class DashboardAlmacenView(APIView):
                 'suministros': consumos_mes
             })
 
+        evolucion_entradas_principales = []
+
+        for periodo in meses_consumo:
+            año = periodo['año']
+            mes = periodo['mes']
+
+            if mes == 12:
+                siguiente_año = año + 1
+                siguiente_mes = 1
+            else:
+                siguiente_año = año
+                siguiente_mes = mes + 1
+
+            inicio_mes = hoy.replace(
+                year=año,
+                month=mes,
+                day=1
+            )
+
+            inicio_siguiente_mes = hoy.replace(
+                year=siguiente_año,
+                month=siguiente_mes,
+                day=1
+            )
+
+            entradas_mes = []
+
+            for suministro in suministros_mas_entradas:
+                cantidad = AltaAlmacen.objects.filter(
+                    suministro_id=suministro['id'],
+                    fecha__gte=inicio_mes,
+                    fecha__lt=inicio_siguiente_mes
+                ).aggregate(
+                    total=Sum('cantidad')
+                )['total'] or 0
+
+                entradas_mes.append({
+                    'id': suministro['id'],
+                    'nombre': suministro['nombre'],
+                    'unidad': suministro['unidad'],
+                    'cantidad': cantidad,
+                })
+
+            evolucion_entradas_principales.append({
+                'mes': f'{año}-{mes:02d}',
+                'suministros': entradas_mes
+            })
+
         consumo_por_categoria_query = bajas_consumo.values(
             'suministro__categoria__nombre'
         ).annotate(
@@ -613,6 +789,26 @@ class DashboardAlmacenView(APIView):
             )
 
             consumo_por_categoria[
+                nombre_categoria
+            ] = categoria['cantidad']
+
+        entradas_por_categoria_query = altas_almacen.values(
+            'suministro__categoria__nombre'
+        ).annotate(
+            cantidad=Sum('cantidad')
+        ).order_by(
+            '-cantidad'
+        )
+
+        entradas_por_categoria = {}
+
+        for categoria in entradas_por_categoria_query:
+            nombre_categoria = (
+                categoria['suministro__categoria__nombre']
+                or 'Sin asignar'
+            )
+
+            entradas_por_categoria[
                 nombre_categoria
             ] = categoria['cantidad']
 
@@ -643,6 +839,10 @@ class DashboardAlmacenView(APIView):
                 'pedidos_pendientes_alta': pedidos_pendientes_alta,
                 'pedidos_correctos': pedidos_correctos,
                 'pedidos_incorrectos': pedidos_incorrectos,
+                'suministros_mas_entradas': suministros_mas_entradas,
+                'evolucion_entradas_principales':
+                    evolucion_entradas_principales,
+                'por_categoria': entradas_por_categoria,
             },
 
             'bajas': {
@@ -883,6 +1083,33 @@ class DashboardAdministracionView(APIView):
                 'importe': proveedor['importe'] or 0,
             })
 
+        suministros_por_importe = (
+            Suministro.objects.filter(
+                detalles_pedido__isnull=False
+            ).values(
+                'id',
+                'nombre',
+                'unidad'
+            ).annotate(
+                importe=Sum(
+                    F('detalles_pedido__cantidad') *
+                    F('detalles_pedido__precio_unidad')
+                )
+            ).order_by(
+                '-importe'
+            )[:5]
+        )
+
+        suministros_principales = []
+
+        for suministro in suministros_por_importe:
+            suministros_principales.append({
+                'id': suministro['id'],
+                'nombre': suministro['nombre'],
+                'unidad': suministro['unidad'],
+                'importe': suministro['importe'] or 0,
+            })    
+
         return Response({
             'resumen': {
                 'presupuesto_total_expedientes':
@@ -983,5 +1210,10 @@ class DashboardAdministracionView(APIView):
 
                 'principales':
                     proveedores,
+            },
+
+            'suministros': {
+                'principales':
+                    suministros_principales,
             },
         })

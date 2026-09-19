@@ -1,9 +1,32 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import './Inicio.css'
 
 function Inicio({ rol }) {
 
     const navigate = useNavigate()
+    const [usuario, setUsuario] = useState(null)
+
+    useEffect(() => {
+        const token = localStorage.getItem('access')
+
+        if (!token) {
+            return
+        }
+
+        axios.get('http://127.0.0.1:8000/api/usuarios/datosperfil/', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then((response) => {
+            setUsuario(response.data)
+        })
+        .catch((error) => {
+            console.error('Error al obtener el perfil:', error)
+        })
+    }, [])
 
     const contenido = {
         residentes: {
@@ -18,7 +41,7 @@ function Inicio({ rol }) {
                     ruta: '/residentes',
                 },
                 {
-                    titulo: 'Módulos y habitaciones',
+                    titulo: 'Ocupación',
                     descripcion:
                         'Gestiona los módulos y habitaciones, su capacidad y la ocupación de los mismos.',
                     ruta: '/modulos',
@@ -27,13 +50,25 @@ function Inicio({ rol }) {
                     titulo: 'Suministros',
                     descripcion:
                         'Consulta los suministros que recibieron los distintos residentes.',
-                    ruta: '/historico_residentes',
-                },                
+                    ruta: '/suministrosResidentes',
+                },
                 {
                     titulo: 'Histórico de residentes',
                     descripcion:
                         'Consulta las estancias finalizadas y el histórico de residentes dados de baja.',
                     ruta: '/historico_residentes',
+                },
+                {
+                    titulo: 'Alertas',
+                    descripcion:
+                        'Consulta las alertas y notificaciones generadas para la gestión del centro.',
+                    ruta: '/notificaciones',
+                },
+                {
+                    titulo: 'Historial',
+                    descripcion:
+                        'Consulta el historial de acciones realizadas en el sistema.',
+                    ruta: '/historial',
                 },
                 {
                     titulo: 'Dashboard',
@@ -66,6 +101,18 @@ function Inicio({ rol }) {
                     descripcion:
                         'Gestiona las entradas y salidas de suministros del almacén.',
                     ruta: '/almacen',
+                },
+                {
+                    titulo: 'Alertas',
+                    descripcion:
+                        'Consulta las alertas y notificaciones generadas para la gestión del centro.',
+                    ruta: '/notificaciones',
+                },
+                {
+                    titulo: 'Historial',
+                    descripcion:
+                        'Consulta el historial de acciones realizadas en el sistema.',
+                    ruta: '/historial',
                 },
                 {
                     titulo: 'Dashboard',
@@ -106,6 +153,18 @@ function Inicio({ rol }) {
                     ruta: '/suministrosAdministracion',
                 },
                 {
+                    titulo: 'Alertas',
+                    descripcion:
+                        'Consulta las alertas y notificaciones generadas para la gestión del centro.',
+                    ruta: '/notificaciones',
+                },
+                {
+                    titulo: 'Historial',
+                    descripcion:
+                        'Consulta el historial de acciones realizadas en el sistema.',
+                    ruta: '/historial',
+                },
+                {
                     titulo: 'Dashboard',
                     descripcion:
                         'Consulta información y estadísticas relacionadas con la administración del centro.',
@@ -120,6 +179,8 @@ function Inicio({ rol }) {
     if (!datos) {
         return null
     }
+
+    const esSuperusuario = usuario?.is_staff && usuario?.is_superuser
 
     return (
         <div className="inicio">
@@ -146,6 +207,22 @@ function Inicio({ rol }) {
                         <p>{funcion.descripcion}</p>
                     </div>
                 ))}
+
+                {esSuperusuario && (
+                    <div
+                        className="inicio-funcion inicio-administrador"
+                        onClick={() => navigate('/admin')}
+                        style={{
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <h2>SuperUsuario</h2>
+
+                        <p>
+                            Accede a las funciones de administración del sistema para super usuarios.
+                        </p>
+                    </div>
+                )}
 
             </div>
 
