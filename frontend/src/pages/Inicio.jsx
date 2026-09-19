@@ -41,7 +41,7 @@ function Inicio({ rol }) {
                     ruta: '/residentes',
                 },
                 {
-                    titulo: 'Módulos y habitaciones',
+                    titulo: 'Ocupación',
                     descripcion:
                         'Gestiona los módulos y habitaciones, su capacidad y la ocupación de los mismos.',
                     ruta: '/modulos',
@@ -211,7 +211,7 @@ function Inicio({ rol }) {
                 {esSuperusuario && (
                     <div
                         className="inicio-funcion inicio-administrador"
-                        onClick={() => window.open('http://127.0.0.1:8000/admin/', '_blank')}
+                        onClick={() => navigate('/admin')}
                         style={{
                             cursor: 'pointer'
                         }}
@@ -219,7 +219,7 @@ function Inicio({ rol }) {
                         <h2>SuperUsuario</h2>
 
                         <p>
-                            Accede al panel de administración del sistema.
+                            Accede a las funciones de administración del sistema para super usuarios.
                         </p>
                     </div>
                 )}

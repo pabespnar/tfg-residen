@@ -37,7 +37,9 @@ import DashboardAdministracion from './pages/DashboardAdministracion';
 import SuministrosResidentes from "./pages/SuministrosResidentes"
 import Historial from "./pages/Historial"
 import Notificaciones from "./pages/Notificaciones"
-
+import Admin from './pages/Admin'
+import CrearUsuario from './pages/CrearUsuario'
+import EditarCentro from './pages/EditarCentro'
 
 
 function tokenValido() {
@@ -61,7 +63,7 @@ function tokenValido() {
     }
 }
 
-async function obtenerRol() {
+async function obtenerDatosUsuario() {
 
     const token = localStorage.getItem('access')
 
@@ -80,12 +82,12 @@ async function obtenerRol() {
             }
         )
 
-        return respuesta.data.rol
+        return respuesta.data
 
     } catch (error) {
 
         console.error(
-            "Error al obtener el rol del usuario:",
+            "Error al obtener los datos del usuario:",
             error
         )
 
@@ -101,25 +103,40 @@ function App() {
     )
 
     const [rol, setRol] = useState(null)
+    const [esSuper, setEsSuper] = useState(false)
 
     useEffect(() => {
 
-        const cargarRol = async () => {
+        const cargarDatosUsuario = async () => {
 
             if (!autenticado) {
 
                 setRol(null)
+                setEsSuper(false)
                 return
 
             }
 
-            const rolUsuario = await obtenerRol()
+            const datosUsuario = await obtenerDatosUsuario()
 
-            setRol(rolUsuario)
+            if (!datosUsuario) {
+
+                setRol(null)
+                setEsSuper(false)
+                return
+
+            }
+
+            setRol(datosUsuario.rol)
+
+            setEsSuper(
+                datosUsuario.is_staff &&
+                datosUsuario.is_superuser
+            )
 
         }
 
-        cargarRol()
+        cargarDatosUsuario()
 
     }, [autenticado])
 
@@ -163,6 +180,7 @@ function App() {
                 sessionStorage.removeItem('aviso_sesion_mostrado')
 
                 setRol(null)
+                setEsSuper(false)
                 setAutenticado(false)
 
             }, Math.max(tiempoExpiracion - tiempoActual, 0))
@@ -179,6 +197,7 @@ function App() {
             sessionStorage.removeItem('aviso_sesion_mostrado')
 
             setRol(null)
+            setEsSuper(false)
             setAutenticado(false)
         }
 
@@ -243,6 +262,25 @@ function App() {
                                 <Inicio rol={rol} />
                             }
                         />
+
+                        {esSuper && (
+                            <>
+                                <Route
+                                    path="/admin"
+                                    element={<Admin />}
+                                />
+
+                                <Route
+                                    path="/crear_usuario"
+                                    element={<CrearUsuario />}
+                                />
+
+                                <Route
+                                    path="/editar_centro"
+                                    element={<EditarCentro />}
+                                />
+                            </>
+                        )}
 
                         <Route
                             path="/perfil"

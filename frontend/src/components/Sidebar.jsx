@@ -292,10 +292,7 @@ function Sidebar({ setAutenticado, rol }) {
                         <li
                             className="sideItem sidebar-administrador"
                             onClick={() =>
-                                window.open(
-                                    'http://127.0.0.1:8000/admin/',
-                                    '_blank'
-                                )
+                                navigate('/admin')
                             }
                         >
                             SuperUser
