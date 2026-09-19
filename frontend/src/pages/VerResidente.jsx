@@ -266,6 +266,48 @@ function VerResidente() {
         }
     }
 
+    const calcularEstanciaDias = (fechaAlta, fechaBaja) => {
+        if (!fechaAlta || !fechaBaja) {
+            return null
+        }
+
+        const alta = new Date(`${fechaAlta}T00:00:00`)
+        const baja = new Date(`${fechaBaja}T00:00:00`)
+
+        const diferencia = baja.getTime() - alta.getTime()
+
+        return Math.round(
+            diferencia / (1000 * 60 * 60 * 24)
+        )
+    }
+
+    const formatearEstancia = (dias) => {
+        if (dias === null) {
+            return 'En curso'
+        }
+
+        if (dias < 30) {
+            return `${dias} días`
+        }
+
+        const meses = Math.floor(dias / 30)
+
+        if (meses < 12) {
+            return `${meses} ${meses === 1 ? 'mes' : 'meses'}`
+        }
+
+        const años = Math.floor(meses / 12)
+        const mesesRestantes = meses % 12
+
+        if (mesesRestantes === 0) {
+            return `${años} ${años === 1 ? 'año' : 'años'}`
+        }
+
+        return `${años} ${años === 1 ? 'año' : 'años'} y ${mesesRestantes} ${
+            mesesRestantes === 1 ? 'mes' : 'meses'
+        }`
+    }
+
     if (error) {
         return (
             <div className="ver-residente-error">
@@ -482,7 +524,6 @@ function VerResidente() {
 
                     <div className="ver-residente-grid">
 
-
                         <div className="ver-residente-campo">
                             <span className="ver-residente-label">
                                 Módulo
@@ -520,6 +561,21 @@ function VerResidente() {
 
                             <span className="ver-residente-valor">
                                 {residente.f_baja || 'No tiene fecha de baja'}
+                            </span>
+                        </div>
+
+                        <div className="ver-residente-campo">
+                            <span className="ver-residente-label">
+                                Duración de la estancia
+                            </span>
+
+                            <span className="ver-residente-valor">
+                                {formatearEstancia(
+                                    calcularEstanciaDias(
+                                        residente.f_alta,
+                                        residente.f_baja
+                                    )
+                                )}
                             </span>
                         </div>
 

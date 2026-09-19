@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './HistoricoResidentes.css'
 import { FaSearch, FaFilter } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 function HistoricoResidentes() {
     const [residentes, setResidentes] = useState([])
@@ -12,6 +12,10 @@ function HistoricoResidentes() {
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [pais, setPais] = useState('')
     const [genero, setGenero] = useState('')
+    const [edadMinima, setEdadMinima] = useState('')
+    const [edadMaxima, setEdadMaxima] = useState('')
+    const [estanciaMinima, setEstanciaMinima] = useState('')
+    const [estanciaMaxima, setEstanciaMaxima] = useState('')
     const [fechaAltaDesde, setFechaAltaDesde] = useState('')
     const [fechaAltaHasta, setFechaAltaHasta] = useState('')
     const [fechaBajaDesde, setFechaBajaDesde] = useState('')
@@ -21,6 +25,7 @@ function HistoricoResidentes() {
     const [currentPage, setCurrentPage] = useState(1)
 
     const navigate = useNavigate()
+    const location = useLocation()
 
     const itemsPerPage = 5
 
@@ -29,6 +34,91 @@ function HistoricoResidentes() {
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
+
+    const calcularEdad = (fechaNacimiento) => {
+        if (!fechaNacimiento) {
+            return null
+        }
+
+        const hoy = new Date()
+        const nacimiento = new Date(`${fechaNacimiento}T00:00:00`)
+
+        let edad = hoy.getFullYear() - nacimiento.getFullYear()
+        const diferenciaMes = hoy.getMonth() - nacimiento.getMonth()
+
+        if (
+            diferenciaMes < 0 ||
+            (
+                diferenciaMes === 0 &&
+                hoy.getDate() < nacimiento.getDate()
+            )
+        ) {
+            edad--
+        }
+
+        return edad
+    }
+
+    const calcularEstanciaDias = (fechaAlta, fechaBaja) => {
+        if (!fechaAlta || !fechaBaja) {
+            return null
+        }
+
+        const alta = new Date(`${fechaAlta}T00:00:00`)
+        const baja = new Date(`${fechaBaja}T00:00:00`)
+
+        const diferencia = baja.getTime() - alta.getTime()
+
+        return Math.round(
+            diferencia / (1000 * 60 * 60 * 24)
+        )
+    }
+
+    const formatearEstancia = (dias) => {
+        if (dias === null) {
+            return 'Sin datos'
+        }
+
+        if (dias < 30) {
+            return `${dias} días`
+        }
+
+        const meses = Math.floor(dias / 30)
+
+        if (meses < 12) {
+            return `${meses} ${meses === 1 ? 'mes' : 'meses'}`
+        }
+
+        const años = Math.floor(meses / 12)
+        const mesesRestantes = meses % 12
+
+        if (mesesRestantes === 0) {
+            return `${años} ${años === 1 ? 'año' : 'años'}`
+        }
+
+        return `${años} ${años === 1 ? 'año' : 'años'} y ${mesesRestantes} ${
+            mesesRestantes === 1 ? 'mes' : 'meses'
+        }`
+    }
+
+    const estancias = residentes
+        .map((residente) =>
+            calcularEstanciaDias(
+                residente.f_alta,
+                residente.f_baja
+            )
+        )
+        .filter((estancia) => estancia !== null)
+
+    const estanciaMedia =
+        estancias.length > 0
+            ? Math.round(
+                estancias.reduce(
+                    (total, estancia) => total + estancia,
+                    0
+                ) / estancias.length
+            )
+            : null
 
     const paises = [
         ...new Set(
@@ -70,6 +160,29 @@ function HistoricoResidentes() {
             nombreCompleto.includes(texto) ||
             dniNie.includes(texto)
 
+        const edad = calcularEdad(residente.f_nacimiento)
+
+        const coincideEdadMinima =
+            edadMinima === '' ||
+            (edad !== null && edad >= Number(edadMinima))
+
+        const coincideEdadMaxima =
+            edadMaxima === '' ||
+            (edad !== null && edad <= Number(edadMaxima))
+
+        const estancia = calcularEstanciaDias(
+            residente.f_alta,
+            residente.f_baja
+        )
+
+        const coincideEstanciaMinima =
+            estanciaMinima === '' ||
+            (estancia !== null && estancia >= Number(estanciaMinima))
+
+        const coincideEstanciaMaxima =
+            estanciaMaxima === '' ||
+            (estancia !== null && estancia <= Number(estanciaMaxima))
+
         const coincidePais =
             pais === '' ||
             residente.pais === pais
@@ -96,6 +209,10 @@ function HistoricoResidentes() {
 
         return (
             coincideBusqueda &&
+            coincideEdadMinima &&
+            coincideEdadMaxima &&
+            coincideEstanciaMinima &&
+            coincideEstanciaMaxima &&
             coincidePais &&
             coincideGenero &&
             coincideFechaAltaDesde &&
@@ -132,6 +249,31 @@ function HistoricoResidentes() {
             case 'pais_desc':
                 valorA = normalizarTexto(a.pais || '')
                 valorB = normalizarTexto(b.pais || '')
+                break
+
+            case 'edad_asc':
+            case 'edad_desc':
+                valorA = calcularEdad(a.f_nacimiento)
+                valorB = calcularEdad(b.f_nacimiento)
+
+                if (valorA === null) valorA = -1
+                if (valorB === null) valorB = -1
+                break
+
+            case 'estancia_asc':
+            case 'estancia_desc':
+                valorA = calcularEstanciaDias(
+                    a.f_alta,
+                    a.f_baja
+                )
+
+                valorB = calcularEstanciaDias(
+                    b.f_alta,
+                    b.f_baja
+                )
+
+                if (valorA === null) valorA = -1
+                if (valorB === null) valorB = -1
                 break
 
             case 'alta_asc':
@@ -206,11 +348,86 @@ function HistoricoResidentes() {
     }, [])
 
     useEffect(() => {
+        const filtros = location.state
+
+        if (!filtros) {
+            return
+        }
+
+        if (filtros.edad !== undefined) {
+            const partesEdad = filtros.edad.split('-')
+
+            if (partesEdad.length === 2) {
+                setEdadMinima(partesEdad[0])
+                setEdadMaxima(partesEdad[1])
+            }
+        }
+
+        if (filtros.estancia !== undefined) {
+            switch (filtros.estancia) {
+                case 'Menos de 1 mes':
+                    setEstanciaMinima('0')
+                    setEstanciaMaxima('29')
+                    break
+
+                case '1-3 meses':
+                    setEstanciaMinima('30')
+                    setEstanciaMaxima('89')
+                    break
+
+                case '3-6 meses':
+                    setEstanciaMinima('90')
+                    setEstanciaMaxima('179')
+                    break
+
+                case '6-12 meses':
+                    setEstanciaMinima('180')
+                    setEstanciaMaxima('364')
+                    break
+
+                case '12 meses o más':
+                    setEstanciaMinima('365')
+                    setEstanciaMaxima('')
+                    break
+
+                default:
+                    break
+            }
+        }
+
+        if (filtros.fechaBajaDesde !== undefined) {
+            setFechaBajaDesde(filtros.fechaBajaDesde)
+        }
+
+        if (filtros.fechaBajaHasta !== undefined) {
+            setFechaBajaHasta(filtros.fechaBajaHasta)
+        }
+
+        if (
+            filtros.edad !== undefined ||
+            filtros.estancia !== undefined ||
+            filtros.fechaBajaDesde !== undefined ||
+            filtros.fechaBajaHasta !== undefined
+        ) {
+            setMostrarFiltros(true)
+        }
+
+        navigate(location.pathname, {
+            replace: true,
+            state: null
+        })
+    }, [location, navigate])
+
+    useEffect(() => {
         setCurrentPage(1)
     }, [
         terminoBusqueda,
         pais,
         genero,
+        edadMinima,
+        edadMaxima,
+        estanciaMinima,
+        estanciaMaxima,
         fechaAltaDesde,
         fechaAltaHasta,
         fechaBajaDesde,
@@ -260,6 +477,12 @@ function HistoricoResidentes() {
                     <p>
                         Consulta de los residentes dados de baja del centro
                     </p>
+
+                    {estanciaMedia !== null && (
+                        <p>
+                            Estancia media: {formatearEstancia(estanciaMedia)}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -340,6 +563,18 @@ function HistoricoResidentes() {
                                     <option value="pais_desc">
                                         País Z-A
                                     </option>
+                                    <option value="edad_asc">
+                                        Edad menor a mayor
+                                    </option>
+                                    <option value="edad_desc">
+                                        Edad mayor a menor
+                                    </option>
+                                    <option value="estancia_asc">
+                                        Estancia más corta
+                                    </option>
+                                    <option value="estancia_desc">
+                                        Estancia más larga
+                                    </option>
                                     <option value="alta_asc">
                                         Fecha de alta más antigua
                                     </option>
@@ -413,6 +648,74 @@ function HistoricoResidentes() {
                                     </select>
                                 </div>
 
+                                <div className="residentes-filtro">
+                                    <label htmlFor="edad-minima">
+                                        Edad mínima
+                                    </label>
+
+                                    <input
+                                        id="edad-minima"
+                                        type="number"
+                                        min="0"
+                                        value={edadMinima}
+                                        onChange={(e) =>
+                                            setEdadMinima(e.target.value)
+                                        }
+                                        placeholder="Sin mínimo"
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro">
+                                    <label htmlFor="edad-maxima">
+                                        Edad máxima
+                                    </label>
+
+                                    <input
+                                        id="edad-maxima"
+                                        type="number"
+                                        min="0"
+                                        value={edadMaxima}
+                                        onChange={(e) =>
+                                            setEdadMaxima(e.target.value)
+                                        }
+                                        placeholder="Sin máximo"
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro">
+                                    <label htmlFor="estancia-minima">
+                                        Estancia mínima (días)
+                                    </label>
+
+                                    <input
+                                        id="estancia-minima"
+                                        type="number"
+                                        min="0"
+                                        value={estanciaMinima}
+                                        onChange={(e) =>
+                                            setEstanciaMinima(e.target.value)
+                                        }
+                                        placeholder="Sin mínimo"
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro">
+                                    <label htmlFor="estancia-maxima">
+                                        Estancia máxima (días)
+                                    </label>
+
+                                    <input
+                                        id="estancia-maxima"
+                                        type="number"
+                                        min="0"
+                                        value={estanciaMaxima}
+                                        onChange={(e) =>
+                                            setEstanciaMaxima(e.target.value)
+                                        }
+                                        placeholder="Sin máximo"
+                                    />
+                                </div>
+
                                 <div className="residentes-filtro residentes-filtro-fecha">
                                     <label htmlFor="fecha-alta-desde">
                                         Fecha de alta desde
@@ -479,6 +782,10 @@ function HistoricoResidentes() {
                                     onClick={() => {
                                         setPais('')
                                         setGenero('')
+                                        setEdadMinima('')
+                                        setEdadMaxima('')
+                                        setEstanciaMinima('')
+                                        setEstanciaMaxima('')
                                         setFechaAltaDesde('')
                                         setFechaAltaHasta('')
                                         setFechaBajaDesde('')
@@ -508,6 +815,7 @@ function HistoricoResidentes() {
                                         <th>Género</th>
                                         <th>Fecha de alta</th>
                                         <th>Fecha de baja</th>
+                                        <th>Estancia</th>
                                     </tr>
                                 </thead>
 
@@ -550,6 +858,15 @@ function HistoricoResidentes() {
 
                                             <td>
                                                 {residente.f_baja}
+                                            </td>
+
+                                            <td>
+                                                {formatearEstancia(
+                                                    calcularEstanciaDias(
+                                                        residente.f_alta,
+                                                        residente.f_baja
+                                                    )
+                                                )}
                                             </td>
                                         </tr>
                                     ))}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './Residentes.css'
 import { FaPencilAlt, FaSearch, FaFilter } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 function Residentes() {
     const [residentes, setResidentes] = useState([])
@@ -14,6 +14,8 @@ function Residentes() {
     const [habitacion, setHabitacion] = useState('')
     const [pais, setPais] = useState('')
     const [genero, setGenero] = useState('')
+    const [edadMinima, setEdadMinima] = useState('')
+    const [edadMaxima, setEdadMaxima] = useState('')
     const [fechaDesde, setFechaDesde] = useState('')
     const [fechaHasta, setFechaHasta] = useState('')
     const [readmision, setReadmision] = useState('')
@@ -23,6 +25,7 @@ function Residentes() {
     const [currentPage, setCurrentPage] = useState(1)
 
     const navigate = useNavigate()
+    const location = useLocation()
 
     const itemsPerPage = 5
 
@@ -31,6 +34,30 @@ function Residentes() {
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
+
+    const calcularEdad = (fechaNacimiento) => {
+        if (!fechaNacimiento) {
+            return null
+        }
+
+        const hoy = new Date()
+        const nacimiento = new Date(`${fechaNacimiento}T00:00:00`)
+
+        let edad = hoy.getFullYear() - nacimiento.getFullYear()
+        const diferenciaMes = hoy.getMonth() - nacimiento.getMonth()
+
+        if (
+            diferenciaMes < 0 ||
+            (
+                diferenciaMes === 0 &&
+                hoy.getDate() < nacimiento.getDate()
+            )
+        ) {
+            edad--
+        }
+
+        return edad
+    }
 
     const modulos = [
         ...new Set(
@@ -97,6 +124,16 @@ function Residentes() {
             nombreCompleto.includes(texto) ||
             dniNie.includes(texto)
 
+        const edad = calcularEdad(residente.f_nacimiento)
+
+        const coincideEdadMinima =
+            edadMinima === '' ||
+            (edad !== null && edad >= Number(edadMinima))
+
+        const coincideEdadMaxima =
+            edadMaxima === '' ||
+            (edad !== null && edad <= Number(edadMaxima))
+
         const coincideModulo =
             modulo === '' ||
             residente.habitacion_modulo_nombre === modulo
@@ -128,6 +165,8 @@ function Residentes() {
 
         return (
             coincideBusqueda &&
+            coincideEdadMinima &&
+            coincideEdadMaxima &&
             coincideModulo &&
             coincideHabitacion &&
             coincidePais &&
@@ -171,6 +210,14 @@ function Residentes() {
                 valorB = normalizarTexto(
                     b.habitacion_nombre || 'Sin habitación'
                 )
+                break
+            case 'edad_asc':
+            case 'edad_desc':
+                valorA = calcularEdad(a.f_nacimiento)
+                valorB = calcularEdad(b.f_nacimiento)
+
+                if (valorA === null) valorA = -1
+                if (valorB === null) valorB = -1
                 break
             case 'alta_asc':
             case 'alta_desc':
@@ -237,6 +284,54 @@ function Residentes() {
     }, [])
 
     useEffect(() => {
+        const filtros = location.state
+
+        if (!filtros) {
+            return
+        }
+
+        if (filtros.genero !== undefined) {
+            setGenero(filtros.genero)
+        }
+
+        if (filtros.pais !== undefined) {
+            setPais(filtros.pais)
+        }
+
+        if (filtros.edad !== undefined) {
+            const partesEdad = filtros.edad.split('-')
+
+            if (partesEdad.length === 2) {
+                setEdadMinima(partesEdad[0])
+                setEdadMaxima(partesEdad[1])
+            }
+        }
+
+        if (filtros.fechaDesde !== undefined) {
+            setFechaDesde(filtros.fechaDesde)
+        }
+
+        if (filtros.fechaHasta !== undefined) {
+            setFechaHasta(filtros.fechaHasta)
+        }
+
+        if (
+            filtros.genero !== undefined ||
+            filtros.pais !== undefined ||
+            filtros.edad !== undefined ||
+            filtros.fechaDesde !== undefined ||
+            filtros.fechaHasta !== undefined
+        ) {
+            setMostrarFiltros(true)
+        }
+
+        navigate(location.pathname, {
+            replace: true,
+            state: null
+        })
+    }, [location, navigate])
+
+    useEffect(() => {
         setHabitacion('')
     }, [modulo])
 
@@ -248,6 +343,8 @@ function Residentes() {
         habitacion,
         pais,
         genero,
+        edadMinima,
+        edadMaxima,
         fechaDesde,
         fechaHasta,
         readmision,
@@ -373,6 +470,12 @@ function Residentes() {
                                     </option>
                                     <option value="habitacion_desc">
                                         Habitación Z-A
+                                    </option>
+                                    <option value="edad_asc">
+                                        Edad menor a mayor
+                                    </option>
+                                    <option value="edad_desc">
+                                        Edad mayor a menor
                                     </option>
                                     <option value="alta_asc">
                                         Fecha de alta más antigua
@@ -505,6 +608,40 @@ function Residentes() {
                                 </div>
 
                                 <div className="residentes-filtro">
+                                    <label htmlFor="edad-minima">
+                                        Edad mínima
+                                    </label>
+
+                                    <input
+                                        id="edad-minima"
+                                        type="number"
+                                        min="0"
+                                        value={edadMinima}
+                                        onChange={(e) =>
+                                            setEdadMinima(e.target.value)
+                                        }
+                                        placeholder="Sin mínimo"
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro">
+                                    <label htmlFor="edad-maxima">
+                                        Edad máxima
+                                    </label>
+
+                                    <input
+                                        id="edad-maxima"
+                                        type="number"
+                                        min="0"
+                                        value={edadMaxima}
+                                        onChange={(e) =>
+                                            setEdadMaxima(e.target.value)
+                                        }
+                                        placeholder="Sin máximo"
+                                    />
+                                </div>
+
+                                <div className="residentes-filtro">
                                     <label htmlFor="filtro-readmision">
                                         Readmisión
                                     </label>
@@ -566,6 +703,8 @@ function Residentes() {
                                         setHabitacion('')
                                         setPais('')
                                         setGenero('')
+                                        setEdadMinima('')
+                                        setEdadMaxima('')
                                         setReadmision('')
                                         setFechaDesde('')
                                         setFechaHasta('')

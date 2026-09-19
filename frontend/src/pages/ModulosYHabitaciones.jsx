@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 
@@ -7,6 +7,7 @@ import "./ModulosYHabitaciones.css";
 
 const ModulosYHabitaciones = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [modulos, setModulos] = useState([]);
     const [habitaciones, setHabitaciones] = useState({});
@@ -76,6 +77,33 @@ const ModulosYHabitaciones = () => {
     const [eliminandoHabitacion, setEliminandoHabitacion] = useState(false);
     const [errorEliminarHabitacion, setErrorEliminarHabitacion] =
         useState(null);
+
+    useEffect(() => {
+        const filtroOcupacionHabitaciones =
+            location.state?.filtroOcupacionHabitaciones;
+
+        const ordenRecibido = location.state?.orden;
+
+        if (filtroOcupacionHabitaciones) {
+            setOcupacionHabitacionesFiltro(
+                filtroOcupacionHabitaciones
+            );
+        }
+
+        if (ordenRecibido) {
+            setOrden(ordenRecibido);
+        }
+
+        if (
+            filtroOcupacionHabitaciones ||
+            ordenRecibido
+        ) {
+            navigate(location.pathname, {
+                replace: true,
+                state: null,
+            });
+        }
+    }, [location.state, location.pathname, navigate]);
 
     useEffect(() => {
         const obtenerModulos = async () => {

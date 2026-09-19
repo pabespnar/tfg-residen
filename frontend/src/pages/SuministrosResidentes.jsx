@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './SuministrosResidentes.css'
 import { FaSearch, FaFilter } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 function SuministrosResidentes() {
 
@@ -22,6 +22,7 @@ function SuministrosResidentes() {
     const [residentesEntrega, setResidentesEntrega] = useState([])
     const [error, setError] = useState('')
 
+    const location = useLocation()
     const navigate = useNavigate()
 
     const normalizarTexto = (texto) =>
@@ -90,6 +91,25 @@ function SuministrosResidentes() {
         obtenerPacks()
         obtenerResidentes()
     }, [])
+
+    useEffect(() => {
+        const packId = location.state?.pack
+
+        if (!packId || packs.length === 0) {
+            return
+        }
+
+        const pack = packs.find(
+            (item) => String(item.id) === String(packId)
+        )
+
+        if (!pack) {
+            return
+        }
+
+        setTerminoBusqueda(pack.nombre || '')
+        setPaginaPacks(1)
+    }, [location.state, packs])
 
     const obtenerPorcentajeEntregas = (pack) => {
         if (residentesActivos.length === 0) {
@@ -342,6 +362,17 @@ function SuministrosResidentes() {
     const totalPaginasPacks = Math.ceil(
         packsOrdenados.length / packsPorPagina
     )
+
+    useEffect(() => {
+        const ordenInicial = location.state?.orden
+
+        if (!ordenInicial) {
+            return
+        }
+
+        setOrden(ordenInicial)
+        setPaginaPacks(1)
+    }, [location.state])
 
     return (
         <div className="suministros-residentes-container">

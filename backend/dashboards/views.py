@@ -17,6 +17,25 @@ from expedientes.permissions import EsGestorAdministracion
 from centro.models import Centro
 
 
+from datetime import timedelta
+
+from django.db.models import Count, Sum, F
+from django.utils import timezone
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from residentes.models import Residente
+from modulos.models import Habitacion
+from modulos.permissions import EsGestorResidentes
+from suministros.models import Suministro, Categoria, Pack, EntregaPack
+from almacen.models import AltaAlmacen, BajaAlmacen
+from expedientes.models import Expediente, Pedido, Proveedor
+from suministros.permissions import EsGestorAlmacen
+from expedientes.permissions import EsGestorAdministracion
+from centro.models import Centro
+
+
 class DashboardResidentesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorResidentes]
 
@@ -226,6 +245,22 @@ class DashboardResidentesView(APIView):
             else:
                 modulo['ocupacion_porcentaje'] = 0
 
+        modulos_mas_ocupados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                -modulo['ocupacion_porcentaje'],
+                modulo['nombre']
+            )
+        )[:3]
+
+        modulos_menos_ocupados = sorted(
+            modulos.values(),
+            key=lambda modulo: (
+                modulo['ocupacion_porcentaje'],
+                modulo['nombre']
+            )
+        )[:3]
+
         modulos_mas_poblados = sorted(
             modulos.values(),
             key=lambda modulo: (
@@ -239,6 +274,66 @@ class DashboardResidentesView(APIView):
             key=lambda modulo: (
                 modulo['residentes'],
                 modulo['nombre']
+            )
+        )[:3]
+
+        packs_entregas = {}
+
+        entregas_por_pack = EntregaPack.objects.filter(
+            fecha_entrega__gte=hace_30_dias,
+            fecha_entrega__lte=hoy
+        ).values(
+            'pack__id',
+            'pack__nombre'
+        ).annotate(
+            total=Count('id')
+        )
+
+        for pack in entregas_por_pack:
+            packs_entregas[pack['pack__id']] = {
+                'id': pack['pack__id'],
+                'nombre': pack['pack__nombre'],
+                'entregas': pack['total']
+            }
+
+        packs_estadisticas = []
+
+        for pack in Pack.objects.all():
+            entregas = packs_entregas.get(
+                pack.id,
+                {
+                    'entregas': 0
+                }
+            )['entregas']
+
+            if residentes_actuales:
+                porcentaje = round(
+                    (entregas / residentes_actuales) * 100,
+                    2
+                )
+            else:
+                porcentaje = 0
+
+            packs_estadisticas.append({
+                'id': pack.id,
+                'nombre': pack.nombre,
+                'entregas': entregas,
+                'porcentaje': porcentaje
+            })
+
+        packs_mas_entregados = sorted(
+            packs_estadisticas,
+            key=lambda pack: (
+                -pack['porcentaje'],
+                pack['nombre']
+            )
+        )[:3]
+
+        packs_menos_entregados = sorted(
+            packs_estadisticas,
+            key=lambda pack: (
+                pack['porcentaje'],
+                pack['nombre']
             )
         )[:3]
 
@@ -329,11 +424,17 @@ class DashboardResidentesView(APIView):
             },
 
             'modulos': {
+                'mas_ocupados': modulos_mas_ocupados,
+                'menos_ocupados': modulos_menos_ocupados,
                 'mas_poblados': modulos_mas_poblados,
                 'menos_poblados': modulos_menos_poblados,
             },
-        })
 
+            'packs': {
+                'mas_entregados': packs_mas_entregados,
+                'menos_entregados': packs_menos_entregados,
+            },
+        })
 
 class DashboardAlmacenView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAlmacen]
