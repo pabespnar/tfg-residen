@@ -1083,6 +1083,33 @@ class DashboardAdministracionView(APIView):
                 'importe': proveedor['importe'] or 0,
             })
 
+        suministros_por_importe = (
+            Suministro.objects.filter(
+                detalles_pedido__isnull=False
+            ).values(
+                'id',
+                'nombre',
+                'unidad'
+            ).annotate(
+                importe=Sum(
+                    F('detalles_pedido__cantidad') *
+                    F('detalles_pedido__precio_unidad')
+                )
+            ).order_by(
+                '-importe'
+            )[:5]
+        )
+
+        suministros_principales = []
+
+        for suministro in suministros_por_importe:
+            suministros_principales.append({
+                'id': suministro['id'],
+                'nombre': suministro['nombre'],
+                'unidad': suministro['unidad'],
+                'importe': suministro['importe'] or 0,
+            })    
+
         return Response({
             'resumen': {
                 'presupuesto_total_expedientes':
@@ -1183,5 +1210,10 @@ class DashboardAdministracionView(APIView):
 
                 'principales':
                     proveedores,
+            },
+
+            'suministros': {
+                'principales':
+                    suministros_principales,
             },
         })

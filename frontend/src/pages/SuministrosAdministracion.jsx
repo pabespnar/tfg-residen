@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useLocation } from 'react-router-dom'
 import { FaTrash, FaSearch, FaFilter } from 'react-icons/fa'
 import './SuministrosAdministracion.css'
 
 function SuministrosAdministracion() {
+
+    const location = useLocation()
 
     const [suministros, setSuministros] = useState([])
     const [suministrosAbiertos, setSuministrosAbiertos] = useState({})
@@ -211,6 +214,9 @@ function SuministrosAdministracion() {
         const expedientesA = (a.expedientes || []).length
         const expedientesB = (b.expedientes || []).length
 
+        const importeA = Number(a.importe || 0)
+        const importeB = Number(b.importe || 0)
+
         if (orden === 'nombre_asc') {
             return nombreA.localeCompare(nombreB)
         }
@@ -233,6 +239,14 @@ function SuministrosAdministracion() {
 
         if (orden === 'expedientes_desc') {
             return expedientesB - expedientesA
+        }
+
+        if (orden === 'importe_asc') {
+            return importeA - importeB
+        }
+
+        if (orden === 'importe_desc') {
+            return importeB - importeA
         }
 
         return 0
@@ -475,6 +489,12 @@ function SuministrosAdministracion() {
         }
     }
 
+    useEffect(() => {
+        if (location.state?.orden) {
+            setOrden(location.state.orden)
+        }
+    }, [location.state])
+
     return (
         <div className="suministros-administracion-container">
 
@@ -595,6 +615,14 @@ function SuministrosAdministracion() {
 
                                 <option value="expedientes_desc">
                                     Número de expedientes: mayor a menor
+                                </option>
+
+                                <option value="importe_asc">
+                                    Gasto acumulado total: menor a mayor
+                                </option>
+
+                                <option value="importe_desc">
+                                    Gasto acumulado total: mayor a menor
                                 </option>
                             </select>
 
@@ -832,6 +860,19 @@ function SuministrosAdministracion() {
 
                                                 <p>
                                                     Unidad: {suministro.unidad}
+                                                </p>
+
+                                                <p>
+                                                    Gasto acumulado total:{' '}
+                                                    {Number(
+                                                        suministro.importe || 0
+                                                    ).toLocaleString(
+                                                        'es-ES',
+                                                        {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2
+                                                        }
+                                                    )} €
                                                 </p>
 
                                             </div>

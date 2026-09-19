@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import './Proveedores.css'
 import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
@@ -7,6 +7,13 @@ import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 function Proveedores() {
 
     const navigate = useNavigate()
+    const location = useLocation()
+
+    useEffect(() => {
+        if (location.state?.orden) {
+            setOrden(location.state.orden)
+        }
+    }, [location.state])
 
     const [proveedores, setProveedores] = useState([])
     const [proveedoresAbiertos, setProveedoresAbiertos] = useState({})
@@ -229,6 +236,9 @@ function Proveedores() {
             ? b.expedientes.length
             : 0
 
+        const importeA = Number(a.importe || 0)
+        const importeB = Number(b.importe || 0)
+
         if (orden === 'nombre_asc') {
             return nombreA.localeCompare(nombreB)
         }
@@ -259,6 +269,14 @@ function Proveedores() {
 
         if (orden === 'expedientes_desc') {
             return expedientesB - expedientesA
+        }
+
+        if (orden === 'importe_asc') {
+            return importeA - importeB
+        }
+
+        if (orden === 'importe_desc') {
+            return importeB - importeA
         }
 
         return 0
@@ -860,6 +878,14 @@ function Proveedores() {
                                 <option value="expedientes_desc">
                                     Número de expedientes: mayor a menor
                                 </option>
+
+                                <option value="importe_asc">
+                                    Gasto acumulado total: menor a mayor
+                                </option>
+
+                                <option value="importe_desc">
+                                    Gasto acumulado total: mayor a menor
+                                </option>
                             </select>
 
                         </div>
@@ -1110,6 +1136,19 @@ function Proveedores() {
 
                                                 <p>
                                                     {proveedor.correo}
+                                                </p>
+
+                                                <p>
+                                                    Gasto acumulado total:{' '}
+                                                    {Number(
+                                                        proveedor.importe || 0
+                                                    ).toLocaleString(
+                                                        'es-ES',
+                                                        {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2
+                                                        }
+                                                    )} €
                                                 </p>
 
                                             </div>

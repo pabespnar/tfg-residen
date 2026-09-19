@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
+from django.db.models import Sum, F
 
 from .models import Categoria, Suministro, Pack, ContenidoPack, EntregaPack
 
@@ -16,6 +17,8 @@ class SuministroSerializer(serializers.ModelSerializer):
         source='categoria.nombre',
         read_only=True
     )
+
+    importe = serializers.SerializerMethodField()
 
     packs = serializers.SerializerMethodField()
     expediente_activo = serializers.SerializerMethodField()
@@ -35,6 +38,7 @@ class SuministroSerializer(serializers.ModelSerializer):
             'categoria',
             'categoria_nombre',
             'f_alta',
+            'importe',
             'packs',
             'expediente_activo',
             'expedientes',
@@ -45,11 +49,19 @@ class SuministroSerializer(serializers.ModelSerializer):
             'id',
             'categoria_nombre',
             'f_alta',
+            'importe',
             'packs',
             'expediente_activo',
             'expedientes',
             'pedidos',
         ]
+
+    def get_importe(self, obj):
+        return obj.detalles_pedido.aggregate(
+            total=Sum(
+                F('cantidad') * F('precio_unidad')
+            )
+        )['total'] or 0
 
     def get_packs(self, obj):
         contenidos = ContenidoPack.objects.filter(
@@ -247,7 +259,7 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
         source='suministro.nombre',
         read_only=True
     )
-    
+
     suministro_unidad = serializers.CharField(
         source='suministro.unidad',
         read_only=True
@@ -282,7 +294,7 @@ class ContenidoPackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El pack especificado no existe."
             )
-        
+
         return value
 
     def validate_suministro(self, value):

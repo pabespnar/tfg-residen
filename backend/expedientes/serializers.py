@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, F
 
 from .models import Proveedor, Expediente, DetalleExpediente, Pedido, DetallePedido
 
@@ -124,6 +124,8 @@ class ProveedorSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    importe = serializers.SerializerMethodField()
+
     suministros_pedidos = serializers.SerializerMethodField()
 
     class Meta:
@@ -135,15 +137,25 @@ class ProveedorSerializer(serializers.ModelSerializer):
             'cif',
             'correo',
             'foto',
+            'importe',
             'expedientes',
             'suministros_pedidos'
         ]
 
         read_only_fields = [
             'id',
+            'importe',
             'expedientes',
             'suministros_pedidos',
         ]
+
+    def get_importe(self, obj):
+        return obj.pedidos.aggregate(
+            total=Sum(
+                F('detalles_pedido__cantidad') *
+                F('detalles_pedido__precio_unidad')
+            )
+        )['total'] or 0
 
     def get_suministros_pedidos(self, obj):
         suministros = {}

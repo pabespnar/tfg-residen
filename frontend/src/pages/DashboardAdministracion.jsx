@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import './DashboardAdministracion.css';
 
@@ -21,6 +22,10 @@ import {
 
 
 function DashboardAdministracion() {
+
+    const navigate = useNavigate();
+
+
 
     const [dashboard, setDashboard] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -97,6 +102,7 @@ function DashboardAdministracion() {
         expedientes,
         pedidos,
         proveedores,
+        suministros,
     } = dashboard;
 
 
@@ -151,6 +157,16 @@ function DashboardAdministracion() {
             proveedor => ({
                 nombre: proveedor.nombre,
                 importe: Number(proveedor.importe),
+            })
+        )
+        : [];
+
+
+    const datosSuministros = suministros.principales
+        ? suministros.principales.map(
+            suministro => ({
+                nombre: suministro.nombre,
+                importe: Number(suministro.importe),
             })
         )
         : [];
@@ -624,6 +640,22 @@ function DashboardAdministracion() {
                                                             coloresPedidos.length
                                                         ]
                                                     }
+                                                    onClick={() =>
+                                                        navigate(
+                                                            '/pedidos',
+                                                            {
+                                                                state: {
+                                                                    tipoPedido:
+                                                                        entry.nombre === 'Con expediente'
+                                                                            ? 'EXPEDIENTE'
+                                                                            : 'GENERAL'
+                                                                }
+                                                            }
+                                                        )
+                                                    }
+                                                    style={{
+                                                        cursor: 'pointer'
+                                                    }}
                                                 />
                                             )
                                         )}
@@ -664,7 +696,22 @@ function DashboardAdministracion() {
 
                     <div className="dashboard-estadisticas-almacen">
 
-                        <div className="dashboard-estadistica">
+                        <div
+                            className="dashboard-estadistica"
+                            onClick={() =>
+                                navigate(
+                                    '/pedidos',
+                                    {
+                                        state: {
+                                            estadoFiltro: 'pendiente'
+                                        }
+                                    }
+                                )
+                            }
+                            style={{
+                                cursor: 'pointer'
+                            }}
+                        >
 
                             <span>
                                 Pedidos pendientes de recibir
@@ -948,6 +995,22 @@ function DashboardAdministracion() {
                                                             coloresExpedientes.length
                                                         ]
                                                     }
+                                                    onClick={() =>
+                                                        navigate(
+                                                            '/expedientes',
+                                                            {
+                                                                state: {
+                                                                    estado:
+                                                                        entry.nombre === 'Activos'
+                                                                            ? 'activo'
+                                                                            : 'inactivo'
+                                                                }
+                                                            }
+                                                        )
+                                                    }
+                                                    style={{
+                                                        cursor: 'pointer'
+                                                    }}
                                                 />
                                             )
                                         )}
@@ -1081,7 +1144,7 @@ function DashboardAdministracion() {
             <div className="dashboard-seccion-header">
 
                 <h2>
-                    Proveedores
+                    Mayores importes
                 </h2>
 
             </div>
@@ -1089,7 +1152,22 @@ function DashboardAdministracion() {
 
             <section className="dashboard-graficos">
 
-                <div className="dashboard-grafico-card">
+                <div
+                    className="dashboard-grafico-card"
+                    onClick={() =>
+                        navigate(
+                            '/proveedores',
+                            {
+                                state: {
+                                    orden: 'importe_desc'
+                                }
+                            }
+                        )
+                    }                    
+                    style={{
+                        cursor: 'pointer'
+                    }}
+                >
 
                     <div className="dashboard-grafico-header">
 
@@ -1175,7 +1253,110 @@ function DashboardAdministracion() {
 
                 </div>
 
+
+                <div
+                    className="dashboard-grafico-card"
+                    onClick={() =>
+                        navigate(
+                            '/suministrosAdministracion',
+                            {
+                                state: {
+                                    orden: 'importe_desc'
+                                }
+                            }
+                        )
+                    }           
+                    style={{
+                        cursor: 'pointer'
+                    }}
+                >
+
+                    <div className="dashboard-grafico-header">
+
+                        <h2>
+                            Suministros con mayor importe
+                        </h2>
+
+                    </div>
+
+
+                    <div className="dashboard-grafico">
+
+                        {datosSuministros.length > 0 ? (
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height={300}
+                            >
+
+                                <BarChart
+                                    data={datosSuministros}
+                                    layout="vertical"
+                                    margin={{
+                                        top: 10,
+                                        right: 30,
+                                        left: 20,
+                                        bottom: 10,
+                                    }}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        type="number"
+                                    />
+
+                                    <YAxis
+                                        type="category"
+                                        dataKey="nombre"
+                                        width={120}
+                                    />
+
+                                    <Tooltip
+                                        formatter={
+                                            value =>
+                                                `${Number(value).toLocaleString(
+                                                    'es-ES',
+                                                    {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    }
+                                                )} €`
+                                        }
+                                    />
+
+                                    <Bar
+                                        dataKey="importe"
+                                        name="Importe"
+                                        fill="#1B5E20"
+                                        radius={[
+                                            0,
+                                            5,
+                                            5,
+                                            0,
+                                        ]}
+                                    />
+
+                                </BarChart>
+
+                            </ResponsiveContainer>
+
+                        ) : (
+
+                            <div className="dashboard-grafico-vacio">
+                                No hay pedidos asociados a suministros.
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+
             </section>
+
 
         </div>
     );

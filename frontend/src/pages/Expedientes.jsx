@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
 import './Expedientes.css';
@@ -29,6 +29,14 @@ function Expedientes() {
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.estado) {
+            setEstado(location.state.estado);
+            setMostrarFiltros(true);
+        }
+    }, [location.state]);
 
     useEffect(() => {
 

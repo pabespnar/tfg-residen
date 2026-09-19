@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
 import './Pedidos.css';
@@ -44,6 +44,19 @@ function Pedidos() {
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.tipoPedido) {
+            setTipoPedido(location.state.tipoPedido);
+            setMostrarFiltros(true);
+        }
+
+        if (location.state?.estadoFiltro) {
+            setEstadoFiltro(location.state.estadoFiltro);
+            setMostrarFiltros(true);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         const obtenerDatos = async () => {
