@@ -82,7 +82,6 @@ class ResidentesTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['nombre'], 'Juan')
 
-
     def test_listar_residentes_como_almacen(self):
         refresh = RefreshToken.for_user(self.usuario_almacen)
         self.client.credentials(
@@ -94,6 +93,23 @@ class ResidentesTests(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_listar_residentes_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('lista_residentes')
+
+        response = self.client.get(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
 
     def test_crear_residente_correctamente(self):
         url = reverse('crear_residente')
@@ -213,6 +229,48 @@ class ResidentesTests(APITestCase):
             status.HTTP_400_BAD_REQUEST
         )
 
+    def test_crear_residente_sin_permiso_almacen(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('crear_residente')
+
+        response = self.client.post(
+            url,
+            {},
+            format='multipart'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+    def test_crear_residente_sin_permiso_administracion(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('crear_residente')
+
+        response = self.client.post(
+            url,
+            {},
+            format='multipart'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
     def test_obtener_detalle_residente(self):
         url = reverse(
             'detalle_residente',
@@ -230,6 +288,46 @@ class ResidentesTests(APITestCase):
         self.assertEqual(
             response.data['habitacion_nombre'],
             'Habitacion 1'
+        )
+
+    def test_obtener_detalle_residente_sin_permiso_almacen(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'detalle_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+    def test_obtener_detalle_residente_sin_permiso_administracion(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'detalle_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )
 
     def test_editar_residente_correctamente(self):
@@ -326,6 +424,54 @@ class ResidentesTests(APITestCase):
         )
         self.assertIn('habitacion', response.data)
 
+    def test_editar_residente_sin_permiso_almacen(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'editar_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.patch(
+            url,
+            {},
+            format='multipart'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+    def test_editar_residente_sin_permiso_administracion(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'editar_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.patch(
+            url,
+            {},
+            format='multipart'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
     def test_dar_de_baja_residente_correctamente(self):
         url = reverse(
             'dar_de_baja_residente',
@@ -357,6 +503,46 @@ class ResidentesTests(APITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST
+        )
+
+    def test_dar_de_baja_residente_sin_permiso_almacen(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'dar_de_baja_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.post(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+    def test_dar_de_baja_residente_sin_permiso_administracion(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'dar_de_baja_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.post(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )
 
     def test_dar_de_alta_residente_correctamente(self):
@@ -451,6 +637,46 @@ class ResidentesTests(APITestCase):
         )
         self.assertIn('habitacion', response.data)
 
+    def test_dar_de_alta_residente_sin_permiso_almacen(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'dar_de_alta_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.post(url, {})
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+    def test_dar_de_alta_residente_sin_permiso_administracion(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'dar_de_alta_residente',
+            kwargs={'id': self.residente.id}
+        )
+
+        response = self.client.post(url, {})
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
     def test_listar_historico_residentes(self):
         self.residente.activo = False
         self.residente.habitacion = None
@@ -476,7 +702,24 @@ class ResidentesTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
-    def test_listar_residentes_sin_permiso(self):
+    def test_listar_historico_residentes_sin_permiso_almacen(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('historico_residentes')
+
+        response = self.client.get(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+    def test_listar_historico_residentes_sin_permiso_administracion(self):
         refresh = RefreshToken.for_user(
             self.usuario_administracion
         )
@@ -484,7 +727,7 @@ class ResidentesTests(APITestCase):
             HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
         )
 
-        url = reverse('lista_residentes')
+        url = reverse('historico_residentes')
 
         response = self.client.get(url)
 

@@ -105,7 +105,6 @@ class PacksTests(APITestCase):
             'Pack Higiene'
         )
 
-
     def test_listar_packs_sin_permiso(self):
         refresh = RefreshToken.for_user(
             self.usuario_administracion
@@ -172,6 +171,32 @@ class PacksTests(APITestCase):
             status.HTTP_400_BAD_REQUEST
         )
 
+    def test_crear_pack_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('crear_pack')
+
+        data = {
+            'nombre': 'Pack Alimentacion',
+            'descripcion': 'Pack de alimentacion'
+        }
+
+        response = self.client.post(
+            url,
+            data,
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
 
     def test_crear_contenido_pack_correctamente(self):
         url = reverse('crear_contenido_pack')
@@ -225,6 +250,33 @@ class PacksTests(APITestCase):
             status.HTTP_400_BAD_REQUEST
         )
 
+    def test_crear_contenido_pack_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('crear_contenido_pack')
+
+        data = {
+            'pack': self.pack.id,
+            'suministro': self.suministro.id,
+            'cantidad': 3
+        }
+
+        response = self.client.post(
+            url,
+            data,
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
 
     def test_entregar_pack_correctamente(self):
         url = reverse(
@@ -368,7 +420,6 @@ class PacksTests(APITestCase):
             response.data
         )
 
-
     def test_entregar_pack_sin_suministros(self):
         pack_vacio = Pack.objects.create(
             nombre='Pack Vacio',
@@ -496,6 +547,34 @@ class PacksTests(APITestCase):
             1
         )
 
+    def test_entregar_pack_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'crear_entrega_pack',
+            kwargs={'id': self.pack.id}
+        )
+
+        data = {
+            'residentes': [self.residente.id]
+        }
+
+        response = self.client.post(
+            url,
+            data,
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
 
     def test_eliminar_pack_correctamente(self):
         pack = Pack.objects.create(
@@ -539,4 +618,25 @@ class PacksTests(APITestCase):
 
         self.assertTrue(
             Pack.objects.filter(id=self.pack.id).exists()
+        )
+
+    def test_eliminar_pack_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'eliminar_pack',
+            kwargs={'id': self.pack.id}
+        )
+
+        response = self.client.delete(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )

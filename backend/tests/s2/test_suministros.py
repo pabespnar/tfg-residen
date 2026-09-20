@@ -79,7 +79,6 @@ class SuministrosTests(APITestCase):
             status.HTTP_401_UNAUTHORIZED
         )
 
-
     def test_crear_categoria_correctamente(self):
         url = reverse('crear_categoria')
 
@@ -132,6 +131,31 @@ class SuministrosTests(APITestCase):
         )
         self.assertIn('nombre', response.data)
 
+    def test_crear_categoria_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('crear_categoria')
+
+        data = {
+            'nombre': 'Higiene',
+            'descripcion': 'Productos de higiene'
+        }
+
+        response = self.client.post(
+            url,
+            data,
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
 
     def test_listar_categorias_con_suministros(self):
         url = reverse('categorias')
@@ -161,4 +185,21 @@ class SuministrosTests(APITestCase):
         self.assertEqual(
             categoria['suministros'][0]['nombre'],
             'Arroz'
+        )
+
+    def test_listar_categorias_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_administracion
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse('categorias')
+
+        response = self.client.get(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )

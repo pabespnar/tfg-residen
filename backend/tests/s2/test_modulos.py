@@ -150,6 +150,30 @@ class ModulosTests(APITestCase):
             1
         )
 
+    def test_crear_modulo_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        response = self.client.post(
+            reverse('crear_modulo'),
+            {
+                'nombre': 'Modulo Nuevo',
+                'descripcion': 'Descripcion del modulo',
+                'num_habitaciones_max': 5,
+            },
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
     def test_editar_modulo_correctamente(self):
         response = self.client.put(
             reverse(
@@ -268,6 +292,33 @@ class ModulosTests(APITestCase):
             'Modulo 1'
         )
 
+    def test_editar_modulo_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        response = self.client.put(
+            reverse(
+                'editar_modulo',
+                kwargs={'pk': self.modulo.id}
+            ),
+            {
+                'nombre': 'Modulo Editado',
+                'descripcion': 'Nueva descripcion',
+                'num_habitaciones_max': 10,
+            },
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
     def test_eliminar_modulo_correctamente(self):
         response = self.client.delete(
             reverse(
@@ -322,6 +373,27 @@ class ModulosTests(APITestCase):
             Habitacion.objects.filter(
                 pk=habitacion.id
             ).exists()
+        )
+
+    def test_eliminar_modulo_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        response = self.client.delete(
+            reverse(
+                'eliminar_modulo',
+                kwargs={'pk': self.modulo.id}
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )
 
     def test_listar_modulos_sin_permiso(self):
