@@ -89,6 +89,24 @@
 .ver-suministro-stock {
     color: #1B5E20;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ver-suministro-stock-bajo {
+    color: #e65100;
+    font-weight: 600;
+}
+
+.ver-suministro-stock-sin-stock {
+    color: #b71c1c;
+    font-weight: 600;
+}
+
+.ver-suministro-stock-alerta {
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 .ver-suministro-packs {
@@ -196,7 +214,6 @@
 .ver-suministro-error button:hover {
     background-color: #145218;
 }
-
 
 .ver-suministro-cabecera-info h1 {
     display: flex;

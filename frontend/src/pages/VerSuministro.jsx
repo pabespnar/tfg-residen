@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './VerSuministro.css'
 import { FiEdit2 } from 'react-icons/fi'
+import { FaExclamationTriangle } from 'react-icons/fa'
 import { useNavigate, useParams } from 'react-router-dom'
 
 function VerSuministro() {
@@ -88,6 +89,22 @@ function VerSuministro() {
         obtenerCategorias()
 
     }, [])
+
+    const comprobarEstadoStock = (suministro) => {
+
+        const stock = Number(suministro.stock || 0)
+        const stockMinimo = Number(suministro.stock_minimo || 0)
+
+        if (stock === 0) {
+            return 'sin_stock'
+        }
+
+        if (stock <= stockMinimo) {
+            return 'stock_bajo'
+        }
+
+        return 'stock_normal'
+    }
 
     const abrirEditar = () => {
 
@@ -235,6 +252,9 @@ function VerSuministro() {
         )
     }
 
+    const estadoStockSuministro =
+        comprobarEstadoStock(suministro)
+
     return (
         <div className="ver-suministro-container">
 
@@ -321,8 +341,32 @@ function VerSuministro() {
                                 Stock actual
                             </span>
 
-                            <span className="ver-suministro-valor">
+                            <span
+                                className={`ver-suministro-valor ver-suministro-stock ${
+                                    estadoStockSuministro === 'sin_stock'
+                                        ? 'ver-suministro-stock-sin-stock'
+                                        : estadoStockSuministro === 'stock_bajo'
+                                        ? 'ver-suministro-stock-bajo'
+                                        : ''
+                                }`}
+                            >
+
+                                {(estadoStockSuministro === 'sin_stock' ||
+                                    estadoStockSuministro === 'stock_bajo') && (
+
+                                    <FaExclamationTriangle
+                                        className="ver-suministro-stock-alerta"
+                                        title={
+                                            estadoStockSuministro === 'sin_stock'
+                                                ? 'Sin stock'
+                                                : 'Stock bajo'
+                                        }
+                                    />
+
+                                )}
+
                                 {suministro.stock}
+
                             </span>
 
                         </div>
