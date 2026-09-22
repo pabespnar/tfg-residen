@@ -14,6 +14,7 @@ from .serializers import UsuarioSerializer, CrearUsuarioSerializer
 from .models import Usuario
 
 from centro.permissions import EsSuperUsuario
+from centro.models import Centro
 
 
 class UsuarioActualView(APIView):
@@ -119,17 +120,24 @@ class RecuperarContrasenaView(APIView):
         usuario = Usuario.objects.filter(email=email).first()
 
         if usuario:
+            centro = Centro.get_solo()
+
             uid = urlsafe_base64_encode(force_bytes(usuario.pk))
             token = default_token_generator.make_token(usuario)
             enlace = f'http://localhost:5173/restablecer-contrasena/{uid}/{token}'
 
             send_mail(
                 'Recuperación de contraseña',
-                f'Hola {usuario.nombre},\n\n'
-                f'Has solicitado recuperar tu contraseña.\n\n'
+                f'Buenas, {usuario.nombre},\n\n'
+                f'Has solicitado recuperar tu contraseña en el sistema de {centro.nombre}.\n\n'
                 f'Accede al siguiente enlace para establecer una nueva contraseña:\n'
-                f'{enlace}\n\n'
-                f'Si no has solicitado este cambio, puedes ignorar este correo.',
+                f'{enlace}\n'
+                f'Si siguieras presentando complicaciones para loggearte o necesitas cualquier tipo de soporte,\n'
+                f'puedes contactar con nosotros a través de:\n'
+                f'{centro.correo}\n\n'
+                f'Si no has solicitado este cambio, puedes ignorar este correo.\n\n'
+                f'Un saludo,\n\n'
+                f'{centro.nombre}',
                 None,
                 [usuario.email],
             )
