@@ -301,3 +301,122 @@
     color: #555;
     font-size: 14px;
 }
+
+.asignar-pack-resumen {
+    background-color: white;
+    padding: 20px 25px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.asignar-pack-info {
+    padding-bottom: 15px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.asignar-pack-info h2 {
+    margin: 0;
+    color: #1B5E20;
+    font-size: 21px;
+}
+
+.asignar-pack-info p {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.asignar-pack-stock-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.asignar-pack-stock-titulo h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.asignar-pack-stock-titulo span {
+    color: #666;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.asignar-pack-stock-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.asignar-pack-stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 15px;
+    border: 1px solid #e4e4e4;
+    border-radius: 7px;
+    background-color: #fafafa;
+}
+
+.asignar-pack-stock-insuficiente {
+    border-color: #e57373;
+    background-color: #ffebee;
+}
+
+.asignar-pack-stock-nombre {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 200px;
+}
+
+.asignar-pack-stock-nombre strong {
+    color: #333;
+    font-size: 14px;
+}
+
+.asignar-pack-stock-nombre span {
+    color: #777;
+    font-size: 12px;
+}
+
+.asignar-pack-stock-datos {
+    display: flex;
+    gap: 30px;
+}
+
+.asignar-pack-stock-datos div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.asignar-pack-stock-datos span {
+    color: #777;
+    font-size: 11px;
+}
+
+.asignar-pack-stock-datos strong {
+    color: #333;
+    font-size: 14px;
+}
+
+.asignar-pack-stock-insuficiente .asignar-pack-stock-datos div:last-child strong {
+    color: #c62828;
+}
+
+.asignar-pack-stock-error {
+    margin: 14px 0 0;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background-color: #ffebee;
+    color: #c62828;
+    font-size: 13px;
+}
