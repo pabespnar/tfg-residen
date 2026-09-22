@@ -109,7 +109,7 @@ const Suministros = () => {
             return "sin_stock";
         }
 
-        if (stock <= stockMinimo) {
+        if (stock < stockMinimo) {
             return "stock_bajo";
         }
 
