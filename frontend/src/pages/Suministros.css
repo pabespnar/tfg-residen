@@ -150,6 +150,25 @@
     color: #555;
     font-size: 13px;
     font-weight: 500;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.suministro-stock-bajo {
+    color: #e65100;
+    font-weight: 600;
+}
+
+.suministro-stock-sin-stock {
+    color: #b71c1c;
+    font-weight: 600;
+}
+
+.suministro-stock-alerta {
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 .suministro-acciones {

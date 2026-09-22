@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
+import {
+    FaPencilAlt,
+    FaTrash,
+    FaSearch,
+    FaFilter,
+    FaExclamationTriangle,
+} from "react-icons/fa";
 
 import "./Suministros.css";
 
@@ -103,7 +109,7 @@ const Suministros = () => {
             return "sin_stock";
         }
 
-        if (stock <= stockMinimo) {
+        if (stock < stockMinimo) {
             return "stock_bajo";
         }
 
@@ -882,48 +888,80 @@ const Suministros = () => {
 
                                         {categoriaActual.suministros.length > 0 ? (
                                             categoriaActual.suministros.map(
-                                                (suministro) => (
-                                                    <div
-                                                        className="suministro-item"
-                                                        key={suministro.id}
-                                                    >
+                                                (suministro) => {
+                                                    const estadoStockSuministro =
+                                                        comprobarEstadoStock(
+                                                            suministro
+                                                        );
+
+                                                    return (
                                                         <div
-                                                            className="suministro-item-informacion"
-                                                            onClick={() =>
-                                                                navigate(
-                                                                    `/suministros/${suministro.id}`
-                                                                )
-                                                            }
+                                                            className="suministro-item"
+                                                            key={suministro.id}
                                                         >
-                                                            <span className="suministro-nombre">
-                                                                {suministro.nombre}
-                                                            </span>
-
-                                                            <span className="suministro-stock">
-                                                                {suministro.stock}{" "}
-                                                                {suministro.unidad}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="suministro-acciones">
-                                                            <button
-                                                                className="suministro-editar"
-                                                                onClick={(evento) => {
-                                                                    evento.stopPropagation();
-                                                                    abrirEditarSuministro(
-                                                                        suministro,
-                                                                        categoriaActual
-                                                                    );
-                                                                }}
-                                                                disabled={
-                                                                    editandoSuministro
+                                                            <div
+                                                                className="suministro-item-informacion"
+                                                                onClick={() =>
+                                                                    navigate(
+                                                                        `/suministros/${suministro.id}`
+                                                                    )
                                                                 }
                                                             >
-                                                                <FaPencilAlt />
-                                                            </button>
+                                                                <span className="suministro-nombre">
+                                                                    {suministro.nombre}
+                                                                </span>
+
+                                                                <span
+                                                                    className={`suministro-stock ${
+                                                                        estadoStockSuministro ===
+                                                                        "sin_stock"
+                                                                            ? "suministro-stock-sin-stock"
+                                                                            : estadoStockSuministro ===
+                                                                              "stock_bajo"
+                                                                            ? "suministro-stock-bajo"
+                                                                            : ""
+                                                                    }`}
+                                                                >
+                                                                    {(estadoStockSuministro ===
+                                                                        "sin_stock" ||
+                                                                        estadoStockSuministro ===
+                                                                            "stock_bajo") && (
+                                                                        <FaExclamationTriangle
+                                                                            className="suministro-stock-alerta"
+                                                                            title={
+                                                                                estadoStockSuministro ===
+                                                                                "sin_stock"
+                                                                                    ? "Sin stock"
+                                                                                    : "Stock bajo"
+                                                                            }
+                                                                        />
+                                                                    )}
+
+                                                                    {suministro.stock}{" "}
+                                                                    {suministro.unidad}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="suministro-acciones">
+                                                                <button
+                                                                    className="suministro-editar"
+                                                                    onClick={(evento) => {
+                                                                        evento.stopPropagation();
+                                                                        abrirEditarSuministro(
+                                                                            suministro,
+                                                                            categoriaActual
+                                                                        );
+                                                                    }}
+                                                                    disabled={
+                                                                        editandoSuministro
+                                                                    }
+                                                                >
+                                                                    <FaPencilAlt />
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )
+                                                    );
+                                                }
                                             )
                                         ) : (
                                             <p className="suministros-sin-elementos">

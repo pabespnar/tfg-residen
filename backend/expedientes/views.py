@@ -573,11 +573,13 @@ class CrearPedidoExpedienteView(APIView):
                             usuario=usuario
                         )
 
+        centro = Centro.get_solo()
+
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
-            f'Hola, {expediente.proveedor.nombre}.\n\n'
-            f'Hemos realizado un nuevo pedido asociado al expediente '
-            f'{expediente.nombre}.\n\n'
+            f'Buenas, {expediente.proveedor.nombre}.\n\n'
+            f'Nuestro centro, {centro.nombre}, ha realizado un nuevo pedido a su entidad,\n'
+            f'asociado al expediente {expediente.nombre}.\n\n'
             f'Pedido: {pedido.nombre}\n'
             f'Fecha: {pedido.fecha}\n\n'
             f'Suministros que solicitamos:\n'
@@ -589,8 +591,11 @@ class CrearPedidoExpedienteView(APIView):
                 for detalle in detalles_pedido
             )
             + f'\nEl coste del pedido, con los precios acordados en el expediente, es de {total:.2f} €\n\n'
+            f'Si necesita contactar con nosotros para cualquier detalle de la tramitación, puede hacerlo a través de:\n'
+            f'{centro.correo}\n\n'
             f'Gracias de antemano.\n'
-            f'Un saludo.',
+            f'Un saludo,\n\n'
+            f'{centro.nombre}',
             None,
             [expediente.proveedor.correo],
         )
@@ -987,8 +992,8 @@ class CrearPedidoGeneralView(APIView):
 
         send_mail(
             f'Nuevo pedido: {pedido.nombre}',
-            f'Hola, {proveedor.nombre}.\n\n'
-            f'Le realizamos un nuevo pedido.\n\n'
+            f'Buenas, {proveedor.nombre}.\n\n'
+            f'Nuestro centro, {centro.nombre}, ha realizado un nuevo pedido a su entidad.\n\n'
             f'Pedido: {pedido.nombre}\n'
             f'Fecha: {pedido.fecha}\n\n'
             f'Suministros que solicitamos:\n'
@@ -1001,8 +1006,11 @@ class CrearPedidoGeneralView(APIView):
             )
             + f'\nEl coste total del pedido, con los precios que ustedes '
             f'marcan, es de {total:.2f} €\n\n'
+            f'Si necesita contactar con nosotros para cualquier detalle de la tramitación, puede hacerlo a través de:\n'
+            f'{centro.correo}\n\n'
             f'Gracias de antemano.\n'
-            f'Un saludo.',
+            f'Un saludo,\n\n'
+            f'{centro.nombre}',
             None,
             [proveedor.correo],
         )

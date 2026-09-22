@@ -145,6 +145,37 @@ class HabitacionesTests(APITestCase):
         )
 
 
+    def test_crear_habitacion_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'crear_habitacion',
+            args=[self.modulo.id]
+        )
+
+        data = {
+            'nombre': 'Habitacion 2',
+            'info': 'Nueva habitacion',
+            'capacidad': 3
+        }
+
+        response = self.client.post(
+            url,
+            data,
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+
     def test_detallar_habitacion(self):
         url = reverse(
             'detalle_habitacion',
@@ -160,6 +191,27 @@ class HabitacionesTests(APITestCase):
         self.assertEqual(
             response.data['nombre'],
             'Habitacion 1'
+        )
+
+
+    def test_detallar_habitacion_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'detalle_habitacion',
+            args=[self.modulo.id, self.habitacion.id]
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )
 
 
@@ -280,6 +332,37 @@ class HabitacionesTests(APITestCase):
         )
 
 
+    def test_editar_habitacion_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'editar_habitacion',
+            args=[self.modulo.id, self.habitacion.id]
+        )
+
+        data = {
+            'nombre': 'Habitacion modificada',
+            'info': 'Informacion modificada',
+            'capacidad': 3
+        }
+
+        response = self.client.put(
+            url,
+            data,
+            format='json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
+
     def test_eliminar_habitacion_correctamente(self):
         url = reverse(
             'eliminar_habitacion',
@@ -324,6 +407,27 @@ class HabitacionesTests(APITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST
+        )
+
+
+    def test_eliminar_habitacion_sin_permiso(self):
+        refresh = RefreshToken.for_user(
+            self.usuario_almacen
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}'
+        )
+
+        url = reverse(
+            'eliminar_habitacion',
+            args=[self.modulo.id, self.habitacion.id]
+        )
+
+        response = self.client.delete(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )
 
 

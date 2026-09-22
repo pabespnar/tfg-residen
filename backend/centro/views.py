@@ -9,8 +9,13 @@ from .permissions import EsSuperUsuario
 
 
 class CentroView(APIView):
-    permission_classes = [IsAuthenticated, EsSuperUsuario]
     parser_classes = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.request.method == 'PATCH':
+            return [IsAuthenticated(), EsSuperUsuario()]
+
+        return [IsAuthenticated()]
 
     def get(self, request):
         centro = Centro.get_solo()
