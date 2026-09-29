@@ -257,7 +257,7 @@ function Residentes() {
 
             try {
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/residentes/listaresidentes/',
+                    '/api/residentes/listaresidentes/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

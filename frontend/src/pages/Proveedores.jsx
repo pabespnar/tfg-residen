@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import './Proveedores.css'
+import { API_URL } from '../config'
 import { FaPencilAlt, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 
 function Proveedores() {
@@ -353,7 +354,7 @@ function Proveedores() {
             const token = localStorage.getItem('access')
 
             const respuesta = await axios.get(
-                'http://127.0.0.1:8000/api/expedientes/proveedores/',
+                '/api/expedientes/proveedores/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -455,7 +456,7 @@ function Proveedores() {
             }
 
             await axios.patch(
-                `http://127.0.0.1:8000/api/expedientes/proveedores/${proveedorEditando.id}/editar/`,
+                `/api/expedientes/proveedores/${proveedorEditando.id}/editar/`,
                 datos,
                 {
                     headers: {
@@ -564,7 +565,7 @@ function Proveedores() {
             const token = localStorage.getItem("access");
 
             await axios.delete(
-                `http://127.0.0.1:8000/api/expedientes/proveedores/${proveedorEliminando.id}/eliminar/`,
+                `/api/expedientes/proveedores/${proveedorEliminando.id}/eliminar/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -682,7 +683,7 @@ function Proveedores() {
             }
 
             await axios.post(
-                'http://127.0.0.1:8000/api/expedientes/proveedores/crear/',
+                '/api/expedientes/proveedores/crear/',
                 datos,
                 {
                     headers: {
@@ -1114,7 +1115,7 @@ function Proveedores() {
                                             <div className="proveedor-foto">
                                                 {proveedor.foto ? (
                                                     <img
-                                                        src={`http://127.0.0.1:8000${proveedor.foto}`}
+                                                        src={`${API_URL}${proveedor.foto}`}                                                        
                                                         alt={proveedor.nombre}
                                                     />
                                                 ) : (

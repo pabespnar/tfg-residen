@@ -46,7 +46,7 @@ function CrearExpediente() {
                     await Promise.all([
 
                         axios.get(
-                            'http://127.0.0.1:8000/api/expedientes/proveedores/',
+                            '/api/expedientes/proveedores/',
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ function CrearExpediente() {
                         ),
 
                         axios.get(
-                            'http://127.0.0.1:8000/api/expedientes/suministrosdisponibles/',
+                            '/api/expedientes/suministrosdisponibles/',
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -500,7 +500,7 @@ function CrearExpediente() {
         try {
 
             await axios.post(
-                'http://127.0.0.1:8000/api/expedientes/crearexpediente/',
+                '/api/expedientes/crearexpediente/',
                 datos,
                 {
                     headers: {

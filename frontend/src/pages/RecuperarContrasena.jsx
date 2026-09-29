@@ -33,7 +33,7 @@ function RecuperarContrasena() {
         setEnviando(true)
 
         axios.post(
-            'http://127.0.0.1:8000/api/usuarios/recuperarcontrasena/',
+            '/api/usuarios/recuperarcontrasena/',
             { email }
         )
         .then(() => {

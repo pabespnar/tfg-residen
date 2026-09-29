@@ -321,7 +321,7 @@ function HistoricoResidentes() {
 
             try {
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/residentes/historicoresidentes/',
+                    '/api/residentes/historicoresidentes/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -479,8 +479,11 @@ function HistoricoResidentes() {
                     </p>
 
                     {estanciaMedia !== null && (
-                        <p>
-                            Estancia media: {formatearEstancia(estanciaMedia)}
+                        <p className="residentes-estancia-media">
+                            <span className="residentes-estancia-media-label">Estancia media por residente de</span>
+                            <span className="residentes-estancia-media-valor">
+                                {formatearEstancia(estanciaMedia)}
+                            </span>
                         </p>
                     )}
                 </div>

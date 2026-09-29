@@ -64,7 +64,7 @@ function Pedidos() {
                 const token = localStorage.getItem('access');
 
                 const respuestaPedidos = await axios.get(
-                    'http://127.0.0.1:8000/api/expedientes/pedidos/',
+                    '/api/expedientes/pedidos/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -73,7 +73,7 @@ function Pedidos() {
                 );
 
                 const respuestaCentro = await axios.get(
-                    'http://127.0.0.1:8000/api/centro/',
+                    '/api/centro/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -129,7 +129,7 @@ function Pedidos() {
             const token = localStorage.getItem('access');
 
             const respuestaSuministros = await axios.get(
-                'http://127.0.0.1:8000/api/expedientes/suministrosdisponibles/',
+                '/api/expedientes/suministrosdisponibles/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -138,7 +138,7 @@ function Pedidos() {
             );
 
             const respuestaProveedores = await axios.get(
-                'http://127.0.0.1:8000/api/expedientes/proveedores/',
+                '/api/expedientes/proveedores/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -473,7 +473,7 @@ function Pedidos() {
             const token = localStorage.getItem('access');
 
             const respuesta = await axios.post(
-                'http://127.0.0.1:8000/api/expedientes/crearpedidogeneral/',
+                '/api/expedientes/crearpedidogeneral/',
                 {
                     nombre: nombrePedido.trim(),
                     proveedor: Number(proveedor),

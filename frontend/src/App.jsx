@@ -74,7 +74,7 @@ async function obtenerDatosUsuario() {
     try {
 
         const respuesta = await axios.get(
-            "http://127.0.0.1:8000/api/usuarios/datosperfil/",
+            "/api/usuarios/datosperfil/",
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

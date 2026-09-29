@@ -245,7 +245,7 @@ function Packs() {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/suministros/packs/',
+                '/api/suministros/packs/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -265,7 +265,7 @@ function Packs() {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/suministros/suministros/',
+                '/api/suministros/suministros/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -284,7 +284,7 @@ function Packs() {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/suministros/categorias/',
+                '/api/suministros/categorias/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -303,7 +303,7 @@ function Packs() {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/residentes/listaresidentes/',
+                '/api/residentes/listaresidentes/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -451,7 +451,7 @@ function Packs() {
 
         try {
             const response = await axios.post(
-                'http://127.0.0.1:8000/api/suministros/crearpack/',
+                '/api/suministros/crearpack/',
                 {
                     nombre: nombrePack.trim(),
                     descripcion: descripcionPack.trim()
@@ -469,7 +469,7 @@ function Packs() {
                 const contenido = contenidoPack[index]
 
                 await axios.post(
-                    'http://127.0.0.1:8000/api/suministros/crearcontenidopack/',
+                    '/api/suministros/crearcontenidopack/',
                     {
                         pack: packCreado.id,
                         suministro: contenido.suministro,
@@ -530,7 +530,7 @@ function Packs() {
 
         try {
             await axios.delete(
-                `http://127.0.0.1:8000/api/suministros/packs/${packSeleccionado.id}/eliminar/`,
+                `/api/suministros/packs/${packSeleccionado.id}/eliminar/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

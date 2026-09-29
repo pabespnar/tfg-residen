@@ -30,7 +30,7 @@ function Notificaciones() {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/evento/notificaciones/',
+                '/api/evento/notificaciones/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -134,7 +134,7 @@ function Notificaciones() {
     const marcarComoLeida = async (id) => {
         try {
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/evento/notificaciones/${id}/leida/`,
+                `/api/evento/notificaciones/${id}/leida/`,
                 {},
                 {
                     headers: {

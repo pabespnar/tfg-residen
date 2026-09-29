@@ -39,7 +39,7 @@ function DashboardAlmacen() {
                 const token = localStorage.getItem('access');
 
                 const respuesta = await axios.get(
-                    'http://127.0.0.1:8000/api/dashboards/almacen/',
+                    '/api/dashboards/almacen/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

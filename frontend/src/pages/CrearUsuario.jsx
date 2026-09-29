@@ -133,7 +133,7 @@ function CrearUsuario() {
         setGuardando(true)
 
         axios.post(
-            'http://127.0.0.1:8000/api/usuarios/crearusuario/',
+            '/api/usuarios/crearusuario/',
             datos,
             {
                 headers: {

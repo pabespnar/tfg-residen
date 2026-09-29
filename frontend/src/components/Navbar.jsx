@@ -3,6 +3,7 @@ import fotoperfil from '../assets/fotoperfil_placeholder.png'
 import logocentro from '../assets/logo_placeholder.png'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { API_URL } from '../config'
 import logoSinTexto from '../assets/logoSinTexto.png'
 
 function Navbar() {
@@ -13,7 +14,7 @@ function Navbar() {
     useEffect(() => {
         const token = localStorage.getItem('access')
 
-        axios.get('http://127.0.0.1:8000/api/usuarios/datosperfil/', {
+        axios.get('/api/usuarios/datosperfil/', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -25,7 +26,7 @@ function Navbar() {
             console.error('Error al obtener el perfil:', error)
         })
 
-        axios.get('http://127.0.0.1:8000/api/centro/', {
+        axios.get('/api/centro/', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -68,8 +69,8 @@ function Navbar() {
                     <img
                         src={
                             centro?.logo
-                                ? `http://127.0.0.1:8000${centro.logo}`
-                                : logoSinTexto
+                            ? `${API_URL}${centro.logo}`
+                            : logoSinTexto
                         }
                         alt="Logo del centro"
                         className="foto"

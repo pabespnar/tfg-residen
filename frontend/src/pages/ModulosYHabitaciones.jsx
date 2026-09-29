@@ -111,7 +111,7 @@ const ModulosYHabitaciones = () => {
                 const token = localStorage.getItem("access");
 
                 const respuesta = await axios.get(
-                    "http://127.0.0.1:8000/api/modulos/listadomodulos/",
+                    "/api/modulos/listadomodulos/",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -142,7 +142,7 @@ const ModulosYHabitaciones = () => {
                 const token = localStorage.getItem("access");
 
                 const respuesta = await axios.get(
-                    `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/`,
+                    `/api/modulos/${moduloId}/habitaciones/`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -369,7 +369,7 @@ const ModulosYHabitaciones = () => {
             const token = localStorage.getItem("access");
 
             const respuesta = await axios.post(
-                "http://127.0.0.1:8000/api/modulos/crearmodulo/",
+                "/api/modulos/crearmodulo/",
                 {
                     nombre: nombre.trim(),
                     descripcion: descripcion,
@@ -506,7 +506,7 @@ const ModulosYHabitaciones = () => {
             const token = localStorage.getItem("access");
 
             const respuesta = await axios.put(
-                `http://127.0.0.1:8000/api/modulos/editarmodulo/${moduloEditando.id}/`,
+                `/api/modulos/editarmodulo/${moduloEditando.id}/`,
                 {
                     nombre: nombreEditar.trim(),
                     descripcion: descripcionEditar,
@@ -600,7 +600,7 @@ const ModulosYHabitaciones = () => {
             const token = localStorage.getItem("access");
 
             await axios.delete(
-                `http://127.0.0.1:8000/api/modulos/eliminarmodulo/${moduloEliminando.id}/`,
+                `/api/modulos/eliminarmodulo/${moduloEliminando.id}/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -729,7 +729,7 @@ const ModulosYHabitaciones = () => {
             const token = localStorage.getItem("access");
 
             const respuesta = await axios.post(
-                `http://127.0.0.1:8000/api/modulos/${moduloHabitacion.id}/habitaciones/crear/`,
+                `/api/modulos/${moduloHabitacion.id}/habitaciones/crear/`,
                 {
                     nombre: nombreHabitacion.trim(),
                     info: infoHabitacion,
@@ -882,7 +882,7 @@ const ModulosYHabitaciones = () => {
             const token = localStorage.getItem("access");
 
             const respuesta = await axios.put(
-                `http://127.0.0.1:8000/api/modulos/${habitacionEditando.modulo}/habitaciones/${habitacionEditando.id}/editar/`,
+                `/api/modulos/${habitacionEditando.modulo}/habitaciones/${habitacionEditando.id}/editar/`,
                 {
                     nombre: nombreHabitacionEditar.trim(),
                     info: infoHabitacionEditar,
@@ -985,7 +985,7 @@ const ModulosYHabitaciones = () => {
             const token = localStorage.getItem("access");
 
             await axios.delete(
-                `http://127.0.0.1:8000/api/modulos/${habitacionEliminando.modulo}/habitaciones/${habitacionEliminando.id}/eliminar/`,
+                `/api/modulos/${habitacionEliminando.modulo}/habitaciones/${habitacionEliminando.id}/eliminar/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

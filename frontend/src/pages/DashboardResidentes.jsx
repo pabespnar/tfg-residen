@@ -31,7 +31,7 @@ function DashboardResidentes() {
                 const token = localStorage.getItem('access')
 
                 const respuesta = await axios.get(
-                    'http://127.0.0.1:8000/api/dashboards/residentes/',
+                    '/api/dashboards/residentes/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

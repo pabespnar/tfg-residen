@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import './Admin.css'
+import { API_URL } from '../config'
 
 function Admin() {
 
@@ -22,7 +23,7 @@ function Admin() {
             titulo: 'Administración total',
             descripcion:
                 'Accede al panel de administración desde la propia base de datos.',
-            accion: () => window.open('http://127.0.0.1:8000/admin/', '_blank'),
+            accion: () => window.open(`${API_URL}/admin/`, '_blank'),
         },
     ]
 

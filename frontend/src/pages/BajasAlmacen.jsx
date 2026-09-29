@@ -45,7 +45,7 @@ function BajasAlmacen() {
             try {
 
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/almacen/listabajas/',
+                    '/api/almacen/listabajas/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

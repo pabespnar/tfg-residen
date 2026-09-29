@@ -18,7 +18,7 @@ function VerPedido() {
         const token = localStorage.getItem('access')
 
         axios.get(
-            `http://127.0.0.1:8000/api/expedientes/pedidos/${id}/`,
+            `/api/expedientes/pedidos/${id}/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

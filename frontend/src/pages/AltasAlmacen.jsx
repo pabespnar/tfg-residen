@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AltasAlmacen.css'
+import { API_URL } from '../config'
 import { useNavigate } from 'react-router-dom'
 import { FaSearch, FaFilter } from 'react-icons/fa'
 
@@ -10,7 +11,6 @@ function AltasAlmacen() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [altaSeleccionada, setAltaSeleccionada] = useState(null)
-    const [mostrarAlbaran, setMostrarAlbaran] = useState(false)
     const [paginaAltas, setPaginaAltas] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('fecha_desc')
@@ -31,7 +31,7 @@ function AltasAlmacen() {
             try {
 
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/almacen/listaltas/',
+                    '/api/almacen/listaltas/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -65,7 +65,6 @@ function AltasAlmacen() {
 
     const cerrarModal = () => {
         setAltaSeleccionada(null)
-        setMostrarAlbaran(false)
     }
 
     const obtenerUrlAlbaran = () => {
@@ -76,8 +75,8 @@ function AltasAlmacen() {
 
         return altaSeleccionada.factura_albaran.startsWith('http')
             ? altaSeleccionada.factura_albaran
-            : `http://127.0.0.1:8000${altaSeleccionada.factura_albaran}`
-    }
+            : `${API_URL}${altaSeleccionada.factura_albaran}`
+        }
 
     const normalizarTexto = (texto) =>
         texto
@@ -516,7 +515,6 @@ function AltasAlmacen() {
                                                 key={alta.id}
                                                 onClick={() => {
                                                     setAltaSeleccionada(alta)
-                                                    setMostrarAlbaran(false)
                                                 }}
                                                 style={{
                                                     cursor: 'pointer'
@@ -649,34 +647,19 @@ function AltasAlmacen() {
 
                             <div className="crear-modulo-campo">
 
-                                <button
-                                    type="button"
+                                <a
+                                    href={obtenerUrlAlbaran()}
+                                    target="_blank"
+                                    rel="noreferrer"
                                     className="albaran-boton"
-                                    onClick={() => {
-                                        setMostrarAlbaran(
-                                            !mostrarAlbaran
-                                        )
-                                    }}
                                 >
-                                    {mostrarAlbaran
-                                        ? 'Ocultar albarán'
-                                        : 'Ver albarán'}
-                                </button>
-
-                                {mostrarAlbaran && (
-
-                                    <img
-                                        src={obtenerUrlAlbaran()}
-                                        alt="Albarán"
-                                        className="albaran-imagen"
-                                    />
-
-                                )}
+                                    Ver albarán
+                                </a>
 
                             </div>
 
                         )}
-
+                        
                         <div className="crear-modulo-botones">
 
                             <button
