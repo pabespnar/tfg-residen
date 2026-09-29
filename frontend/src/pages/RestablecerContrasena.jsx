@@ -39,7 +39,7 @@ function RestablecerContrasena() {
         setEnviando(true)
 
         axios.post(
-            `http://127.0.0.1:8000/api/usuarios/restablecercontrasena/${uid}/${token}/`,
+            `/api/usuarios/restablecercontrasena/${uid}/${token}/`,
             {
                 nueva_contrasena: nuevaContrasena,
             }

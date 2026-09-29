@@ -320,7 +320,7 @@ function SuministrosAdministracion() {
             const token = localStorage.getItem('access')
 
             const respuesta = await axios.get(
-                'http://127.0.0.1:8000/api/suministros/suministros/',
+                '/api/suministros/suministros/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -374,7 +374,7 @@ function SuministrosAdministracion() {
             const token = localStorage.getItem('access')
 
             await axios.post(
-                'http://127.0.0.1:8000/api/suministros/crearsuministro/',
+                '/api/suministros/crearsuministro/',
                 {
                     nombre: nombreCrearSuministro,
                     unidad: unidadCrearSuministro,
@@ -453,7 +453,7 @@ function SuministrosAdministracion() {
             const token = localStorage.getItem('access')
 
             await axios.delete(
-                `http://127.0.0.1:8000/api/suministros/${suministroEliminar.id}/eliminar/`,
+                `/api/suministros/${suministroEliminar.id}/eliminar/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

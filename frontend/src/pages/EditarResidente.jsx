@@ -44,7 +44,7 @@ function EditarResidente() {
                 const [residenteResponse, modulosResponse] =
                     await Promise.all([
                         axios.get(
-                            `http://127.0.0.1:8000/api/residentes/${id}/`,
+                            `/api/residentes/${id}/`,
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -52,7 +52,7 @@ function EditarResidente() {
                             }
                         ),
                         axios.get(
-                            'http://127.0.0.1:8000/api/modulos/listadomodulos/',
+                            '/api/modulos/listadomodulos/',
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ function EditarResidente() {
                     for (const modulo of modulosResponse.data) {
 
                         const habitacionesResponse = await axios.get(
-                            `http://127.0.0.1:8000/api/modulos/${modulo.id}/habitaciones/`,
+                            `/api/modulos/${modulo.id}/habitaciones/`,
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -176,7 +176,7 @@ function EditarResidente() {
         try {
 
             const response = await axios.get(
-                `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/`,
+                `/api/modulos/${moduloId}/habitaciones/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -332,7 +332,7 @@ function EditarResidente() {
         try {
 
             await axios.patch(
-                `http://127.0.0.1:8000/api/residentes/${id}/editar/`,
+                `/api/residentes/${id}/editar/`,
                 datos,
                 {
                     headers: {

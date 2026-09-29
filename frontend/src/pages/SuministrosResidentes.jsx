@@ -36,7 +36,7 @@ function SuministrosResidentes() {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/suministros/packs/',
+                '/api/suministros/packs/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -58,7 +58,7 @@ function SuministrosResidentes() {
             const [residentesActivos, residentesHistorico] =
                 await Promise.all([
                     axios.get(
-                        'http://127.0.0.1:8000/api/residentes/listaresidentes/',
+                        '/api/residentes/listaresidentes/',
                         {
                             headers: {
                                 Authorization: `Bearer ${token}`
@@ -66,7 +66,7 @@ function SuministrosResidentes() {
                         }
                     ),
                     axios.get(
-                        'http://127.0.0.1:8000/api/residentes/historicoresidentes/',
+                        '/api/residentes/historicoresidentes/',
                         {
                             headers: {
                                 Authorization: `Bearer ${token}`

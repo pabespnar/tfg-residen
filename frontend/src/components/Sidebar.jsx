@@ -17,7 +17,7 @@ function Sidebar({ setAutenticado, rol }) {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/evento/notificaciones/',
+                '/api/evento/notificaciones/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -44,7 +44,7 @@ function Sidebar({ setAutenticado, rol }) {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/usuarios/datosperfil/',
+                '/api/usuarios/datosperfil/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

@@ -41,7 +41,7 @@ function CrearResidente() {
             try {
 
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/modulos/listadomodulos/',
+                    '/api/modulos/listadomodulos/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -108,7 +108,7 @@ function CrearResidente() {
         try {
 
             const response = await axios.get(
-                `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/`,
+                `/api/modulos/${moduloId}/habitaciones/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -272,7 +272,7 @@ function CrearResidente() {
         try {
 
             await axios.post(
-                'http://127.0.0.1:8000/api/residentes/crearresidente/',
+                '/api/residentes/crearresidente/',
                 datos,
                 {
                     headers: {

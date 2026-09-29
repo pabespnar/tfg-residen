@@ -55,7 +55,7 @@ function Almacen() {
             const token = localStorage.getItem('access')
 
             const responseSuministros = await axios.get(
-                'http://127.0.0.1:8000/api/suministros/suministros',
+                '/api/suministros/suministros',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -66,7 +66,7 @@ function Almacen() {
             console.log('SUMINISTROS:', responseSuministros.data)
 
             const responseCategorias = await axios.get(
-                'http://127.0.0.1:8000/api/suministros/categorias/',
+                '/api/suministros/categorias/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -329,7 +329,7 @@ function Almacen() {
                 )
 
             await axios.post(
-                'http://127.0.0.1:8000/api/almacen/crearbajaservicio/',
+                '/api/almacen/crearbajaservicio/',
                 {
                     suministros: datosSuministros,
                     servicio: servicio,
@@ -391,7 +391,7 @@ function Almacen() {
             const token = localStorage.getItem('access')
 
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/expedientes/pedidosrecibidos/',
+                '/api/expedientes/pedidosrecibidos/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -442,7 +442,7 @@ function Almacen() {
             const token = localStorage.getItem('access')
 
             const response = await axios.get(
-                `http://127.0.0.1:8000/api/expedientes/pedidos/${valor}/detalles/`,
+                `/api/expedientes/pedidos/${valor}/detalles/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -581,7 +581,7 @@ function Almacen() {
             }
 
             await axios.post(
-                'http://127.0.0.1:8000/api/almacen/crearalta/',
+                '/api/almacen/crearalta/',
                 formData,
                 {
                     headers: {

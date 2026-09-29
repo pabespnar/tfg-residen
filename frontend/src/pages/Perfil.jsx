@@ -11,7 +11,7 @@ function Perfil() {
     useEffect(() => {
         const token = localStorage.getItem('access')
 
-        axios.get('http://127.0.0.1:8000/api/usuarios/datosperfil/', {
+        axios.get('/api/usuarios/datosperfil/', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

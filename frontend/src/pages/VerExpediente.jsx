@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './VerExpediente.css'
+import { API_URL } from '../config'
 import { useNavigate, useParams } from 'react-router-dom'
 
 function VerExpediente() {
@@ -31,7 +32,7 @@ function VerExpediente() {
         const token = localStorage.getItem('access')
 
         axios.get(
-            `http://127.0.0.1:8000/api/expedientes/expedientes/${id}/`,
+            `/api/expedientes/expedientes/${id}/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -143,7 +144,7 @@ function VerExpediente() {
         const token = localStorage.getItem('access')
 
         axios.post(
-            `http://127.0.0.1:8000/api/expedientes/expedientes/${id}/crearpedidoexpediente/`,
+            `/api/expedientes/expedientes/${id}/crearpedidoexpediente/`,
             {
                 nombre: nombrePedido,
                 cantidades: cantidades
@@ -159,7 +160,7 @@ function VerExpediente() {
             cerrarModalPedido()
 
             axios.get(
-                `http://127.0.0.1:8000/api/expedientes/expedientes/${id}/`,
+                `/api/expedientes/expedientes/${id}/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -632,7 +633,7 @@ function VerExpediente() {
                             </span>
 
                             <a
-                                href={`http://127.0.0.1:8000${expediente.contrato}`}
+                                href={`${API_URL}${expediente.contrato}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="ver-expediente-boton-contrato"

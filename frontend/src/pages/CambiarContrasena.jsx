@@ -66,7 +66,7 @@ function CambiarContrasena() {
         setGuardando(true)
 
         axios.patch(
-            'http://127.0.0.1:8000/api/usuarios/cambiarcontrasena/',
+            '/api/usuarios/cambiarcontrasena/',
             {
                 contrasena_actual: contrasenaActual,
                 nueva_contrasena: nuevaContrasena,

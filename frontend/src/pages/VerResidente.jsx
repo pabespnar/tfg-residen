@@ -26,7 +26,7 @@ function VerResidente() {
         const token = localStorage.getItem('access')
 
         axios.get(
-            `http://127.0.0.1:8000/api/residentes/${id}/`,
+            `/api/residentes/${id}/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -56,7 +56,7 @@ function VerResidente() {
         const token = localStorage.getItem('access')
 
         axios.get(
-            'http://127.0.0.1:8000/api/suministros/packs/',
+            '/api/suministros/packs/',
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ function VerResidente() {
 
         try {
             const response = await axios.get(
-                'http://127.0.0.1:8000/api/modulos/listadomodulos/',
+                '/api/modulos/listadomodulos/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -150,7 +150,7 @@ function VerResidente() {
 
         try {
             const response = await axios.get(
-                `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/`,
+                `/api/modulos/${moduloId}/habitaciones/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -193,7 +193,7 @@ function VerResidente() {
 
         try {
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/residentes/${id}/baja/`,
+                `/api/residentes/${id}/baja/`,
                 {},
                 {
                     headers: {
@@ -234,7 +234,7 @@ function VerResidente() {
 
         try {
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/residentes/${id}/alta/`,
+                `/api/residentes/${id}/alta/`,
                 {
                     habitacion: habitacionSeleccionada,
                 },

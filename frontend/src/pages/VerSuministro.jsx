@@ -27,7 +27,7 @@ function VerSuministro() {
         const token = localStorage.getItem('access')
 
         axios.get(
-            `http://127.0.0.1:8000/api/suministros/${id}/`,
+            `/api/suministros/${id}/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -64,7 +64,7 @@ function VerSuministro() {
             try {
 
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/suministros/categorias/',
+                    '/api/suministros/categorias/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -179,7 +179,7 @@ function VerSuministro() {
         try {
 
             const response = await axios.patch(
-                `http://127.0.0.1:8000/api/suministros/${id}/editar/`,
+                `/api/suministros/${id}/editar/`,
                 {
                     categoria: categoriaEditar
                         ? Number(categoriaEditar)

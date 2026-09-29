@@ -47,7 +47,7 @@ function Expedientes() {
                 const token = localStorage.getItem('access');
 
                 const respuesta = await axios.get(
-                    'http://127.0.0.1:8000/api/expedientes/expedientes/',
+                    '/api/expedientes/expedientes/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

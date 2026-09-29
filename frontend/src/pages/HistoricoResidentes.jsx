@@ -321,7 +321,7 @@ function HistoricoResidentes() {
 
             try {
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/residentes/historicoresidentes/',
+                    '/api/residentes/historicoresidentes/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

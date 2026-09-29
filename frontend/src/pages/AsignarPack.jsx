@@ -119,7 +119,7 @@ function AsignarPack() {
                 const [residentesResponse, packsResponse, suministrosResponse] =
                     await Promise.all([
                         axios.get(
-                            `http://127.0.0.1:8000/api/residentes/listaresidentes/?pack_id=${packId}`,
+                            `/api/residentes/listaresidentes/?pack_id=${packId}`,
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -127,7 +127,7 @@ function AsignarPack() {
                             }
                         ),
                         axios.get(
-                            'http://127.0.0.1:8000/api/suministros/packs/',
+                            '/api/suministros/packs/',
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -135,7 +135,7 @@ function AsignarPack() {
                             }
                         ),
                         axios.get(
-                            'http://127.0.0.1:8000/api/suministros/suministros/',
+                            '/api/suministros/suministros/',
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`,
@@ -252,7 +252,7 @@ function AsignarPack() {
         try {
 
             await axios.post(
-                `http://127.0.0.1:8000/api/suministros/packs/${packId}/crearentrega/`,
+                `/api/suministros/packs/${packId}/crearentrega/`,
                 {
                     residentes: residentesSeleccionados,
                 },

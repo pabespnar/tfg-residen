@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './EditarCentro.css'
+import { API_URL } from '../config'
 import { useNavigate } from 'react-router-dom'
 
 function EditarCentro() {
@@ -25,7 +26,7 @@ function EditarCentro() {
         const token = localStorage.getItem('access')
 
         axios.get(
-            'http://127.0.0.1:8000/api/centro/',
+            '/api/centro/',
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -172,7 +173,7 @@ function EditarCentro() {
         setGuardando(true)
 
         axios.patch(
-            'http://127.0.0.1:8000/api/centro/',
+            '/api/centro/',
             datos,
             {
                 headers: {
@@ -240,8 +241,8 @@ function EditarCentro() {
                             src={
                                 logoActual.startsWith('http')
                                     ? logoActual
-                                    : `http://127.0.0.1:8000${logoActual}`
-                            }
+                                    : `${API_URL}${logoActual}`
+                                }
                             alt="Logo del centro"
                         />
                     ) : (

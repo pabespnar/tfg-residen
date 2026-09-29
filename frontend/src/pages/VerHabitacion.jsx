@@ -26,7 +26,7 @@ function VerHabitacion() {
         const token = localStorage.getItem('access')
 
         axios.get(
-            `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/${habitacionId}/`,
+            `/api/modulos/${moduloId}/habitaciones/${habitacionId}/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -120,7 +120,7 @@ function VerHabitacion() {
 
         try {
             const response = await axios.put(
-                `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/${habitacionId}/editar/`,
+                `/api/modulos/${moduloId}/habitaciones/${habitacionId}/editar/`,
                 {
                     nombre: nombreEditar.trim(),
                     info: infoEditar.trim(),
@@ -193,7 +193,7 @@ function VerHabitacion() {
 
         try {
             await axios.delete(
-                `http://127.0.0.1:8000/api/modulos/${moduloId}/habitaciones/${habitacionId}/eliminar/`,
+                `/api/modulos/${moduloId}/habitaciones/${habitacionId}/eliminar/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

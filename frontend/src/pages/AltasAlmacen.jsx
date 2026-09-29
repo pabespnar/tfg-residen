@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AltasAlmacen.css'
+import { API_URL } from '../config'
 import { useNavigate } from 'react-router-dom'
 import { FaSearch, FaFilter } from 'react-icons/fa'
 
@@ -30,7 +31,7 @@ function AltasAlmacen() {
             try {
 
                 const response = await axios.get(
-                    'http://127.0.0.1:8000/api/almacen/listaltas/',
+                    '/api/almacen/listaltas/',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -74,8 +75,8 @@ function AltasAlmacen() {
 
         return altaSeleccionada.factura_albaran.startsWith('http')
             ? altaSeleccionada.factura_albaran
-            : `http://127.0.0.1:8000${altaSeleccionada.factura_albaran}`
-    }
+            : `${API_URL}${altaSeleccionada.factura_albaran}`
+        }
 
     const normalizarTexto = (texto) =>
         texto

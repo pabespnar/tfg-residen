@@ -260,7 +260,7 @@ const Suministros = () => {
             const token = localStorage.getItem("access");
 
             const respuesta = await axios.get(
-                "http://127.0.0.1:8000/api/suministros/categorias/",
+                "/api/suministros/categorias/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -348,7 +348,7 @@ const Suministros = () => {
             const token = localStorage.getItem("access");
 
             await axios.delete(
-                `http://127.0.0.1:8000/api/suministros/categorias/${categoriaEliminando.id}/eliminar/`,
+                `/api/suministros/categorias/${categoriaEliminando.id}/eliminar/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -449,7 +449,7 @@ const Suministros = () => {
             const token = localStorage.getItem("access");
 
             await axios.patch(
-                `http://127.0.0.1:8000/api/suministros/${suministroEditando.id}/editar/`,
+                `/api/suministros/${suministroEditando.id}/editar/`,
                 {
                     categoria: categoriaEditar
                         ? Number(categoriaEditar)
@@ -536,7 +536,7 @@ const Suministros = () => {
             const token = localStorage.getItem("access");
 
             const respuesta = await axios.post(
-                "http://127.0.0.1:8000/api/suministros/crearcategoria/",
+                "/api/suministros/crearcategoria/",
                 {
                     nombre: nombreCategoria.trim(),
                     descripcion: descripcionCategoria.trim(),
