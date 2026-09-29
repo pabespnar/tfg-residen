@@ -1,0 +1,160 @@
+.editar-centro-container {
+    min-height: calc(100vh - 70px);
+    padding: 40px 60px;
+    background-color: #f5f7f6;
+}
+
+.editar-centro-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin: 0 auto 30px auto;
+}
+
+.editar-centro-avatar {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #1B5E20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.editar-centro-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.editar-centro-avatar span {
+    color: white;
+    font-size: 42px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.editar-centro-header-info h1 {
+    margin: 0 0 10px 0;
+    color: #1B5E20;
+    font-size: 32px;
+}
+
+.editar-centro-rol {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background-color: #1B5E20;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.editar-centro-card {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.editar-centro-card h2 {
+    margin: 0 0 25px 0;
+    color: #333;
+    font-size: 22px;
+    border-bottom: 2px solid #e8ece9;
+    padding-bottom: 15px;
+}
+
+.editar-centro-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.editar-centro-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f8faf9;
+}
+
+.editar-centro-field label {
+    font-size: 13px;
+    color: #777;
+    font-weight: 500;
+}
+
+.editar-centro-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #d9dfdb;
+    border-radius: 7px;
+    background-color: white;
+    color: #222;
+    font-size: 16px;
+    outline: none;
+}
+
+.editar-centro-field input:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.1);
+}
+
+.editar-centro-botones {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.editar-centro-boton {
+    display: block;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 7px;
+    background-color: #1B5E20;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.editar-centro-boton:hover {
+    background-color: #144a18;
+}
+
+.editar-centro-boton.cancelar {
+    background-color: #757575;
+}
+
+.editar-centro-boton.cancelar:hover {
+    background-color: #616161;
+}
+
+.editar-centro-mensaje {
+    margin-top: 20px;
+    text-align: center;
+    color: #1B5E20;
+    font-weight: 500;
+}
+
+.editar-centro-error {
+    margin-top: 5px;
+    color: #c62828;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.editar-centro-cargando {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+}

@@ -1,0 +1,367 @@
+.altas-container {
+    padding: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.altas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.altas-header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #1B5E20;
+}
+
+.altas-header p {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 15px;
+}
+
+.tabla-altas-container {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tabla-altas {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-altas thead {
+    background-color: #1B5E20;
+    color: white;
+}
+
+.tabla-altas th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tabla-altas td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e5e5;
+    color: #333;
+    font-size: 14px;
+}
+
+.tabla-altas tbody tr {
+    cursor: default;
+}
+
+.tabla-altas tbody tr:hover {
+    background-color: #f5f7f6;
+}
+
+.altas-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.altas-volver {
+    padding: 10px 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.altas-volver:hover {
+    background-color: #f5f5f5;
+}
+
+.altas-vacio {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    color: #666;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.altas-vacio p {
+    margin: 0;
+}
+
+.altas-error {
+    color: #c62828;
+    background-color: #ffebee;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.albaran-imagen {
+    display: block;
+    width: 100%;
+    max-width: 700px;
+    max-height: 500px;
+    object-fit: contain;
+    margin: 0 auto;
+}
+
+.albaran-boton {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: #1b5e20;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.albaran-boton:hover {
+    background-color: #144716;
+}
+
+.altas-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.altas-paginacion button {
+    padding: 8px 16px;
+    border: 1px solid #1B5E20;
+    border-radius: 6px;
+    background: white;
+    color: #1B5E20;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.altas-paginacion button:hover:not(:disabled) {
+    background: #1B5E20;
+    color: white;
+}
+
+.altas-paginacion button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.altas-paginacion span {
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    text-align: center;
+}
+
+.altas-controles {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.altas-controles-principales {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.altas-buscador {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.altas-buscador-input {
+    width: 320px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    box-sizing: border-box;
+    transition: 0.2s ease;
+}
+
+.altas-buscador-input:focus-within {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.altas-buscador-icono {
+    color: #888;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.altas-buscador-input input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 10px 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.altas-buscador-input input::placeholder {
+    color: #888;
+}
+
+.altas-boton-filtros {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.altas-boton-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
+}
+
+.altas-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.altas-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.altas-ordenacion select {
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.altas-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.altas-panel-filtros {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.altas-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.altas-filtro label {
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.altas-filtro select,
+.altas-filtro input {
+    min-width: 150px;
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.altas-filtro select {
+    min-width: 180px;
+    cursor: pointer;
+}
+
+.altas-filtro select:focus,
+.altas-filtro input:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.altas-filtro-rango {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.altas-filtro-rango input {
+    width: 120px;
+    min-width: 120px;
+}
+
+.altas-filtro-rango span {
+    color: #555;
+    font-size: 14px;
+}
+
+.altas-restablecer-filtros {
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: white;
+    color: #555;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.altas-restablecer-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
+}

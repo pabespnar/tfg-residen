@@ -1,0 +1,118 @@
+.restablecer-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1B5E20;
+}
+
+.restablecer-card {
+    width: 400px;
+    padding: 40px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.restablecer-card h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 26px;
+    text-align: center;
+}
+
+.restablecer-descripcion {
+    margin-top: 6px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #999;
+    font-size: 16px;
+}
+
+.restablecer-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.restablecer-field label {
+    margin-bottom: 7px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.restablecer-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.restablecer-input input {
+    width: 100%;
+    padding: 12px 45px 12px 12px;
+    border: 1px solid #d5d9d6;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.restablecer-input input:focus {
+    border-color: #1B5E20;
+}
+
+.restablecer-ojo {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #555;
+    font-size: 13px;
+}
+
+.restablecer-error {
+    margin: 10px 0;
+    color: #c62828;
+    font-size: 14px;
+    text-align: center;
+}
+
+.restablecer-mensaje {
+    margin: 10px 0;
+    color: #1B5E20;
+    font-size: 14px;
+    text-align: center;
+}
+
+.restablecer-botones {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.restablecer-cancelar,
+.restablecer-confirmar {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.restablecer-confirmar {
+    background-color: #1B5E20;
+    border: none;
+    color: white;
+}
+
+.restablecer-confirmar:hover {
+    background-color: #2E7D32;
+}
+
+.restablecer-confirmar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

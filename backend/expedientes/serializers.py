@@ -1,0 +1,401 @@
+from rest_framework import serializers
+from django.utils import timezone
+from django.db.models import Sum, F
+
+from .models import Proveedor, Expediente, DetalleExpediente, Pedido, DetallePedido
+
+
+class ExpedienteSerializer(serializers.ModelSerializer):
+
+    proveedor_nombre = serializers.CharField(
+        source='proveedor.nombre',
+        read_only=True
+    )
+
+    activo = serializers.SerializerMethodField()
+
+    suministros = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Expediente
+
+        fields = [
+            'id',
+            'nombre',
+            'detalles',
+            'activo',
+            'fecha_inicio',
+            'fecha_final',
+            'contrato',
+            'proveedor',
+            'proveedor_nombre',
+            'presupuesto',
+            'presupuesto_restante',
+            'suministros',
+        ]
+
+        read_only_fields = [
+            'id',
+            'proveedor_nombre',
+            'presupuesto_restante',
+            'suministros',
+        ]
+
+    def get_activo(self, obj):
+        hoy = timezone.now().date()
+
+        return obj.fecha_inicio <= hoy <= obj.fecha_final
+
+    def get_suministros(self, obj):
+        suministros = {}
+
+        for detalle in obj.detalles_expediente.select_related(
+            'suministro__categoria'
+        ).all():
+
+            suministro = detalle.suministro
+
+            if suministro.id not in suministros:
+                suministros[suministro.id] = {
+                    'id': suministro.id,
+                    'nombre': suministro.nombre,
+                    'categoria_id': (
+                        suministro.categoria.id
+                        if suministro.categoria
+                        else None
+                    ),
+                    'categoria_nombre': (
+                        suministro.categoria.nombre
+                        if suministro.categoria
+                        else 'Sin asignar'
+                    )
+                }
+
+        return list(suministros.values())
+
+    def validate_nombre(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "El nombre no puede estar vacío."
+            )
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                "El nombre no puede superar los 50 caracteres."
+            )
+
+        return value
+
+    def validate_detalles(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "Los detalles no pueden estar vacíos."
+            )
+        if len(value) > 200:
+            raise serializers.ValidationError(
+                "Los detalles no pueden superar los 200 caracteres."
+            )
+
+        return value
+
+    def validate(self, data):
+        fecha_inicio = data.get('fecha_inicio')
+        fecha_final = data.get('fecha_final')
+        presupuesto = data.get('presupuesto')
+
+        if fecha_inicio and fecha_final and fecha_final < fecha_inicio:
+            raise serializers.ValidationError({
+                'fecha_final':
+                    'La fecha final no puede ser anterior a la fecha de inicio.'
+            })
+
+        if presupuesto is not None and presupuesto < 0:
+            raise serializers.ValidationError({
+                'presupuesto':
+                    'El presupuesto no puede ser negativo.'
+            })
+
+        return data
+
+
+class ProveedorSerializer(serializers.ModelSerializer):
+
+    expedientes = ExpedienteSerializer(
+        many=True,
+        read_only=True
+    )
+
+    importe = serializers.SerializerMethodField()
+
+    suministros_pedidos = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Proveedor
+
+        fields = [
+            'id',
+            'nombre',
+            'cif',
+            'correo',
+            'foto',
+            'importe',
+            'expedientes',
+            'suministros_pedidos'
+        ]
+
+        read_only_fields = [
+            'id',
+            'importe',
+            'expedientes',
+            'suministros_pedidos',
+        ]
+
+    def get_importe(self, obj):
+        return obj.pedidos.aggregate(
+            total=Sum(
+                F('detalles_pedido__cantidad') *
+                F('detalles_pedido__precio_unidad')
+            )
+        )['total'] or 0
+
+    def get_suministros_pedidos(self, obj):
+        suministros = {}
+
+        for pedido in obj.pedidos.all():
+            for detalle in pedido.detalles_pedido.select_related(
+                'suministro__categoria'
+            ).all():
+                suministro = detalle.suministro
+
+                if suministro.id not in suministros:
+                    suministros[suministro.id] = {
+                        'id': suministro.id,
+                        'nombre': suministro.nombre,
+                        'categoria_id': (
+                            suministro.categoria.id
+                            if suministro.categoria
+                            else None
+                        ),
+                        'categoria_nombre': (
+                            suministro.categoria.nombre
+                            if suministro.categoria
+                            else 'Sin asignar'
+                        )
+                    }
+
+        return list(suministros.values())
+
+
+class DetalleExpedienteSerializer(serializers.ModelSerializer):
+
+    suministro_nombre = serializers.CharField(
+        source='suministro.nombre',
+        read_only=True
+    )
+
+    suministro_unidad = serializers.CharField(
+        source='suministro.unidad',
+        read_only=True
+    )
+
+    class Meta:
+        model = DetalleExpediente
+
+        fields = [
+            'id',
+            'expediente',
+            'suministro',
+            'suministro_nombre',
+            'suministro_unidad',
+            'precio_unidad',
+        ]
+
+        read_only_fields = [
+            'id',
+            'suministro_nombre',
+            'suministro_unidad',
+        ]
+
+    def validate_precio_unidad(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "El precio por unidad no puede ser negativo."
+            )
+
+        return value
+
+
+class PedidoSerializer(serializers.ModelSerializer):
+
+    expediente_nombre = serializers.CharField(
+        source='expediente.nombre',
+        read_only=True
+    )
+
+    proveedor_nombre = serializers.CharField(
+        source='proveedor.nombre',
+        read_only=True
+    )
+
+    correcto = serializers.SerializerMethodField()
+
+    suministros = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Pedido
+
+        fields = [
+            'id',
+            'nombre',
+            'tipo_pedido',
+            'expediente',
+            'expediente_nombre',
+            'proveedor',
+            'proveedor_nombre',
+            'fecha',
+            'recibido',
+            'correcto',
+            'suministros',
+        ]
+
+        read_only_fields = [
+            'id',
+            'fecha',
+            'expediente_nombre',
+            'proveedor_nombre',
+            'suministros',
+        ]
+
+    def get_suministros(self, obj):
+        suministros = {}
+
+        for detalle in obj.detalles_pedido.select_related(
+            'suministro__categoria'
+        ).all():
+
+            suministro = detalle.suministro
+
+            if suministro.id not in suministros:
+                suministros[suministro.id] = {
+                    'id': suministro.id,
+                    'nombre': suministro.nombre,
+                    'categoria_id': (
+                        suministro.categoria.id
+                        if suministro.categoria
+                        else None
+                    ),
+                    'categoria_nombre': (
+                        suministro.categoria.nombre
+                        if suministro.categoria
+                        else 'Sin asignar'
+                    )
+                }
+
+        return list(suministros.values())
+
+    def get_correcto(self, obj):
+
+        if not obj.recibido:
+            return None
+
+        cantidades_solicitadas = {}
+
+        for detalle in obj.detalles_pedido.all():
+            cantidades_solicitadas[detalle.suministro_id] = (
+                cantidades_solicitadas.get(
+                    detalle.suministro_id,
+                    0
+                ) + detalle.cantidad
+            )
+
+        cantidades_recibidas = {}
+
+        altas = obj.altas.values(
+            'suministro_id'
+        ).annotate(
+            total=Sum('cantidad')
+        )
+
+        for alta in altas:
+            cantidades_recibidas[alta['suministro_id']] = alta['total']
+
+        return cantidades_solicitadas == cantidades_recibidas
+
+    def validate_nombre(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "El nombre del pedido no puede estar vacío."
+            )
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                "El nombre del pedido no puede superar los 50 caracteres."
+            )
+
+        return value
+
+    def validate(self, value):
+        tipo_pedido = value.get('tipo_pedido')
+        expediente = value.get('expediente')
+
+        if tipo_pedido == Pedido.TipoPedido.EXPEDIENTE:
+            if not expediente:
+                raise serializers.ValidationError({
+                    'expediente':
+                    'Un pedido con expediente debe estar asociado a un expediente.'
+                })
+
+        if tipo_pedido == Pedido.TipoPedido.GENERAL:
+            if expediente:
+                raise serializers.ValidationError({
+                    'expediente':
+                    'Un gasto general no puede estar asociado a un expediente.'
+                })
+
+        return value
+
+
+class DetallePedidoSerializer(serializers.ModelSerializer):
+
+    suministro_nombre = serializers.CharField(
+        source='suministro.nombre',
+        read_only=True
+    )
+
+    suministro_unidad = serializers.CharField(
+        source='suministro.unidad',
+        read_only=True
+    )
+
+    class Meta:
+        model = DetallePedido
+
+        fields = [
+            'id',
+            'pedido',
+            'suministro',
+            'suministro_nombre',
+            'suministro_unidad',
+            'cantidad',
+            'precio_unidad',
+        ]
+
+        read_only_fields = [
+            'id',
+            'suministro_nombre',
+            'suministro_unidad',
+        ]
+
+    def validate_cantidad(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "La cantidad debe ser un número positivo."
+            )
+
+        return value
+
+    def validate_precio_unidad(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "El precio por unidad no puede ser negativo."
+            )
+
+        return value

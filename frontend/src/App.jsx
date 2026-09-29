@@ -1,44 +1,466 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
+import './App.css'
+import Inicio from "./pages/Inicio";
+import Layout from './Layout'
+import Perfil from './pages/Perfil'
+import Login from './pages/Login'
+import EditarPerfil from './pages/EditarPerfil'
+import CambiarContrasena from './pages/CambiarContrasena'
+import RecuperarContrasena from './pages/RecuperarContrasena'
+import RestablecerContrasena from './pages/RestablecerContrasena'
+import ModulosYHabitaciones from "./pages/ModulosYHabitaciones";
+import Residentes from "./pages/Residentes";
+import CrearResidente from "./pages/CrearResidente";
+import VerResidente from "./pages/VerResidente";
+import EditarResidente from "./pages/EditarResidente";
+import VerHabitacion from "./pages/VerHabitacion";
+import VerHistoricoResidentes from "./pages/HistoricoResidentes";
+import DashboardResidentes from "./pages/DashboardResidentes";
+import Suministros from "./pages/Suministros";
+import Packs from "./pages/Packs";
+import AsignarPack from "./pages/AsignarPack";
+import Almacen from './pages/Almacen';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import BajasAlmacen from './pages/BajasAlmacen';
+import AltasAlmacen from './pages/AltasAlmacen';
+import VerSuministro from './pages/VerSuministro';
+import DashboardAlmacen from "./pages/DashboardAlmacen";
+import Expedientes from "./pages/Expedientes";
+import VerExpediente from "./pages/VerExpediente";
+import Pedidos from "./pages/Pedidos"
+import VerPedido from "./pages/VerPedido"
+import Proveedores from "./pages/Proveedores"
+import CrearExpediente from "./pages/CrearExpediente"
+import SuministrosAdministracion from "./pages/SuministrosAdministracion"
+import DashboardAdministracion from './pages/DashboardAdministracion';
+import SuministrosResidentes from "./pages/SuministrosResidentes"
+import Historial from "./pages/Historial"
+import Notificaciones from "./pages/Notificaciones"
+import Admin from './pages/Admin'
+import CrearUsuario from './pages/CrearUsuario'
+import EditarCentro from './pages/EditarCentro'
+
+
+function tokenValido() {
+
+    const token = localStorage.getItem('access')
+
+    if (!token) {
+        return false
+    }
+
+    try {
+
+        const payload = JSON.parse(atob(token.split('.')[1]))
+
+        return payload.exp > Date.now() / 1000
+
+    } catch {
+
+        return false
+
+    }
+}
+
+async function obtenerDatosUsuario() {
+
+    const token = localStorage.getItem('access')
+
+    if (!token) {
+        return null
+    }
+
+    try {
+
+        const respuesta = await axios.get(
+            "/api/usuarios/datosperfil/",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
+
+        return respuesta.data
+
+    } catch (error) {
+
+        console.error(
+            "Error al obtener los datos del usuario:",
+            error
+        )
+
+        return null
+
+    }
+}
 
 function App() {
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
 
-  const testConnection = async () => {
-    try {
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/token/',
-        {
-          username: 'avexp',
-          password: 'abcd',
+    const [autenticado, setAutenticado] = useState(
+        tokenValido()
+    )
+
+    const [rol, setRol] = useState(null)
+    const [esSuper, setEsSuper] = useState(false)
+
+    useEffect(() => {
+
+        const cargarDatosUsuario = async () => {
+
+            if (!autenticado) {
+
+                setRol(null)
+                setEsSuper(false)
+                return
+
+            }
+
+            const datosUsuario = await obtenerDatosUsuario()
+
+            if (!datosUsuario) {
+
+                setRol(null)
+                setEsSuper(false)
+                return
+
+            }
+
+            setRol(datosUsuario.rol)
+
+            setEsSuper(
+                datosUsuario.is_staff &&
+                datosUsuario.is_superuser
+            )
+
         }
-      )
 
-      setMessage('¡Conexión con Django funcionando!')
-      setError('')
+        cargarDatosUsuario()
 
-      console.log('Access token:', response.data.access)
-      console.log('Refresh token:', response.data.refresh)
-    } catch (error) {
-      setError('No se ha podido conectar con el backend')
-      setMessage('')
-      console.error(error)
+    }, [autenticado])
+
+    useEffect(() => {
+
+        const token = localStorage.getItem('access')
+
+        if (!token) {
+            return
+        }
+
+        try {
+
+            const payload = JSON.parse(atob(token.split('.')[1]))
+            const tiempoExpiracion = payload.exp * 1000
+            const tiempoActual = Date.now()
+
+            const tiempoAviso = tiempoExpiracion - tiempoActual - 60000
+
+            const aviso = setTimeout(() => {
+
+                if (!sessionStorage.getItem('aviso_sesion_mostrado')) {
+
+                    alert(
+                        'Su sesión expirará en 1 minuto. Guarde su trabajo y reinicie la sesión en caso de continuar trabajando.'
+                    )
+
+                    sessionStorage.setItem(
+                        'aviso_sesion_mostrado',
+                        'true'
+                    )
+                }
+
+            }, Math.max(tiempoAviso, 0))
+
+            const expiracion = setTimeout(() => {
+
+                localStorage.removeItem('access')
+                localStorage.removeItem('refresh')
+
+                sessionStorage.removeItem('aviso_sesion_mostrado')
+
+                setRol(null)
+                setEsSuper(false)
+                setAutenticado(false)
+
+            }, Math.max(tiempoExpiracion - tiempoActual, 0))
+
+            return () => {
+                clearTimeout(aviso)
+                clearTimeout(expiracion)
+            }
+
+        } catch {
+
+            localStorage.removeItem('access')
+            localStorage.removeItem('refresh')
+            sessionStorage.removeItem('aviso_sesion_mostrado')
+
+            setRol(null)
+            setEsSuper(false)
+            setAutenticado(false)
+        }
+
+    }, [autenticado])
+
+    if (!autenticado) {
+
+        localStorage.removeItem('access')
+        localStorage.removeItem('refresh')
+
     }
-  }
 
-  return (
-    <div>
-      <h1>Prueba de conexión</h1>
+    return (
+        <Router>
 
-      <button onClick={testConnection}>
-        Conectar con Django
-      </button>
+            {!autenticado ? (
 
-      {message && <p>{message}</p>}
-      {error && <p>{error}</p>}
-    </div>
-  )
+                <Routes>
+
+                    <Route
+                        path="/login"
+                        element={
+                            <Login setAutenticado={setAutenticado} />
+                        }
+                    />
+
+                    <Route
+                        path="/recuperar-contrasena"
+                        element={<RecuperarContrasena />}
+                    />
+
+                    <Route
+                        path="/restablecer-contrasena/:uid/:token"
+                        element={<RestablecerContrasena />}
+                    />
+
+                    <Route
+                        path="*"
+                        element={
+                            <Navigate to="/login" replace />
+                        }
+                    />
+
+                </Routes>
+
+            ) : (
+
+                <Routes>
+
+                    <Route
+                        element={
+                            <Layout
+                                setAutenticado={setAutenticado}
+                                rol={rol}
+                            />
+                        }
+                    >
+
+                        <Route
+                            path="/"
+                            element={
+                                <Inicio rol={rol} />
+                            }
+                        />
+
+                        {esSuper && (
+                            <>
+                                <Route
+                                    path="/admin"
+                                    element={<Admin />}
+                                />
+
+                                <Route
+                                    path="/crear_usuario"
+                                    element={<CrearUsuario />}
+                                />
+
+                                <Route
+                                    path="/editar_centro"
+                                    element={<EditarCentro />}
+                                />
+                            </>
+                        )}
+
+                        <Route
+                            path="/perfil"
+                            element={<Perfil />}
+                        />
+
+                        <Route
+                            path="/editar-perfil"
+                            element={<EditarPerfil />}
+                        />
+
+                        <Route
+                            path="/cambiar-contrasena"
+                            element={<CambiarContrasena />}
+                        />
+
+                        <Route
+                            path="/historial"
+                            element={<Historial />}
+                        />
+
+                        <Route
+                            path="/notificaciones"
+                            element={<Notificaciones />}
+                        />
+
+                        {rol === "residentes" && (
+                            <>
+                                <Route
+                                    path="/modulos"
+                                    element={<ModulosYHabitaciones />}
+                                />
+
+                                <Route
+                                    path="/residentes"
+                                    element={<Residentes />}
+                                />
+
+                                <Route
+                                    path="/residentes/nuevo"
+                                    element={<CrearResidente />}
+                                />
+
+                                <Route
+                                    path="/residentes/:id"
+                                    element={<VerResidente />}
+                                />
+
+                                <Route
+                                    path="/residentes/:id/editar"
+                                    element={<EditarResidente />}
+                                />
+
+                                <Route
+                                    path="/modulos/:moduloId/habitacion/:habitacionId"
+                                    element={<VerHabitacion />}
+                                />
+
+                                <Route
+                                    path="/historico_residentes"
+                                    element={<VerHistoricoResidentes />}
+                                />
+
+                                <Route
+                                    path="/suministrosResidentes"
+                                    element={<SuministrosResidentes />}
+                                />
+
+                                <Route
+                                    path="/dashboard_residentes"
+                                    element={<DashboardResidentes />}
+                                />
+                            </>
+                        )}
+
+                        {rol === "almacen" && (
+                            <>
+                                <Route
+                                    path="/suministros"
+                                    element={<Suministros />}
+                                />
+
+                                <Route
+                                    path="/suministros/:id"
+                                    element={<VerSuministro />}
+                                />
+
+                                <Route
+                                    path="/packs"
+                                    element={<Packs />}
+                                />
+
+                                <Route
+                                    path="/packs/asignar/:packId"
+                                    element={<AsignarPack />}
+                                />
+
+                                <Route
+                                    path="/almacen"
+                                    element={<Almacen />}
+                                />
+
+                                <Route
+                                    path="/almacen/bajas"
+                                    element={<BajasAlmacen />}
+                                />
+
+                                <Route
+                                    path="/almacen/altas"
+                                    element={<AltasAlmacen />}
+                                />
+
+                                <Route
+                                    path="/dashboard_almacen"
+                                    element={<DashboardAlmacen />}
+                                />
+                            </>
+                        )}
+
+                        {rol === "administracion" && (
+                            <>
+                                <Route
+                                    path="/expedientes"
+                                    element={<Expedientes />}
+                                />
+
+                                <Route
+                                    path="/expedientes/:id"
+                                    element={<VerExpediente />}
+                                />
+
+                                <Route
+                                    path="/pedidos"
+                                    element={<Pedidos />}
+                                />
+
+                                <Route
+                                    path="/pedidos/:id"
+                                    element={<VerPedido />}
+                                />
+
+                                <Route
+                                    path="/proveedores"
+                                    element={<Proveedores />}
+                                />
+
+                                <Route
+                                    path="/expedientes/nuevo"
+                                    element={<CrearExpediente />}
+                                />
+
+                                <Route
+                                    path="/suministrosAdministracion"
+                                    element={<SuministrosAdministracion />}
+                                />
+
+                                <Route
+                                    path="/dashboard_administracion"
+                                    element={<DashboardAdministracion />}
+                                />
+                            </>
+                        )}
+
+                        {rol !== null && (
+                            <Route
+                                path="*"
+                                element={
+                                    <h1>Página no encontrada</h1>
+                                }
+                            />
+                        )}
+
+                    </Route>
+
+                </Routes>
+
+            )}
+
+        </Router>
+    )
 }
 
 export default App

@@ -1,0 +1,400 @@
+.expedientes-container {
+    padding: 30px;
+}
+
+.expedientes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.expedientes-header h1 {
+    margin: 0 0 8px 0;
+    color: #1B5E20;
+}
+
+.expedientes-header p {
+    margin: 0;
+    color: #666;
+}
+
+.expedientes-boton-anadir {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background-color: #1B5E20;
+    color: white;
+    font-size: 28px;
+    line-height: 42px;
+    cursor: pointer;
+}
+
+.expedientes-boton-anadir:hover {
+    background-color: #144817;
+}
+
+.expedientes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.expediente-card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 22px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
+}
+
+.expediente-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.expediente-card-header h2 {
+    margin: 0 0 6px 0;
+    color: #333;
+    font-size: 21px;
+}
+
+.expediente-card-header span {
+    color: #666;
+    font-size: 14px;
+}
+
+.expediente-estado {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px !important;
+    font-weight: 600;
+}
+
+.expediente-estado.activo {
+    background-color: #e8f5e9 !important;
+    color: #1B5E20 !important;
+}
+
+.expediente-estado.finalizado {
+    background-color: #fdeaea !important;
+    color: #b71c1c !important;
+}
+
+.expediente-card-fechas {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    color: #555;
+    font-size: 14px;
+}
+
+.expediente-card-economia {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #eee;
+}
+
+.expediente-card-economia div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.expediente-card-economia span {
+    color: #777;
+    font-size: 13px;
+}
+
+.expediente-card-economia strong {
+    color: #333;
+    font-size: 17px;
+}
+
+.expedientes-vacio {
+    padding: 40px;
+    text-align: center;
+    color: #777;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.expedientes-cargando {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+}
+
+.expedientes-error {
+    padding: 30px;
+    text-align: center;
+    color: #b71c1c;
+}
+
+.expedientes-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.expedientes-paginacion button {
+    padding: 8px 16px;
+    border: 1px solid #1B5E20;
+    border-radius: 6px;
+    background: white;
+    color: #1B5E20;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.expedientes-paginacion button:hover:not(:disabled) {
+    background: #1B5E20;
+    color: white;
+}
+
+.expedientes-paginacion button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.expedientes-paginacion span {
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    text-align: center;
+}
+
+.expedientes-controles {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.expedientes-buscador {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.expedientes-buscador-input {
+    width: 320px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    box-sizing: border-box;
+    transition: 0.2s ease;
+}
+
+.expedientes-buscador-input:focus-within {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.expedientes-buscador-icono {
+    color: #888;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.expedientes-buscador-input input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 10px 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.expedientes-buscador-input input::placeholder {
+    color: #888;
+}
+
+.expedientes-controles-principales {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.expedientes-boton-filtros {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.expedientes-boton-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
+}
+
+.expedientes-ordenacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.expedientes-ordenacion label {
+    color: #555;
+    font-size: 14px;
+}
+
+.expedientes-ordenacion select {
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.expedientes-ordenacion select:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.expedientes-panel-filtros {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.expedientes-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.expedientes-filtro label {
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.expedientes-filtro select,
+.expedientes-filtro input {
+    min-width: 150px;
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.expedientes-filtro select {
+    min-width: 180px;
+    cursor: pointer;
+}
+
+.expedientes-filtro select:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.expedientes-filtro input[type="number"] {
+    width: 120px;
+    min-width: 120px;
+}
+
+.expedientes-filtro input[type="date"] {
+    min-width: 160px;
+}
+
+.expedientes-filtro select:focus,
+.expedientes-filtro input:focus {
+    border-color: #1B5E20;
+    box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.08);
+}
+
+.expedientes-filtro-rango {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.expedientes-filtro-rango span {
+    color: #555;
+    font-size: 14px;
+}
+
+.expedientes-restablecer-filtros {
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: white;
+    color: #555;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.expedientes-restablecer-filtros:hover {
+    border-color: #1B5E20;
+    color: #1B5E20;
+}
+
+.expediente-presupuesto-gastado {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.expediente-presupuesto-gastado-valor {
+    color: #1B5E20;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.expediente-presupuesto-gastado-texto {
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
+}
