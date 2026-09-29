@@ -23,6 +23,27 @@
     font-size: 15px;
 }
 
+.residentes-estancia-media {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px !important;
+    padding: 8px 16px;
+    background-color: #f4faf5;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+.residentes-estancia-media-label {
+    font-size: 14px;
+    color: #555;
+}
+.residentes-estancia-media-valor {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1b5e20;
+}
+
 .residentes-anadir {
     width: 42px;
     height: 42px;
