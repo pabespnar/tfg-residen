@@ -10,7 +10,6 @@ function AltasAlmacen() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [altaSeleccionada, setAltaSeleccionada] = useState(null)
-    const [mostrarAlbaran, setMostrarAlbaran] = useState(false)
     const [paginaAltas, setPaginaAltas] = useState(1)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('fecha_desc')
@@ -65,7 +64,6 @@ function AltasAlmacen() {
 
     const cerrarModal = () => {
         setAltaSeleccionada(null)
-        setMostrarAlbaran(false)
     }
 
     const obtenerUrlAlbaran = () => {
@@ -516,7 +514,6 @@ function AltasAlmacen() {
                                                 key={alta.id}
                                                 onClick={() => {
                                                     setAltaSeleccionada(alta)
-                                                    setMostrarAlbaran(false)
                                                 }}
                                                 style={{
                                                     cursor: 'pointer'
@@ -649,34 +646,19 @@ function AltasAlmacen() {
 
                             <div className="crear-modulo-campo">
 
-                                <button
-                                    type="button"
+                                <a
+                                    href={obtenerUrlAlbaran()}
+                                    target="_blank"
+                                    rel="noreferrer"
                                     className="albaran-boton"
-                                    onClick={() => {
-                                        setMostrarAlbaran(
-                                            !mostrarAlbaran
-                                        )
-                                    }}
                                 >
-                                    {mostrarAlbaran
-                                        ? 'Ocultar albarán'
-                                        : 'Ver albarán'}
-                                </button>
-
-                                {mostrarAlbaran && (
-
-                                    <img
-                                        src={obtenerUrlAlbaran()}
-                                        alt="Albarán"
-                                        className="albaran-imagen"
-                                    />
-
-                                )}
+                                    Ver albarán
+                                </a>
 
                             </div>
 
                         )}
-
+                        
                         <div className="crear-modulo-botones">
 
                             <button

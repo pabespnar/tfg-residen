@@ -632,11 +632,12 @@ function VerExpediente() {
                             </span>
 
                             <a
-                                href={expediente.contrato}
+                                href={`http://127.0.0.1:8000${expediente.contrato}`}
                                 target="_blank"
                                 rel="noreferrer"
+                                className="ver-expediente-boton-contrato"
                             >
-                                Ver contrato
+                                Ver acuerdo
                             </a>
 
                         </div>
