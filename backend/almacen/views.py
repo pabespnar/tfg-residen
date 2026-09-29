@@ -162,7 +162,7 @@ class CrearBajaServicioView(APIView):
 
                 elif (
                     stock_anterior > suministro.stock_minimo
-                    and suministro.stock <= suministro.stock_minimo
+                    and suministro.stock < suministro.stock_minimo
                 ):
                     for usuario in usuarios_almacen:
                         Notificacion.objects.create(

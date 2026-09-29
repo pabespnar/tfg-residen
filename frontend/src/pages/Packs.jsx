@@ -515,6 +515,10 @@ function Packs() {
                 }
 
                 setErrores(nuevosErrores)
+
+                if (datosError.error) {
+                    setError(datosError.error)
+                }
             } else {
                 setError('Ha ocurrido un error al crear el pack.')
             }

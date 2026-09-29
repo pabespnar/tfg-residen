@@ -11,6 +11,8 @@ function AsignarPack() {
 
     const [residentes, setResidentes] = useState([])
     const [residentesSeleccionados, setResidentesSeleccionados] = useState([])
+    const [pack, setPack] = useState(null)
+    const [suministros, setSuministros] = useState([])
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [orden, setOrden] = useState('nombre_asc')
     const [estadoFiltro, setEstadoFiltro] = useState('')
@@ -106,7 +108,7 @@ function AsignarPack() {
 
     useEffect(() => {
 
-        const cargarResidentes = async () => {
+        const cargarDatos = async () => {
 
             setLoading(true)
 
@@ -114,26 +116,77 @@ function AsignarPack() {
 
             try {
 
-                const response = await axios.get(
-                    `http://127.0.0.1:8000/api/residentes/listaresidentes/?pack_id=${packId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
+                const [residentesResponse, packsResponse, suministrosResponse] =
+                    await Promise.all([
+                        axios.get(
+                            `http://127.0.0.1:8000/api/residentes/listaresidentes/?pack_id=${packId}`,
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        ),
+                        axios.get(
+                            'http://127.0.0.1:8000/api/suministros/packs/',
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        ),
+                        axios.get(
+                            'http://127.0.0.1:8000/api/suministros/suministros/',
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        )
+                    ])
+
+                setResidentes(residentesResponse.data)
+
+                const packActual = packsResponse.data.find(
+                    (pack) => pack.id === Number(packId)
+                )
+
+                if (!packActual) {
+                    setError('El pack no existe.')
+                    return
+                }
+
+                setPack(packActual)
+
+                const suministrosPack = packActual.contenido.map(
+                    (contenido) => {
+
+                        const suministro = suministrosResponse.data.find(
+                            (item) => item.id === contenido.suministro
+                        )
+
+                        return {
+                            ...contenido,
+                            stock: suministro ? suministro.stock : 0,
+                            unidad: suministro
+                                ? suministro.unidad
+                                : contenido.suministro_unidad
+                        }
+
                     }
                 )
 
-                setResidentes(response.data)
+                setSuministros(suministrosPack)
 
             } catch (error) {
 
                 console.error(
-                    'Error al obtener los residentes:',
+                    'Error al obtener los datos:',
                     error
                 )
 
                 setError(
-                    'No se han podido cargar los residentes.'
+                    error.response?.data?.error ||
+                    'No se han podido cargar los datos.'
                 )
 
             } finally {
@@ -143,7 +196,7 @@ function AsignarPack() {
             }
         }
 
-        cargarResidentes()
+        cargarDatos()
 
     }, [packId])
 
@@ -174,6 +227,23 @@ function AsignarPack() {
     const restablecerFiltros = () => {
         setEstadoFiltro('')
     }
+
+    const stockRestante = (suministro) => {
+
+        return (
+            suministro.stock -
+            (
+                suministro.cantidad *
+                residentesSeleccionados.length
+            )
+        )
+
+    }
+
+    const hayStockInsuficiente = suministros.some(
+        (suministro) =>
+            stockRestante(suministro) < 0
+    )
 
     const asignarPack = async () => {
 
@@ -207,6 +277,7 @@ function AsignarPack() {
             )
 
             setError(
+                error.response?.data?.error ||
                 'Ha ocurrido un error al asignar el pack.'
             )
 
@@ -249,7 +320,10 @@ function AsignarPack() {
                     type="button"
                     className="asignar-pack-boton"
                     onClick={asignarPack}
-                    disabled={residentesSeleccionados.length === 0}
+                    disabled={
+                        residentesSeleccionados.length === 0 ||
+                        hayStockInsuficiente
+                    }
                 >
                     Asignar pack
                 </button>
@@ -260,6 +334,131 @@ function AsignarPack() {
                 <p className="residentes-error">
                     {error}
                 </p>
+            )}
+
+            {pack && (
+                <div className="asignar-pack-resumen">
+
+                    <div className="asignar-pack-info">
+
+                        <h2>
+                            {pack.nombre}
+                        </h2>
+
+                        {pack.descripcion && (
+                            <p>
+                                {pack.descripcion}
+                            </p>
+                        )}
+
+                    </div>
+
+                    <div className="asignar-pack-stock">
+
+                        <div className="asignar-pack-stock-titulo">
+
+                            <h3>
+                                Suministros del pack
+                            </h3>
+
+                            <span>
+                                {residentesSeleccionados.length}{' '}
+                                {residentesSeleccionados.length === 1
+                                    ? 'residente seleccionado'
+                                    : 'residentes seleccionados'}
+                            </span>
+
+                        </div>
+
+                        <div className="asignar-pack-stock-lista">
+
+                            {suministros.map((suministro) => {
+
+                                const cantidadNecesaria =
+                                    suministro.cantidad *
+                                    residentesSeleccionados.length
+
+                                const restante =
+                                    stockRestante(suministro)
+
+                                return (
+                                    <div
+                                        className={`asignar-pack-stock-item ${
+                                            restante < 0
+                                                ? 'asignar-pack-stock-insuficiente'
+                                                : ''
+                                        }`}
+                                        key={suministro.id}
+                                    >
+
+                                        <div className="asignar-pack-stock-nombre">
+
+                                            <strong>
+                                                {suministro.suministro_nombre}
+                                            </strong>
+
+                                            <span>
+                                                {suministro.cantidad}{' '}
+                                                {suministro.unidad}
+                                                {' '}por pack
+                                            </span>
+
+                                        </div>
+
+                                        <div className="asignar-pack-stock-datos">
+
+                                            <div>
+                                                <span>
+                                                    Stock actual
+                                                </span>
+
+                                                <strong>
+                                                    {suministro.stock}{' '}
+                                                    {suministro.unidad}
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <span>
+                                                    A retirar
+                                                </span>
+
+                                                <strong>
+                                                    {cantidadNecesaria}{' '}
+                                                    {suministro.unidad}
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <span>
+                                                    Stock restante
+                                                </span>
+
+                                                <strong>
+                                                    {restante}{' '}
+                                                    {suministro.unidad}
+                                                </strong>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                )
+
+                            })}
+
+                        </div>
+
+                        {hayStockInsuficiente && (
+                            <p className="asignar-pack-stock-error">
+                                No hay stock suficiente para asignar el pack
+                                a todos los residentes seleccionados.
+                            </p>
+                        )}
+
+                    </div>
+
+                </div>
             )}
 
             {residentes.length === 0 ? (
@@ -401,6 +600,7 @@ function AsignarPack() {
                                 <option value="pack_desc">
                                     Ya recibido primero
                                 </option>
+
                             </select>
 
                         </div>
