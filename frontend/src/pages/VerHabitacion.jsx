@@ -145,12 +145,26 @@ function VerHabitacion() {
             const erroresBackend = error.response?.data
 
             if (erroresBackend) {
-                setErroresEditar(erroresBackend)
+
+                if (erroresBackend.error) {
+
+                    setErroresEditar({
+                        general: erroresBackend.error
+                    })
+
+                } else {
+
+                    setErroresEditar(erroresBackend)
+
+                }
+
             } else {
+
                 setErroresEditar({
                     general:
                         'No se ha podido editar la habitación.',
                 })
+
             }
         } finally {
             setEditando(false)

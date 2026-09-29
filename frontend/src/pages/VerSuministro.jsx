@@ -209,12 +209,26 @@ function VerSuministro() {
             const erroresBackend = error.response?.data
 
             if (erroresBackend) {
-                setErroresEditar(erroresBackend)
+
+                if (erroresBackend.error) {
+
+                    setErroresEditar({
+                        general: erroresBackend.error
+                    })
+
+                } else {
+
+                    setErroresEditar(erroresBackend)
+
+                }
+
             } else {
+
                 setErroresEditar({
                     general:
                         'No se ha podido editar el suministro.',
                 })
+
             }
 
         } finally {

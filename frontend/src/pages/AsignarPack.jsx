@@ -185,6 +185,7 @@ function AsignarPack() {
                 )
 
                 setError(
+                    error.response?.data?.error ||
                     'No se han podido cargar los datos.'
                 )
 
@@ -276,6 +277,7 @@ function AsignarPack() {
             )
 
             setError(
+                error.response?.data?.error ||
                 'Ha ocurrido un error al asignar el pack.'
             )
 

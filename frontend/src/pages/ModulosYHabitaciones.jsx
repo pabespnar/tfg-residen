@@ -399,6 +399,11 @@ const ModulosYHabitaciones = () => {
             if (error.response?.data) {
                 const erroresBackend = {};
 
+                if (error.response.data.error) {
+                    erroresBackend.general =
+                        error.response.data.error;
+                }
+
                 if (error.response.data.nombre) {
                     erroresBackend.nombre =
                         error.response.data.nombre[0];
@@ -532,6 +537,11 @@ const ModulosYHabitaciones = () => {
 
             if (error.response?.data) {
                 const erroresBackend = {};
+
+                if (error.response.data.error) {
+                    erroresBackend.general =
+                        error.response.data.error;
+                }
 
                 if (error.response.data.nombre) {
                     erroresBackend.nombre =

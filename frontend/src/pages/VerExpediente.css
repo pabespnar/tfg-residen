@@ -374,9 +374,15 @@
 }
 .ver-expediente-modal-error {
     margin-top: 6px;
-    color: #b71c1c;
+    color: #b71c1c !important;
     font-size: 13px;
 }
+
+.ver-expediente-modal-error-presupuesto {
+    display: block;
+    margin-top: 12px;
+}
+
 .ver-expediente-modal-resumen {
     margin-top: 25px;
     padding: 16px;

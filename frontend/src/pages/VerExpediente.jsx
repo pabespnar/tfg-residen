@@ -20,6 +20,7 @@ function VerExpediente() {
     const [erroresCantidad, setErroresCantidad] = useState({})
     const [errorSuministros, setErrorSuministros] = useState('')
     const [errorPresupuesto, setErrorPresupuesto] = useState('')
+    const [errorPedido, setErrorPedido] = useState('')
 
 
     const navigate = useNavigate()
@@ -75,6 +76,7 @@ function VerExpediente() {
         setErroresCantidad({})
         setErrorSuministros('')
         setErrorPresupuesto('')
+        setErrorPedido('')
 
         let valido = true
 
@@ -180,6 +182,11 @@ function VerExpediente() {
                 error
             )
 
+            setErrorPedido(
+                error.response?.data?.error ||
+                'Ha ocurrido un error al crear el pedido.'
+            )
+
         })
     }
 
@@ -198,6 +205,8 @@ function VerExpediente() {
         setErrorSuministros('')
 
         setErrorPresupuesto('')
+
+        setErrorPedido('')
 
     }
 
@@ -673,6 +682,14 @@ function VerExpediente() {
 
                         <div className="ver-expediente-modal-contenido">
 
+                            {errorPedido && (
+
+                                <span className="ver-expediente-modal-error">
+                                    {errorPedido}
+                                </span>
+
+                            )}
+
                             <div className="ver-expediente-modal-campo">
 
                                 <h3>
@@ -688,6 +705,7 @@ function VerExpediente() {
                                         setNombrePedido(e.target.value)
 
                                         setErrorNombrePedido('')
+                                        setErrorPedido('')
 
                                     }}
                                 />
@@ -773,6 +791,7 @@ function VerExpediente() {
 
                                                 setErrorSuministros('')
                                                 setErrorPresupuesto('')
+                                                setErrorPedido('')
 
                                             }}
                                         />
@@ -820,7 +839,7 @@ function VerExpediente() {
 
                                 {errorPresupuesto && (
 
-                                    <span className="ver-expediente-modal-error">
+                                    <span className="ver-expediente-modal-error ver-expediente-modal-error-presupuesto">
                                         {errorPresupuesto}
                                     </span>
 
