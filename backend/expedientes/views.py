@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -17,7 +16,7 @@ from suministros.models import Suministro
 from suministros.serializers import SuministroSerializer
 from evento.models import Historial, Notificacion
 from usuarios.models import Usuario, Rol
-
+from usuarios.correo import enviar_correo
 
 class ListaExpedientesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
@@ -575,7 +574,8 @@ class CrearPedidoExpedienteView(APIView):
 
         centro = Centro.get_solo()
 
-        send_mail(
+        enviar_correo(
+            expediente.proveedor.correo,
             f'Nuevo pedido: {pedido.nombre}',
             f'Buenas, {expediente.proveedor.nombre}.\n\n'
             f'Nuestro centro, {centro.nombre}, ha realizado un nuevo pedido a su entidad,\n'
@@ -596,8 +596,6 @@ class CrearPedidoExpedienteView(APIView):
             f'Gracias de antemano.\n'
             f'Un saludo,\n\n'
             f'{centro.nombre}',
-            None,
-            [expediente.proveedor.correo],
         )
 
         return Response(
@@ -990,7 +988,8 @@ class CrearPedidoGeneralView(APIView):
                                 usuario=usuario
                             )
 
-        send_mail(
+        enviar_correo(
+            proveedor.correo,
             f'Nuevo pedido: {pedido.nombre}',
             f'Buenas, {proveedor.nombre}.\n\n'
             f'Nuestro centro, {centro.nombre}, ha realizado un nuevo pedido a su entidad.\n\n'
@@ -1011,8 +1010,6 @@ class CrearPedidoGeneralView(APIView):
             f'Gracias de antemano.\n'
             f'Un saludo,\n\n'
             f'{centro.nombre}',
-            None,
-            [proveedor.correo],
         )
 
         return Response(
