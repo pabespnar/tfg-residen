@@ -45,7 +45,7 @@
     margin: 0 auto;
 
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
 
     align-items: start;
@@ -136,26 +136,28 @@
 
 .suministro-item-informacion {
     flex: 1;
+    min-width: 0;
 
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: center;
 
-    min-width: 0;
-    gap: 15px;
-
+    gap: 4px;
     cursor: pointer;
 }
 
 .suministro-nombre {
+    display: block;
+    width: 100%;
     min-width: 0;
 
     color: #333;
     font-size: 14px;
 
     white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
 .suministro-stock {
