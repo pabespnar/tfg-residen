@@ -122,6 +122,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
 # CORS
 
@@ -171,18 +172,30 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+BREVO_SMTP_LOGIN = os.getenv('BREVO_SMTP_LOGIN')
+BREVO_SMTP_KEY = os.getenv('BREVO_SMTP_KEY')
 
-if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+if not DEBUG and BREVO_SMTP_LOGIN and BREVO_SMTP_KEY:
+    EMAIL_HOST = 'smtp-relay.brevo.com'
+    EMAIL_PORT = 2525
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = BREVO_SMTP_LOGIN
+    EMAIL_HOST_PASSWORD = BREVO_SMTP_KEY
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'residenapp@gmail.com'
+
+elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'residenapp@gmail.com'
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
