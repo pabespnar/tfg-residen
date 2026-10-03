@@ -174,28 +174,18 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-BREVO_SMTP_LOGIN = os.getenv('BREVO_SMTP_LOGIN')
-BREVO_SMTP_KEY = os.getenv('BREVO_SMTP_KEY')
 
-if not DEBUG and BREVO_SMTP_LOGIN and BREVO_SMTP_KEY:
-    EMAIL_HOST = 'smtp-relay.brevo.com'
-    EMAIL_PORT = 2525
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = BREVO_SMTP_LOGIN
-    EMAIL_HOST_PASSWORD = BREVO_SMTP_KEY
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    DEFAULT_FROM_EMAIL = 'residenapp@gmail.com'
-
-elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_HOST = 'smtp.gmail.com'
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'residenapp@gmail.com'
+
+BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 

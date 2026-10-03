@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
@@ -16,7 +15,7 @@ from .models import Usuario
 
 from centro.permissions import EsSuperUsuario
 from centro.models import Centro
-
+from .correo import enviar_correo
 
 class UsuarioActualView(APIView):
     permission_classes = [IsAuthenticated]
@@ -126,7 +125,8 @@ class RecuperarContrasenaView(APIView):
             uid = urlsafe_base64_encode(force_bytes(usuario.pk))
             token = default_token_generator.make_token(usuario)
             enlace = f'{settings.FRONTEND_URL}/restablecer-contrasena/{uid}/{token}'
-            send_mail(
+            enviar_correo(
+                usuario.email,
                 'Recuperación de contraseña',
                 f'Buenas, {usuario.nombre},\n\n'
                 f'Has solicitado recuperar tu contraseña en el sistema de {centro.nombre}.\n\n'
@@ -138,8 +138,6 @@ class RecuperarContrasenaView(APIView):
                 f'Si no has solicitado este cambio, puedes ignorar este correo.\n\n'
                 f'Un saludo,\n\n'
                 f'{centro.nombre}',
-                None,
-                [usuario.email],
             )
 
         return Response(
