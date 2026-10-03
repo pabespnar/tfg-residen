@@ -104,9 +104,13 @@
 }
 
 .modulo-descripcion {
-    margin: 10px 0 6px 0;
-    color: #555;
-    font-size: 15px;
+    min-width: 0;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
 }
 
 .modulo-datos {

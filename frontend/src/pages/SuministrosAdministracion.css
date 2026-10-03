@@ -58,6 +58,9 @@
     margin: 0 0 8px 0;
     color: #333;
     font-size: 17px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 .suministro-administracion-informacion p {
     margin: 3px 0;
@@ -121,6 +124,9 @@
     margin: 0 0 5px 0;
     color: #333;
     font-size: 14px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 .suministro-administracion-expediente p {
     margin: 3px 0;

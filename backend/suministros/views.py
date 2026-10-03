@@ -692,6 +692,14 @@ class EliminarSuministroView(APIView):
                 status=400
             )
 
+        if suministro.contenidopack_set.exists():
+            return Response(
+                {
+                    'error': 'No se puede eliminar el suministro porque forma parte del contenido de un pack.'
+                },
+                status=400
+            )
+
         nombre_suministro = suministro.nombre
 
         suministro.delete()

@@ -186,9 +186,9 @@ class SuministroSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Los detalles no pueden estar formados únicamente por espacios."
             )
-        if value and len(value) > 500:
+        if value and len(value) > 150:
             raise serializers.ValidationError(
-                "Los detalles no pueden superar los 500 caracteres."
+                "Los detalles no pueden superar los 150 caracteres."
             )
 
         return value
@@ -233,9 +233,9 @@ class CategoriaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Ya existe una categoría con este nombre."
             )
-        if len(value) > 100:
+        if len(value) > 35:
             raise serializers.ValidationError(
-                "El nombre no puede superar los 100 caracteres."
+                "El nombre no puede superar los 35 caracteres."
             )
 
         return value
@@ -245,9 +245,9 @@ class CategoriaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "La descripción no puede estar formada únicamente por espacios."
             )
-        if value and len(value) > 500:
+        if value and len(value) > 150:
             raise serializers.ValidationError(
-                "La descripción no puede superar los 500 caracteres."
+                "La descripción no puede superar los 150 caracteres."
             )
 
         return value
@@ -360,9 +360,9 @@ class PackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "La descripción no puede estar formada únicamente por espacios."
             )
-        if value and len(value) > 500:
+        if value and len(value) > 150:
             raise serializers.ValidationError(
-                "La descripción no puede superar los 500 caracteres."
+                "La descripción no puede superar los 150 caracteres."
             )
 
         return value

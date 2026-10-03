@@ -33,13 +33,9 @@ function CrearResidente() {
     })
 
     useEffect(() => {
-
         const obtenerModulos = async () => {
-
             const token = localStorage.getItem('access')
-
             try {
-
                 const response = await axios.get(
                     '/api/modulos/listadomodulos/',
                     {
@@ -48,35 +44,26 @@ function CrearResidente() {
                         },
                     }
                 )
-
                 setModulos(response.data)
-
             } catch (error) {
-
                 console.error(
                     'Error al obtener los módulos:',
                     error
                 )
-
                 setError(
                     'No se han podido cargar los módulos.'
                 )
             }
         }
-
         obtenerModulos()
-
     }, [])
 
     const cambiarCampo = (e) => {
-
         const { name, value } = e.target
-
         setResidente({
             ...residente,
             [name]: value,
         })
-
         setErrores({
             ...errores,
             [name]: '',
@@ -84,7 +71,6 @@ function CrearResidente() {
     }
 
     const seleccionarModulo = async (e) => {
-
         const moduloId = e.target.value
 
         setResidente({
@@ -106,7 +92,6 @@ function CrearResidente() {
         const token = localStorage.getItem('access')
 
         try {
-
             const response = await axios.get(
                 `/api/modulos/${moduloId}/habitaciones/`,
                 {
@@ -117,14 +102,11 @@ function CrearResidente() {
             )
 
             setHabitaciones(response.data)
-
         } catch (error) {
-
             console.error(
                 'Error al obtener las habitaciones:',
                 error
             )
-
             setError(
                 'No se han podido cargar las habitaciones.'
             )
@@ -132,7 +114,6 @@ function CrearResidente() {
     }
 
     const validarFormulario = () => {
-
         const nuevosErrores = {}
 
         if (!residente.nombre.trim()) {
@@ -165,10 +146,10 @@ function CrearResidente() {
 
         if (
             residente.telefono &&
-            residente.telefono.length > 9
+            !/^\d{9}$/.test(residente.telefono)
         ) {
             nuevosErrores.telefono =
-                'El teléfono no puede tener más de 9 caracteres.'
+                'El teléfono debe tener 9 dígitos numéricos.'
         }
 
         if (
@@ -189,6 +170,14 @@ function CrearResidente() {
                 'La fecha de nacimiento es obligatoria.'
         }
 
+        if (
+            residente.f_nacimiento &&
+            residente.f_nacimiento > new Date().toISOString().split('T')[0]
+        ) {
+            nuevosErrores.f_nacimiento =
+                'La fecha de nacimiento no puede ser una fecha futura.'
+        }
+
         if (!residente.pais.trim()) {
             nuevosErrores.pais =
                 'El país es obligatorio.'
@@ -204,9 +193,14 @@ function CrearResidente() {
                 'El DNI/NIE es obligatorio.'
         }
 
-        if (residente.dni_nie.length > 20) {
+        if (
+            residente.dni_nie &&
+            !/^(?:\d{8}[A-Za-z]|[XYZxyz]\d{7}[A-Za-z])$/.test(
+                residente.dni_nie
+            )
+        ) {
             nuevosErrores.dni_nie =
-                'El DNI/NIE no puede tener más de 20 caracteres.'
+                'El DNI/NIE debe tener el formato de un DNI (8 dígitos y una letra) o de un NIE (X, Y o Z, 7 dígitos y una letra).'
         }
 
         if (!residente.genero) {
@@ -228,16 +222,13 @@ function CrearResidente() {
         }
 
         setErrores(nuevosErrores)
-
         return Object.keys(nuevosErrores).length === 0
     }
 
     const crearResidente = async (e) => {
-
         e.preventDefault()
 
         setError('')
-
         setErrores({})
 
         if (!validarFormulario()) {
@@ -270,7 +261,6 @@ function CrearResidente() {
         )
 
         try {
-
             await axios.post(
                 '/api/residentes/crearresidente/',
                 datos,
@@ -282,9 +272,7 @@ function CrearResidente() {
             )
 
             navigate('/residentes')
-
         } catch (error) {
-
             console.error(
                 'Error al crear el residente:',
                 error
@@ -311,7 +299,6 @@ function CrearResidente() {
                     dni_nie:
                         'Ya existe un residente con ese DNI/NIE.'
                 })
-
                 return
             }
 
@@ -321,7 +308,6 @@ function CrearResidente() {
                         ? erroresBackend.foto[0]
                         : erroresBackend.foto,
                 })
-
                 return
             }
 
@@ -344,13 +330,10 @@ function CrearResidente() {
 
     return (
         <div className="crear-residente-container">
-
             <div className="crear-residente-contenido">
 
                 <div className="crear-residente-cabecera">
-
                     <h1>Nuevo residente</h1>
-
                 </div>
 
                 {error && (
@@ -371,7 +354,6 @@ function CrearResidente() {
                         <div className="crear-residente-grid">
 
                             <div className="crear-residente-campo">
-
                                 <label>Nombre</label>
 
                                 <input
@@ -379,6 +361,7 @@ function CrearResidente() {
                                     name="nombre"
                                     value={residente.nombre}
                                     onChange={cambiarCampo}
+                                    maxLength={100}
                                 />
 
                                 {errores.nombre && (
@@ -386,11 +369,9 @@ function CrearResidente() {
                                         {errores.nombre}
                                     </p>
                                 )}
-
                             </div>
 
                             <div className="crear-residente-campo">
-
                                 <label>Apellido</label>
 
                                 <input
@@ -398,6 +379,7 @@ function CrearResidente() {
                                     name="apellido"
                                     value={residente.apellido}
                                     onChange={cambiarCampo}
+                                    maxLength={100}
                                 />
 
                                 {errores.apellido && (
@@ -405,11 +387,9 @@ function CrearResidente() {
                                         {errores.apellido}
                                     </p>
                                 )}
-
                             </div>
 
                             <div className="crear-residente-campo">
-
                                 <label>Teléfono</label>
 
                                 <input
@@ -417,6 +397,7 @@ function CrearResidente() {
                                     name="telefono"
                                     value={residente.telefono}
                                     onChange={cambiarCampo}
+                                    maxLength={9}
                                 />
 
                                 {errores.telefono && (
@@ -424,11 +405,9 @@ function CrearResidente() {
                                         {errores.telefono}
                                     </p>
                                 )}
-
                             </div>
 
                             <div className="crear-residente-campo">
-
                                 <label>Email</label>
 
                                 <input
@@ -436,6 +415,7 @@ function CrearResidente() {
                                     name="email"
                                     value={residente.email}
                                     onChange={cambiarCampo}
+                                    maxLength={254}
                                 />
 
                                 {errores.email && (
@@ -443,11 +423,9 @@ function CrearResidente() {
                                         {errores.email}
                                     </p>
                                 )}
-
                             </div>
 
                             <div className="crear-residente-campo">
-
                                 <label>Fecha de nacimiento</label>
 
                                 <input
@@ -462,11 +440,9 @@ function CrearResidente() {
                                         {errores.f_nacimiento}
                                     </p>
                                 )}
-
                             </div>
 
                             <div className="crear-residente-campo">
-
                                 <label>País</label>
 
                                 <input
@@ -474,6 +450,7 @@ function CrearResidente() {
                                     name="pais"
                                     value={residente.pais}
                                     onChange={cambiarCampo}
+                                    maxLength={100}
                                 />
 
                                 {errores.pais && (
@@ -481,11 +458,9 @@ function CrearResidente() {
                                         {errores.pais}
                                     </p>
                                 )}
-
                             </div>
 
                             <div className="crear-residente-campo">
-
                                 <label>DNI/NIE</label>
 
                                 <input
@@ -493,6 +468,7 @@ function CrearResidente() {
                                     name="dni_nie"
                                     value={residente.dni_nie}
                                     onChange={cambiarCampo}
+                                    maxLength={9}
                                 />
 
                                 {errores.dni_nie && (
@@ -500,11 +476,9 @@ function CrearResidente() {
                                         {errores.dni_nie}
                                     </p>
                                 )}
-
                             </div>
 
                             <div className="crear-residente-campo">
-
                                 <label>Género</label>
 
                                 <select
@@ -512,7 +486,6 @@ function CrearResidente() {
                                     value={residente.genero}
                                     onChange={cambiarCampo}
                                 >
-
                                     <option value="">
                                         Selecciona un género
                                     </option>
@@ -528,7 +501,6 @@ function CrearResidente() {
                                     <option value="O">
                                         Otro
                                     </option>
-
                                 </select>
 
                                 {errores.genero && (
@@ -536,7 +508,6 @@ function CrearResidente() {
                                         {errores.genero}
                                     </p>
                                 )}
-
                             </div>
 
                         </div>
@@ -555,6 +526,7 @@ function CrearResidente() {
 
                                 <textarea
                                     name="info"
+                                    maxLength={200}
                                     value={residente.info}
                                     onChange={cambiarCampo}
                                 />
@@ -577,11 +549,9 @@ function CrearResidente() {
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
                                     onChange={(e) => {
-
                                         const archivo = e.target.files[0]
 
                                         if (archivo) {
-
                                             setResidente({
                                                 ...residente,
                                                 foto: archivo,
@@ -621,20 +591,17 @@ function CrearResidente() {
                                     onChange={seleccionarModulo}
                                     defaultValue=""
                                 >
-
                                     <option value="">
                                         Selecciona un módulo
                                     </option>
 
                                     {modulos.map((modulo) => (
-
                                         <option
                                             key={modulo.id}
                                             value={modulo.id}
                                         >
                                             {modulo.nombre}
                                         </option>
-
                                     ))}
 
                                 </select>
@@ -651,7 +618,6 @@ function CrearResidente() {
                                     onChange={cambiarCampo}
                                     disabled={habitaciones.length === 0}
                                 >
-
                                     <option value="">
                                         Selecciona una habitación
                                     </option>
@@ -715,10 +681,8 @@ function CrearResidente() {
                 </form>
 
             </div>
-
         </div>
     )
 }
 
 export default CrearResidente
-

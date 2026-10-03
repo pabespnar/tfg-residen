@@ -412,9 +412,18 @@ function Pedidos() {
 
                 if (
                     suministroSeleccionado.cantidad === '' ||
-                    Number(
-                        suministroSeleccionado.cantidad
-                    ) <= 0
+                    !Number.isInteger(
+                        Number(suministroSeleccionado.cantidad)
+                    )
+                ) {
+                    nuevosErrores[index] =
+                        'La cantidad debe ser un número entero.';
+
+                    return;
+                }
+
+                if (
+                    Number(suministroSeleccionado.cantidad) <= 0
                 ) {
                     nuevosErrores[index] =
                         'La cantidad debe ser mayor que cero.';
@@ -1576,6 +1585,7 @@ function Pedidos() {
                                                     <input
                                                         type="number"
                                                         min="1"
+                                                        step="1"
                                                         value={
                                                             suministroSeleccionado.cantidad
                                                         }

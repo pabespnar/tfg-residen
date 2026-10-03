@@ -24,6 +24,18 @@ class CentroSerializer(serializers.ModelSerializer):
             self.instance.presupuesto_referencia
         )
 
+        if presupuesto < 0:
+            raise serializers.ValidationError({
+                'presupuesto':
+                    'El presupuesto no puede ser negativo.'
+            })
+
+        if presupuesto_referencia < 0:
+            raise serializers.ValidationError({
+                'presupuesto_referencia':
+                    'El presupuesto de referencia no puede ser negativo.'
+            })
+
         if presupuesto_referencia < presupuesto:
             raise serializers.ValidationError({
                 'presupuesto_referencia':
@@ -31,3 +43,20 @@ class CentroSerializer(serializers.ModelSerializer):
             })
 
         return data
+
+    def validate_logo(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "La imagen no puede superar los 5 MB."
+            )
+
+        if value.content_type not in [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+        ]:
+            raise serializers.ValidationError(
+                "Solo se permiten imágenes JPG, PNG o WEBP."
+            )
+
+        return value

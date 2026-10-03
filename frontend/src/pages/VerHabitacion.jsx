@@ -80,14 +80,6 @@ function VerHabitacion() {
             nuevosErrores.nombre = 'El nombre no puede estar vacío.'
         }
 
-        if (
-            nombre &&
-            habitacion.residentes &&
-            habitacion.residentes.some(
-                () => false
-            )
-        ) 
-
         if (!Number.isInteger(capacidad) || capacidad < 1) {
             nuevosErrores.capacidad =
                 'La capacidad debe ser como mínimo 1.'
@@ -101,6 +93,11 @@ function VerHabitacion() {
         if (infoEditar && !info) {
             nuevosErrores.info =
                 'La información no puede estar formada únicamente por espacios.'
+        }
+
+        if (infoEditar.length > 200) {
+            nuevosErrores.info =
+                'La información no puede superar los 200 caracteres.'
         }
 
         setErroresEditar(nuevosErrores)
@@ -478,6 +475,7 @@ function VerHabitacion() {
 
                             <textarea
                                 value={infoEditar}
+                                maxLength={200}
                                 onChange={(e) => {
                                     setInfoEditar(e.target.value)
 

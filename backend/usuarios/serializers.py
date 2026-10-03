@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Usuario, Rol
-
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -88,6 +89,19 @@ class CrearUsuarioSerializer(serializers.ModelSerializer):
             'imagen_perfil',
             'es_superusuario',
         ]
+
+    def validate_password(self, value):
+        usuario_temporal = Usuario(
+            email=self.initial_data.get('email', ''),
+            nombre=self.initial_data.get('nombre', ''),
+            apellido=self.initial_data.get('apellido', ''),
+        )
+        try:
+            validate_password(value, user=usuario_temporal)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(list(e.messages))
+        return value
+
 
     def validate_email(self, value):
         if Usuario.objects.filter(email=value).exists():

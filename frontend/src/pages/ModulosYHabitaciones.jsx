@@ -341,6 +341,11 @@ const ModulosYHabitaciones = () => {
             }
         }
 
+        if (descripcion.length > 200) {
+            nuevosErrores.descripcion =
+                "La descripción no puede superar los 200 caracteres.";
+        }
+
         if (!numHabitacionesMax) {
             nuevosErrores.numHabitacionesMax =
                 "El número máximo de habitaciones es obligatorio.";
@@ -407,6 +412,11 @@ const ModulosYHabitaciones = () => {
                 if (error.response.data.nombre) {
                     erroresBackend.nombre =
                         error.response.data.nombre[0];
+                }
+
+                if (error.response.data.descripcion) {
+                    erroresBackend.descripcion =
+                        error.response.data.descripcion[0];
                 }
 
                 if (error.response.data.num_habitaciones_max) {
@@ -478,6 +488,11 @@ const ModulosYHabitaciones = () => {
             }
         }
 
+        if (descripcionEditar.length > 200) {
+            nuevosErrores.descripcion =
+                "La descripción no puede superar los 200 caracteres.";
+        }
+
         if (!numHabitacionesMaxEditar) {
             nuevosErrores.numHabitacionesMax =
                 "El número máximo de habitaciones es obligatorio.";
@@ -546,6 +561,11 @@ const ModulosYHabitaciones = () => {
                 if (error.response.data.nombre) {
                     erroresBackend.nombre =
                         error.response.data.nombre[0];
+                }
+
+                if (error.response.data.descripcion) {
+                    erroresBackend.descripcion =
+                        error.response.data.descripcion[0];
                 }
 
                 if (error.response.data.num_habitaciones_max) {
@@ -701,6 +721,11 @@ const ModulosYHabitaciones = () => {
             }
         }
 
+        if (infoHabitacion.length > 200) {
+            nuevosErrores.info =
+                "La información no puede superar los 200 caracteres.";
+        }
+
         if (!capacidadHabitacion) {
             nuevosErrores.capacidad =
                 "La capacidad es obligatoria.";
@@ -844,6 +869,11 @@ const ModulosYHabitaciones = () => {
                 nuevosErrores.nombre =
                     "Ya existe una habitación con ese nombre en este módulo.";
             }
+        }
+
+        if (infoHabitacionEditar.length > 200) {
+            nuevosErrores.info =
+                "La información no puede superar los 200 caracteres.";
         }
 
         if (!capacidadHabitacionEditar) {
@@ -1616,11 +1646,18 @@ const ModulosYHabitaciones = () => {
 
                             <textarea
                                 id="descripcion"
+                                maxLength={200}
                                 value={descripcion}
                                 onChange={(e) =>
                                     setDescripcion(e.target.value)
                                 }
                             />
+
+                            {erroresFormulario.descripcion && (
+                                <p className="crear-modulo-error">
+                                    {erroresFormulario.descripcion}
+                                </p>
+                            )}
                         </div>
 
                         <div className="crear-modulo-campo">
@@ -1711,6 +1748,7 @@ const ModulosYHabitaciones = () => {
 
                             <textarea
                                 id="descripcion-editar"
+                                maxLength={200}
                                 value={descripcionEditar}
                                 onChange={(e) =>
                                     setDescripcionEditar(
@@ -1718,6 +1756,12 @@ const ModulosYHabitaciones = () => {
                                     )
                                 }
                             />
+
+                            {erroresEditar.descripcion && (
+                                <p className="crear-modulo-error">
+                                    {erroresEditar.descripcion}
+                                </p>
+                            )}
                         </div>
 
                         <div className="crear-modulo-campo">
@@ -1857,6 +1901,7 @@ const ModulosYHabitaciones = () => {
 
                             <textarea
                                 id="info-habitacion"
+                                maxLength={200}
                                 value={infoHabitacion}
                                 onChange={(e) =>
                                     setInfoHabitacion(
@@ -1962,6 +2007,7 @@ const ModulosYHabitaciones = () => {
 
                             <textarea
                                 id="info-habitacion-editar"
+                                maxLength={200}
                                 value={infoHabitacionEditar}
                                 onChange={(e) =>
                                     setInfoHabitacionEditar(

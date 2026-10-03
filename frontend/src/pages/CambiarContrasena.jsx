@@ -117,7 +117,9 @@ function CambiarContrasena() {
 
                 if (erroresBackend.nueva_contrasena) {
                     nuevosErrores.nuevaContrasena =
-                        erroresBackend.nueva_contrasena
+                        Array.isArray(erroresBackend.nueva_contrasena)
+                            ? erroresBackend.nueva_contrasena[0]
+                            : erroresBackend.nueva_contrasena
                 }
 
                 setErrores(nuevosErrores)

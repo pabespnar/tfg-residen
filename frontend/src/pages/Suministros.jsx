@@ -527,6 +527,11 @@ const Suministros = () => {
                 "El nombre de la categoría es obligatorio."
             );
             return;
+        } else if (nombreCategoria.trim().length > 35) {
+            setErrorCrearCategoria(
+                "El nombre de la categoría no puede superar los 35 caracteres."
+            );
+            return;
         }
 
         try {
@@ -1025,6 +1030,7 @@ const Suministros = () => {
                                 <input
                                     id="nombre-categoria"
                                     type="text"
+                                    maxLength={35}
                                     value={nombreCategoria}
                                     onChange={(evento) =>
                                         setNombreCategoria(
@@ -1043,6 +1049,7 @@ const Suministros = () => {
 
                                 <textarea
                                     id="descripcion-categoria"
+                                    maxLength={150}
                                     value={descripcionCategoria}
                                     onChange={(evento) =>
                                         setDescripcionCategoria(
