@@ -17,7 +17,7 @@ class Residente(models.Model):
     f_baja = models.DateField(null=True, blank=True)
     info = models.TextField(blank=True)
     pais = models.CharField(max_length=100)
-    dni_nie = models.CharField(max_length=20, unique=True)
+    dni_nie = models.CharField(max_length=9, unique=True)
     activo = models.BooleanField(default=True)
     habitacion = models.ForeignKey('modulos.Habitacion', on_delete=models.SET_NULL, null=True, blank=True, related_name='residentes')
     foto = models.ImageField(upload_to='residentes/', null=True, blank=True)

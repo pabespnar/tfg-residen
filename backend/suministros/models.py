@@ -2,8 +2,8 @@ from django.db import models
 
 
 class Categoria(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True)
+    nombre = models.CharField(max_length=35, unique=True)
+    descripcion = models.TextField(max_length=150,blank=True)
 
     def __str__(self):
         return self.nombre
@@ -14,7 +14,7 @@ class Categoria(models.Model):
 
 class Suministro(models.Model):
     nombre = models.CharField(max_length=100)
-    detalles = models.TextField(blank=True, null=True)
+    detalles = models.TextField(max_length=150, blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)
     unidad = models.CharField(max_length=50)
     stock_minimo = models.PositiveIntegerField(default=0)
@@ -34,7 +34,7 @@ class Suministro(models.Model):
 
 class Pack(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True, null=True)
+    descripcion = models.TextField(max_length=150, blank=True, null=True)
 
     def __str__(self):
         return self.nombre

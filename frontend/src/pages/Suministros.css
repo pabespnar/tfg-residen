@@ -68,9 +68,14 @@
 
     color: #555;
     font-size: 13px;
+    line-height: 1.5;
 
     background-color: #fafafa;
     border-bottom: 1px solid #eeeeee;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .suministro-categoria-boton {
@@ -488,16 +493,54 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+
+    min-width: 0;
+}
+
+.suministro-categoria-boton {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+
+    padding: 12px 16px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+
+    border: none;
+    background-color: white;
+
+    color: #1b5e20;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease;
+}
+
+.suministro-categoria-boton span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.suministro-categoria-boton span:last-child {
+    flex-shrink: 0;
 }
 
 .suministro-categoria-acciones {
     display: flex;
     align-items: center;
     gap: 8px;
+
     flex-shrink: 0;
     margin-right: 10px;
 }
-
 .suministro-categoria-eliminar {
     padding: 5px 8px;
     border: 1px solid #b71c1c;

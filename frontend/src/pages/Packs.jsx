@@ -400,9 +400,9 @@ function Packs() {
         if (descripcionPack && !descripcionPack.trim()) {
             nuevosErrores.descripcion =
                 'La descripción no puede estar formada únicamente por espacios.'
-        } else if (descripcionPack.length > 500) {
+        } else if (descripcionPack.length > 150) {
             nuevosErrores.descripcion =
-                'La descripción no puede superar los 500 caracteres.'
+                'La descripción no puede superar los 150 caracteres.'
         }
 
         const suministrosSeleccionados = []
@@ -427,10 +427,11 @@ function Packs() {
 
             if (
                 contenido.cantidad === '' ||
+                !Number.isInteger(Number(contenido.cantidad)) ||
                 Number(contenido.cantidad) <= 0
             ) {
                 nuevosErrores[`cantidad_${index}`] =
-                    'La cantidad debe ser un número positivo.'
+                    'La cantidad debe ser un número entero positivo.'
             }
         })
 
@@ -1173,6 +1174,7 @@ function Packs() {
                                             <input
                                                 type="number"
                                                 min="1"
+                                                step="1"
                                                 value={contenido.cantidad}
                                                 onChange={(e) =>
                                                     cambiarContenido(

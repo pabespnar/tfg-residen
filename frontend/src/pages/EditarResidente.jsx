@@ -9,12 +9,17 @@ import './EditarResidente.css'
 function EditarResidente() {
 
     const navigate = useNavigate()
+
     const { id } = useParams()
 
     const [modulos, setModulos] = useState([])
+
     const [habitaciones, setHabitaciones] = useState([])
+
     const [error, setError] = useState('')
+
     const [errores, setErrores] = useState({})
+
     const [cargando, setCargando] = useState(true)
 
     const [residente, setResidente] = useState({
@@ -43,6 +48,7 @@ function EditarResidente() {
 
                 const [residenteResponse, modulosResponse] =
                     await Promise.all([
+
                         axios.get(
                             `/api/residentes/${id}/`,
                             {
@@ -51,6 +57,7 @@ function EditarResidente() {
                                 },
                             }
                         ),
+
                         axios.get(
                             '/api/modulos/listadomodulos/',
                             {
@@ -59,6 +66,7 @@ function EditarResidente() {
                                 },
                             }
                         ),
+
                     ])
 
                 const datosResidente = residenteResponse.data
@@ -101,7 +109,10 @@ function EditarResidente() {
                         if (habitacionEncontrada) {
 
                             setModuloSeleccionado(modulo.id)
-                            setHabitaciones(habitacionesResponse.data)
+
+                            setHabitaciones(
+                                habitacionesResponse.data
+                            )
 
                             break
                         }
@@ -116,8 +127,13 @@ function EditarResidente() {
                 )
 
                 if (error.response?.status === 404) {
-                    setError('El residente no existe.')
+
+                    setError(
+                        'El residente no existe.'
+                    )
+
                 } else {
+
                     setError(
                         'No se han podido cargar los datos del residente.'
                     )
@@ -204,21 +220,25 @@ function EditarResidente() {
         const nuevosErrores = {}
 
         if (!residente.nombre.trim()) {
+
             nuevosErrores.nombre =
                 'El nombre es obligatorio.'
         }
 
         if (residente.nombre.length > 100) {
+
             nuevosErrores.nombre =
                 'El nombre no puede tener más de 100 caracteres.'
         }
 
         if (!residente.apellido.trim()) {
+
             nuevosErrores.apellido =
                 'El apellido es obligatorio.'
         }
 
         if (residente.apellido.length > 100) {
+
             nuevosErrores.apellido =
                 'El apellido no puede tener más de 100 caracteres.'
         }
@@ -227,62 +247,78 @@ function EditarResidente() {
             residente.telefono &&
             !residente.telefono.trim()
         ) {
+
             nuevosErrores.telefono =
                 'El teléfono no puede estar formado únicamente por espacios.'
         }
 
         if (
             residente.telefono &&
-            residente.telefono.length > 9
+            !/^\d{9}$/.test(residente.telefono)
         ) {
+
             nuevosErrores.telefono =
-                'El teléfono no puede tener más de 9 caracteres.'
+                'El teléfono debe tener 9 dígitos numéricos.'
         }
 
         if (
             residente.email &&
             !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(residente.email)
         ) {
+
             nuevosErrores.email =
                 'El email no tiene un formato válido.'
         }
 
         if (residente.email.length > 254) {
+
             nuevosErrores.email =
                 'El email no puede tener más de 254 caracteres.'
         }
 
         if (!residente.f_nacimiento) {
+
             nuevosErrores.f_nacimiento =
                 'La fecha de nacimiento es obligatoria.'
         }
 
         if (!residente.pais.trim()) {
+
             nuevosErrores.pais =
                 'El país es obligatorio.'
         }
 
         if (residente.pais.length > 100) {
+
             nuevosErrores.pais =
                 'El país no puede tener más de 100 caracteres.'
         }
 
         if (!residente.dni_nie.trim()) {
+
             nuevosErrores.dni_nie =
                 'El DNI/NIE es obligatorio.'
         }
 
-        if (residente.dni_nie.length > 20) {
+        if (
+            residente.dni_nie &&
+            !/^(?:\d{8}[A-Za-z]|[XYZxyz]\d{7}[A-Za-z])$/.test(
+                residente.dni_nie
+            )
+        ) {
+
             nuevosErrores.dni_nie =
-                'El DNI/NIE no puede tener más de 20 caracteres.'
+                'El DNI/NIE debe tener el formato de un DNI (8 dígitos y una letra) o de un NIE (X, Y o Z, 7 dígitos y una letra).'
         }
 
         if (!residente.genero) {
+
             nuevosErrores.genero =
                 'El género es obligatorio.'
         }
 
         if (!residente.habitacion) {
+
             nuevosErrores.habitacion =
                 'La habitación es obligatoria.'
         }
@@ -291,6 +327,7 @@ function EditarResidente() {
             residente.info &&
             !residente.info.trim()
         ) {
+
             nuevosErrores.info =
                 'La información no puede estar formada únicamente por espacios.'
         }
@@ -305,6 +342,7 @@ function EditarResidente() {
         e.preventDefault()
 
         setError('')
+
         setErrores({})
 
         if (!validarFormulario()) {
@@ -312,20 +350,31 @@ function EditarResidente() {
         }
 
         const token = localStorage.getItem('access')
+
         const datos = new FormData()
 
         datos.append('nombre', residente.nombre)
+
         datos.append('apellido', residente.apellido)
+
         datos.append('telefono', residente.telefono)
+
         datos.append('email', residente.email)
+
         datos.append('f_nacimiento', residente.f_nacimiento)
+
         datos.append('info', residente.info)
+
         datos.append('pais', residente.pais)
+
         datos.append('dni_nie', residente.dni_nie)
+
         datos.append('habitacion', residente.habitacion)
+
         datos.append('genero', residente.genero)
 
         if (residente.foto instanceof File) {
+
             datos.append('foto', residente.foto)
         }
 
@@ -405,9 +454,15 @@ function EditarResidente() {
 
         return (
             <div className="crear-residente-container">
+
                 <div className="crear-residente-contenido">
-                    <p>Cargando residente...</p>
+
+                    <p>
+                        Cargando residente...
+                    </p>
+
                 </div>
+
             </div>
         )
     }
@@ -416,7 +471,9 @@ function EditarResidente() {
 
         return (
             <div className="crear-residente-container">
+
                 <div className="crear-residente-contenido">
+
                     <p className="crear-residente-error">
                         {error}
                     </p>
@@ -428,26 +485,33 @@ function EditarResidente() {
                     >
                         Volver
                     </button>
+
                 </div>
+
             </div>
         )
     }
 
     return (
+
         <div className="crear-residente-container">
 
             <div className="crear-residente-contenido">
 
                 <div className="crear-residente-cabecera">
 
-                    <h1>Editar residente</h1>
+                    <h1>
+                        Editar residente
+                    </h1>
 
                 </div>
 
                 {error && (
+
                     <p className="crear-residente-error">
                         {error}
                     </p>
+
                 )}
 
                 <form
@@ -457,89 +521,113 @@ function EditarResidente() {
 
                     <div className="crear-residente-seccion">
 
-                        <h2>Datos personales</h2>
+                        <h2>
+                            Datos personales
+                        </h2>
 
                         <div className="crear-residente-grid">
 
                             <div className="crear-residente-campo">
 
-                                <label>Nombre</label>
+                                <label>
+                                    Nombre
+                                </label>
 
                                 <input
                                     type="text"
                                     name="nombre"
                                     value={residente.nombre}
                                     onChange={cambiarCampo}
+                                    maxLength={100}
                                 />
 
                                 {errores.nombre && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.nombre}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>Apellido</label>
+                                <label>
+                                    Apellido
+                                </label>
 
                                 <input
                                     type="text"
                                     name="apellido"
                                     value={residente.apellido}
                                     onChange={cambiarCampo}
+                                    maxLength={100}
                                 />
 
                                 {errores.apellido && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.apellido}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>Teléfono</label>
+                                <label>
+                                    Teléfono
+                                </label>
 
                                 <input
                                     type="text"
                                     name="telefono"
                                     value={residente.telefono}
                                     onChange={cambiarCampo}
+                                    maxLength={9}
                                 />
 
                                 {errores.telefono && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.telefono}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>Email</label>
+                                <label>
+                                    Email
+                                </label>
 
                                 <input
                                     type="email"
                                     name="email"
                                     value={residente.email}
                                     onChange={cambiarCampo}
+                                    maxLength={254}
                                 />
 
                                 {errores.email && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.email}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>Fecha de nacimiento</label>
+                                <label>
+                                    Fecha de nacimiento
+                                </label>
 
                                 <input
                                     type="date"
@@ -549,54 +637,68 @@ function EditarResidente() {
                                 />
 
                                 {errores.f_nacimiento && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.f_nacimiento}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>País</label>
+                                <label>
+                                    País
+                                </label>
 
                                 <input
                                     type="text"
                                     name="pais"
                                     value={residente.pais}
                                     onChange={cambiarCampo}
+                                    maxLength={100}
                                 />
 
                                 {errores.pais && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.pais}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>DNI/NIE</label>
+                                <label>
+                                    DNI/NIE
+                                </label>
 
                                 <input
                                     type="text"
                                     name="dni_nie"
                                     value={residente.dni_nie}
                                     onChange={cambiarCampo}
+                                    maxLength={9}
                                 />
 
                                 {errores.dni_nie && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.dni_nie}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>Género</label>
+                                <label>
+                                    Género
+                                </label>
 
                                 <select
                                     name="genero"
@@ -623,9 +725,11 @@ function EditarResidente() {
                                 </select>
 
                                 {errores.genero && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.genero}
                                     </p>
+
                                 )}
 
                             </div>
@@ -636,13 +740,17 @@ function EditarResidente() {
 
                     <div className="crear-residente-seccion">
 
-                        <h2>Información adicional</h2>
+                        <h2>
+                            Información adicional
+                        </h2>
 
                         <div className="crear-residente-grid">
 
                             <div className="crear-residente-campo crear-residente-campo-completo">
 
-                                <label>Información</label>
+                                <label>
+                                    Información
+                                </label>
 
                                 <textarea
                                     name="info"
@@ -651,16 +759,20 @@ function EditarResidente() {
                                 />
 
                                 {errores.info && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.info}
                                     </p>
+
                                 )}
 
                             </div>
 
                             <div className="crear-residente-campo">
 
-                                <label>Foto</label>
+                                <label>
+                                    Foto
+                                </label>
 
                                 <input
                                     id="foto"
@@ -683,15 +795,16 @@ function EditarResidente() {
                                                 ...errores,
                                                 foto: '',
                                             })
-
                                         }
                                     }}
                                 />
 
                                 {errores.foto && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.foto}
                                     </p>
+
                                 )}
 
                             </div>
@@ -702,13 +815,17 @@ function EditarResidente() {
 
                     <div className="crear-residente-seccion">
 
-                        <h2>Ubicación</h2>
+                        <h2>
+                            Ubicación
+                        </h2>
 
                         <div className="crear-residente-habitaciones">
 
                             <div className="crear-residente-campo">
 
-                                <label>Módulo</label>
+                                <label>
+                                    Módulo
+                                </label>
 
                                 <select
                                     value={moduloSeleccionado}
@@ -736,13 +853,17 @@ function EditarResidente() {
 
                             <div className="crear-residente-campo">
 
-                                <label>Habitación</label>
+                                <label>
+                                    Habitación
+                                </label>
 
                                 <select
                                     name="habitacion"
                                     value={residente.habitacion}
                                     onChange={cambiarCampo}
-                                    disabled={habitaciones.length === 0}
+                                    disabled={
+                                        habitaciones.length === 0
+                                    }
                                 >
 
                                     <option value="">
@@ -754,32 +875,39 @@ function EditarResidente() {
                                         const completa =
                                             habitacion.residentes_actuales >=
                                             habitacion.capacidad &&
-                                            habitacion.id !== residente.habitacion
+                                            habitacion.id !==
+                                                residente.habitacion
 
                                         return (
+
                                             <option
                                                 key={habitacion.id}
                                                 value={habitacion.id}
                                                 disabled={completa}
                                             >
+
                                                 {habitacion.nombre} (
                                                 {habitacion.residentes_actuales}/
                                                 {habitacion.capacidad}
                                                 )
+
                                                 {completa
                                                     ? ' - Completa'
                                                     : ''}
-                                            </option>
-                                        )
 
+                                            </option>
+
+                                        )
                                     })}
 
                                 </select>
 
                                 {errores.habitacion && (
+
                                     <p className="crear-residente-campo-error">
                                         {errores.habitacion}
                                     </p>
+
                                 )}
 
                             </div>
@@ -793,7 +921,9 @@ function EditarResidente() {
                         <button
                             type="button"
                             className="crear-residente-cancelar"
-                            onClick={() => navigate(`/residentes/${id}`)}
+                            onClick={() =>
+                                navigate(`/residentes/${id}`)
+                            }
                         >
                             Cancelar
                         </button>

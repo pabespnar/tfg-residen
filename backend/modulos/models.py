@@ -5,7 +5,7 @@ from django.core.validators import MinValueValidator
 class Modulo(models.Model):
 
     nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True)
+    descripcion = models.TextField(max_length=200,blank=True)
     num_habitaciones_max = models.IntegerField(validators=[MinValueValidator(1)])
     def __str__(self):
         return self.nombre
@@ -17,7 +17,7 @@ class Modulo(models.Model):
 class Habitacion(models.Model):
 
     nombre = models.CharField(max_length=100)
-    info = models.TextField(blank=True)
+    info = models.TextField(max_length=200,blank=True)
     capacidad = models.IntegerField(
         validators=[MinValueValidator(1)]
     )

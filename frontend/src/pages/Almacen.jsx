@@ -301,6 +301,9 @@ function Almacen() {
         if (!observaciones.trim()) {
             nuevosErrores.observaciones =
                 'Las bajas de servicio requieren observaciones.'
+        } else if (observaciones.length > 250) {
+            nuevosErrores.observaciones =
+                'Las observaciones no pueden superar los 250 caracteres.'
         }
 
         if (Object.keys(nuevosErrores).length > 0) {
@@ -1014,6 +1017,7 @@ function Almacen() {
 
                                 <textarea
                                     value={observaciones}
+                                    maxLength={250}
                                     onChange={(e) =>
                                         setObservaciones(
                                             e.target.value
