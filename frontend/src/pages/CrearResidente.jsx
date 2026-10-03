@@ -518,6 +518,7 @@ function CrearResidente() {
 
                                 <textarea
                                     name="info"
+                                    maxLength={200}
                                     value={residente.info}
                                     onChange={cambiarCampo}
                                 />

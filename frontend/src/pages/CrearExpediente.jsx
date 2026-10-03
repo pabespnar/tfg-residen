@@ -518,10 +518,21 @@ function CrearExpediente() {
                 error
             );
 
-            setError(
-                error.response?.data?.error ||
-                'No se ha podido crear el expediente.'
-            );
+            const datosError = error.response?.data;
+
+            if (datosError?.error) {
+
+                setError(datosError.error);
+
+            } else if (datosError) {
+
+                setErrores(datosError);
+
+            } else {
+
+                setError('No se ha podido crear el expediente.');
+
+            }
 
         }
 

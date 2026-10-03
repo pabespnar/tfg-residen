@@ -88,6 +88,11 @@ class ResidenteSerializer(serializers.ModelSerializer):
                 "La información no puede estar formada únicamente por espacios."
             )
 
+        if value and len(value) > 200:
+            raise serializers.ValidationError(
+                "La información no puede superar los 200 caracteres."
+            )
+
         return value
 
     def validate_pais(self, value):

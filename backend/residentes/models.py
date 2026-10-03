@@ -15,7 +15,7 @@ class Residente(models.Model):
     f_nacimiento = models.DateField()
     f_alta = models.DateField()
     f_baja = models.DateField(null=True, blank=True)
-    info = models.TextField(blank=True)
+    info = models.TextField(max_length=200,blank=True)
     pais = models.CharField(max_length=100)
     dni_nie = models.CharField(max_length=9, unique=True)
     activo = models.BooleanField(default=True)

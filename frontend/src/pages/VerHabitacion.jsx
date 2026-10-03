@@ -80,14 +80,6 @@ function VerHabitacion() {
             nuevosErrores.nombre = 'El nombre no puede estar vacío.'
         }
 
-        if (
-            nombre &&
-            habitacion.residentes &&
-            habitacion.residentes.some(
-                () => false
-            )
-        )
-
         if (!Number.isInteger(capacidad) || capacidad < 1) {
             nuevosErrores.capacidad =
                 'La capacidad debe ser como mínimo 1.'

@@ -527,9 +527,9 @@ const Suministros = () => {
                 "El nombre de la categoría es obligatorio."
             );
             return;
-        } else if (nombreCategoria.trim().length > 100) {
+        } else if (nombreCategoria.trim().length > 35) {
             setErrorCrearCategoria(
-                "El nombre de la categoría no puede superar los 100 caracteres."
+                "El nombre de la categoría no puede superar los 35 caracteres."
             );
             return;
         }

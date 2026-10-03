@@ -385,6 +385,12 @@ class CrearPedidoExpedienteView(APIView):
                 status=400
             )
 
+        if Pedido.objects.filter(nombre=nombre.strip()).exists():
+            return Response(
+                {"error": "Ya existe un pedido con ese nombre, use otro."},
+                status=400
+            )
+
         if not cantidades:
             return Response(
                 {"error": "Debes indicar al menos un suministro."},
@@ -718,6 +724,12 @@ class CrearPedidoGeneralView(APIView):
                     "error":
                     "El nombre del pedido no puede superar los 50 caracteres."
                 },
+                status=400
+            )
+
+        if Pedido.objects.filter(nombre=nombre.strip()).exists():
+            return Response(
+                {"error": "Ya existe un pedido con ese nombre, use otro."},
                 status=400
             )
 

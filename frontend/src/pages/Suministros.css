@@ -114,7 +114,7 @@
     padding: 9px 16px;
 
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
 
     gap: 15px;
@@ -138,20 +138,29 @@
     flex: 1;
 
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
 
     min-width: 0;
+    gap: 15px;
 
     cursor: pointer;
 }
 
 .suministro-nombre {
+    min-width: 0;
+
     color: #333;
     font-size: 14px;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .suministro-stock {
+    flex-shrink: 0;
+
     color: #555;
     font-size: 13px;
     font-weight: 500;
