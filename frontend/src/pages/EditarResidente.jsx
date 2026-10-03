@@ -282,6 +282,14 @@ function EditarResidente() {
                 'La fecha de nacimiento es obligatoria.'
         }
 
+        if (
+            residente.f_nacimiento &&
+            residente.f_nacimiento > new Date().toISOString().split('T')[0]
+        ) {
+            nuevosErrores.f_nacimiento =
+                'La fecha de nacimiento no puede ser una fecha futura.'
+        }
+
         if (!residente.pais.trim()) {
 
             nuevosErrores.pais =

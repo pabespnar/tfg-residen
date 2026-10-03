@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 
 from .models import Residente
 
@@ -127,6 +128,14 @@ class ResidenteSerializer(serializers.ModelSerializer):
             )
 
         return valor
+    
+    def validate_f_nacimiento(self, value):
+        if value > timezone.now().date():
+            raise serializers.ValidationError(
+                "La fecha de nacimiento no puede ser una fecha futura."
+            )
+
+        return value
 
     def validate(self, data):
 
