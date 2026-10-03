@@ -57,7 +57,8 @@ function RestablecerContrasena() {
             if (error.response?.data?.error) {
                 setError(error.response.data.error)
             } else if (error.response?.data?.nueva_contrasena) {
-                setError(error.response.data.nueva_contrasena)
+                const mensaje = error.response.data.nueva_contrasena
+                setError(Array.isArray(mensaje) ? mensaje[0] : mensaje)
             } else {
                 setError('No se ha podido restablecer la contraseña.')
             }
