@@ -34,7 +34,7 @@ class CrearUsuarioTests(APITestCase):
                 'telefono': '600123457',
                 'dni': '12345678B',
                 'rol': 'residentes',
-                'password': 'Test1234',
+                'password': 'Test1234!',
             },
             format='multipart'
         )
@@ -74,7 +74,7 @@ class CrearUsuarioTests(APITestCase):
         )
 
         self.assertTrue(
-            usuario.check_password('Test1234')
+            usuario.check_password('Test1234!')
         )
 
     def test_crear_usuario_como_superusuario(self):
@@ -87,7 +87,7 @@ class CrearUsuarioTests(APITestCase):
                 'telefono': '600123458',
                 'dni': '12345678C',
                 'rol': 'administracion',
-                'password': 'Test1234',
+                'password': 'Test1234!',
                 'es_superusuario': True,
             },
             format='multipart'
@@ -113,7 +113,7 @@ class CrearUsuarioTests(APITestCase):
     def test_crear_usuario_sin_permiso(self):
         usuario = Usuario.objects.create_user(
             email='usuario@tfg.com',
-            password='Test1234',
+            password='Test1234!',
             nombre='Usuario',
             apellido='Normal',
             telefono='600123459',
@@ -135,7 +135,7 @@ class CrearUsuarioTests(APITestCase):
                 'telefono': '600123460',
                 'dni': '12345678E',
                 'rol': 'residentes',
-                'password': 'Test1234',
+                'password': 'Test1234!',
             },
             format='multipart'
         )
@@ -155,7 +155,7 @@ class CrearUsuarioTests(APITestCase):
                 'telefono': '600123460',
                 'dni': '12345678E',
                 'rol': 'residentes',
-                'password': 'Test1234',
+                'password': 'Test1234!',
             },
             format='multipart'
         )
@@ -175,7 +175,7 @@ class CrearUsuarioTests(APITestCase):
                 'telefono': '600123460',
                 'dni': '12345678A',
                 'rol': 'residentes',
-                'password': 'Test1234',
+                'password': 'Test1234!',
             },
             format='multipart'
         )
@@ -195,7 +195,7 @@ class CrearUsuarioTests(APITestCase):
                 'telefono': '123',
                 'dni': '12345678E',
                 'rol': 'residentes',
-                'password': 'Test1234',
+                'password': 'Test1234!',
             },
             format='multipart'
         )

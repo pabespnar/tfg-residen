@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 
 from .models import Residente
 
@@ -74,6 +75,11 @@ class ResidenteSerializer(serializers.ModelSerializer):
                 "El teléfono no puede estar formado únicamente por espacios."
             )
 
+        if value and (not value.isdigit() or len(value) != 9):
+            raise serializers.ValidationError(
+                "El teléfono debe tener 9 dígitos."
+            )
+
         return value
 
     def validate_info(self, value):
@@ -81,6 +87,11 @@ class ResidenteSerializer(serializers.ModelSerializer):
         if value and not value.strip():
             raise serializers.ValidationError(
                 "La información no puede estar formada únicamente por espacios."
+            )
+
+        if value and len(value) > 200:
+            raise serializers.ValidationError(
+                "La información no puede superar los 200 caracteres."
             )
 
         return value
@@ -95,10 +106,33 @@ class ResidenteSerializer(serializers.ModelSerializer):
         return value
 
     def validate_dni_nie(self, value):
+        valor = value.strip().upper()
 
-        if not value.strip():
+        if not valor:
             raise serializers.ValidationError(
                 "El DNI/NIE no puede estar vacío."
+            )
+
+        if len(valor) != 9:
+            raise serializers.ValidationError(
+                "El DNI/NIE debe tener 9 caracteres."
+            )
+
+        es_dni = valor[:-1].isdigit() and valor[-1].isalpha()
+        es_nie = valor[0] in "XYZ" and valor[1:-1].isdigit() and valor[-1].isalpha()
+
+        if not (es_dni or es_nie):
+            raise serializers.ValidationError(
+                "El DNI/NIE debe tener el formato de un DNI (8 dígitos y una letra) "
+                "o de un NIE (empieza por X, Y o Z, 7 dígitos y una letra)."
+            )
+
+        return valor
+    
+    def validate_f_nacimiento(self, value):
+        if value > timezone.now().date():
+            raise serializers.ValidationError(
+                "La fecha de nacimiento no puede ser una fecha futura."
             )
 
         return value

@@ -184,6 +184,46 @@ class ProveedorSerializer(serializers.ModelSerializer):
 
         return list(suministros.values())
 
+    def validate_cif(self, value):
+        valor = value.strip().upper()
+
+        if not valor:
+            raise serializers.ValidationError(
+                "El CIF no puede estar vacío."
+            )
+
+        letras_validas = "ABCDEFGHJNPQRSUVW"
+        control_validos = "0123456789ABCDEFGHIJ"
+
+        if (
+            len(valor) != 9
+            or valor[0] not in letras_validas
+            or not valor[1:8].isdigit()
+            or valor[8] not in control_validos
+        ):
+            raise serializers.ValidationError(
+                "El CIF debe tener el formato de una letra, 7 dígitos "
+                "y un carácter de control (ej. A1234567B)."
+            )
+
+        return valor
+
+    def validate_foto(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "La imagen no puede superar los 5 MB."
+            )
+
+        if value.content_type not in [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+        ]:
+            raise serializers.ValidationError(
+                "Solo se permiten imágenes JPG, PNG o WEBP."
+            )
+
+        return value
 
 class DetalleExpedienteSerializer(serializers.ModelSerializer):
 

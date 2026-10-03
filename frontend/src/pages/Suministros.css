@@ -45,7 +45,7 @@
     margin: 0 auto;
 
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
 
     align-items: start;
@@ -68,9 +68,14 @@
 
     color: #555;
     font-size: 13px;
+    line-height: 1.5;
 
     background-color: #fafafa;
     border-bottom: 1px solid #eeeeee;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .suministro-categoria-boton {
@@ -109,7 +114,7 @@
     padding: 9px 16px;
 
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
 
     gap: 15px;
@@ -131,22 +136,33 @@
 
 .suministro-item-informacion {
     flex: 1;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
     min-width: 0;
 
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+
+    gap: 4px;
     cursor: pointer;
 }
 
 .suministro-nombre {
+    display: block;
+    width: 100%;
+    min-width: 0;
+
     color: #333;
     font-size: 14px;
+
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
 .suministro-stock {
+    flex-shrink: 0;
+
     color: #555;
     font-size: 13px;
     font-weight: 500;
@@ -488,16 +504,54 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+
+    min-width: 0;
+}
+
+.suministro-categoria-boton {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+
+    padding: 12px 16px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+
+    border: none;
+    background-color: white;
+
+    color: #1b5e20;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease;
+}
+
+.suministro-categoria-boton span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.suministro-categoria-boton span:last-child {
+    flex-shrink: 0;
 }
 
 .suministro-categoria-acciones {
     display: flex;
     align-items: center;
     gap: 8px;
+
     flex-shrink: 0;
     margin-right: 10px;
 }
-
 .suministro-categoria-eliminar {
     padding: 5px 8px;
     border: 1px solid #b71c1c;

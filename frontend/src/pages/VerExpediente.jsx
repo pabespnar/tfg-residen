@@ -91,9 +91,17 @@ function VerExpediente() {
         const nuevosErroresCantidad = {}
 
         detalles.forEach((detalle) => {
-            const cantidad = cantidades[detalle.suministro]
+            const cantidad =
+                cantidades[detalle.suministro] ?? 0
 
             if (
+                cantidad !== '' &&
+                !Number.isInteger(Number(cantidad))
+            ) {
+                nuevosErroresCantidad[detalle.suministro] =
+                    'La cantidad debe ser un número entero.'
+                valido = false
+            } else if (
                 cantidad !== '' &&
                 Number(cantidad) < 0
             ) {
@@ -776,6 +784,8 @@ function VerExpediente() {
 
                                         <input
                                             type="number"
+                                            min="0"
+                                            step="1"
                                             value={
                                                 cantidades[detalle.suministro] ?? 0
                                             }

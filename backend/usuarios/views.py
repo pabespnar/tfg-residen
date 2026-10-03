@@ -9,6 +9,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .serializers import UsuarioSerializer, CrearUsuarioSerializer
 from .models import Usuario
@@ -85,9 +87,11 @@ class CambiarContrasenaView(APIView):
                 status=400
             )
 
-        if len(nueva_contrasena) < 8:
+        try:
+            validate_password(nueva_contrasena, user=request.user)
+        except DjangoValidationError as e:
             return Response(
-                {'nueva_contrasena': 'La nueva contraseña debe tener al menos 8 caracteres.'},
+                {'nueva_contrasena': list(e.messages)},
                 status=400
             )
 
@@ -180,9 +184,11 @@ class RestablecerContrasenaView(APIView):
                 status=400
             )
 
-        if len(nueva_contrasena) < 8:
+        try:
+            validate_password(nueva_contrasena, user=usuario)
+        except DjangoValidationError as e:
             return Response(
-                {'nueva_contrasena': 'La nueva contraseña debe tener al menos 8 caracteres.'},
+                {'nueva_contrasena': list(e.messages)},
                 status=400
             )
 

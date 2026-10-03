@@ -29,10 +29,7 @@ HOY = date(2026, 9, 16)
 
 
 def _fijar_fecha(objeto, fecha):
-    """Los modelos de evento.Evento usan auto_now_add, así que la fecha
-    pasada a .objects.create() se ignora. Este helper la fija después,
-    con un UPDATE que no pasa por save() y por tanto no la sobrescribe.
-    `fecha` puede ser date o datetime; si es date se fija a mediodía UTC."""
+
     if isinstance(fecha, date) and not isinstance(fecha, datetime):
         fecha = datetime(
             fecha.year, fecha.month, fecha.day, 12, 0,

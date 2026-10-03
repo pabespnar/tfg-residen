@@ -183,10 +183,12 @@
 
 .pack-detalle-descripcion p {
     margin: 0;
-    max-height: 100px;
-    overflow-y: auto;
     color: #555;
     font-size: 14px;
+    line-height: 1.5;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .pack-residentes-recibidos {
