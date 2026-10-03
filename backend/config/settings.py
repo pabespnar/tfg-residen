@@ -122,6 +122,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
 # CORS
 

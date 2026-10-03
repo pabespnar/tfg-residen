@@ -9,6 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.conf import settings
 
 from .serializers import UsuarioSerializer, CrearUsuarioSerializer
 from .models import Usuario
@@ -124,8 +125,7 @@ class RecuperarContrasenaView(APIView):
 
             uid = urlsafe_base64_encode(force_bytes(usuario.pk))
             token = default_token_generator.make_token(usuario)
-            enlace = f'http://localhost:5173/restablecer-contrasena/{uid}/{token}'
-
+            enlace = f'{settings.FRONTEND_URL}/restablecer-contrasena/{uid}/{token}'
             send_mail(
                 'Recuperación de contraseña',
                 f'Buenas, {usuario.nombre},\n\n'
