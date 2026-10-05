@@ -358,17 +358,19 @@ function VerResidente() {
 
                             <span className="ver-residente-acciones">
 
-                                <button
-                                    className="ver-residente-editar-icono"
-                                    onClick={() =>
-                                        navigate(
-                                            `/residentes/${id}/editar`
-                                        )
-                                    }
-                                    title="Editar residente"
-                                >
-                                    <FiEdit2 />
-                                </button>
+                                {residente.activo && (
+                                    <button
+                                        className="ver-residente-editar-icono"
+                                        onClick={() =>
+                                            navigate(
+                                                `/residentes/${id}/editar`
+                                            )
+                                        }
+                                        title="Editar residente"
+                                    >
+                                        <FiEdit2 />
+                                    </button>
+                                )}
 
                                 {residente.activo ? (
                                     <button

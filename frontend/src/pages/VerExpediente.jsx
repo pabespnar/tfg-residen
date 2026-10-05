@@ -151,11 +151,18 @@ function VerExpediente() {
 
         const token = localStorage.getItem('access')
 
+        const cantidadesPedido = Object.fromEntries(
+            Object.entries(cantidades).map(([suministro, cantidad]) => [
+                suministro,
+                cantidad === '' ? 0 : cantidad
+            ])
+        )
+        
         axios.post(
             `/api/expedientes/expedientes/${id}/crearpedidoexpediente/`,
             {
                 nombre: nombrePedido,
-                cantidades: cantidades
+                cantidades: cantidadesPedido
             },
             {
                 headers: {
@@ -787,7 +794,7 @@ function VerExpediente() {
                                             min="0"
                                             step="1"
                                             value={
-                                                cantidades[detalle.suministro] ?? 0
+                                                cantidades[detalle.suministro] ?? ''
                                             }
                                             onChange={(e) => {
 

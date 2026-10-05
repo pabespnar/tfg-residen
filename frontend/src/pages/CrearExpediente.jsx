@@ -334,6 +334,17 @@ function CrearExpediente() {
 
             valido = false;
 
+        } else if (
+            !/^\d+(\.\d{1,2})?$/.test(
+                expediente.presupuesto
+            )
+        ) {
+
+            nuevosErrores.presupuesto =
+                'El presupuesto no puede tener más de 2 decimales.';
+
+            valido = false;
+
         }
 
 
@@ -409,6 +420,17 @@ function CrearExpediente() {
 
                     nuevosErrores[index] =
                         'El precio por unidad no puede ser negativo.';
+
+                    valido = false;
+
+                } else if (
+                    !/^\d+(\.\d{1,2})?$/.test(
+                        suministro.precio_unidad
+                    )
+                ) {
+
+                    nuevosErrores[index] =
+                        'El precio por unidad no puede tener más de 2 decimales.';
 
                     valido = false;
 
