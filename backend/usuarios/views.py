@@ -17,7 +17,7 @@ from .models import Usuario
 
 from centro.permissions import EsSuperUsuario
 from centro.models import Centro
-from .correo import enviar_correo
+from .correo import enviar_correo_seguro
 
 class UsuarioActualView(APIView):
     permission_classes = [IsAuthenticated]
@@ -135,7 +135,7 @@ class RecuperarContrasenaView(APIView):
             uid = urlsafe_base64_encode(force_bytes(usuario.pk))
             token = default_token_generator.make_token(usuario)
             enlace = f'{settings.FRONTEND_URL}/restablecer-contrasena/{uid}/{token}'
-            enviar_correo(
+            enviar_correo_seguro(
                 usuario.email,
                 'Recuperación de contraseña',
                 f'Buenas, {usuario.nombre},\n\n'

@@ -1,5 +1,5 @@
 from django.db import models
-
+from config.archivos import RutaAleatoria
 
 class Genero(models.TextChoices):
     MASCULINO = 'M', 'Masculino'
@@ -20,7 +20,7 @@ class Residente(models.Model):
     dni_nie = models.CharField(max_length=9, unique=True)
     activo = models.BooleanField(default=True)
     habitacion = models.ForeignKey('modulos.Habitacion', on_delete=models.SET_NULL, null=True, blank=True, related_name='residentes')
-    foto = models.ImageField(upload_to='residentes/', null=True, blank=True)
+    foto = models.ImageField(upload_to=RutaAleatoria('residentes'), null=True, blank=True)
     genero = models.CharField(max_length=1, choices=Genero.choices)
 
 

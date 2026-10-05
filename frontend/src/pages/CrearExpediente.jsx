@@ -1047,8 +1047,17 @@ function CrearExpediente() {
 
                         <input
                             type="file"
+                            accept="application/pdf,image/jpeg,image/png,image/webp"
                             onChange={cambiarContrato}
                         />
+
+                        {errores.contrato && (
+
+                            <p className="crear-expediente-error">
+                                {errores.contrato}
+                            </p>
+
+                        )}
 
                     </div>
 

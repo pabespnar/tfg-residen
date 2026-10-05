@@ -130,6 +130,8 @@ function VerHabitacion() {
                 }
             )
 
+            window.location.reload()
+
             setHabitacion(response.data)
             setMostrarEditar(false)
             setErroresEditar({})

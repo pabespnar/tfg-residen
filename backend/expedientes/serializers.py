@@ -85,6 +85,19 @@ class ExpedienteSerializer(serializers.ModelSerializer):
 
         return value
 
+    def validate_contrato(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "El contrato no puede superar los 5 MB."
+            )
+        if value.content_type not in [
+            'application/pdf', 'image/jpeg', 'image/png', 'image/webp'
+        ]:
+            raise serializers.ValidationError(
+                "El contrato debe ser un PDF o una imagen JPG, PNG o WEBP."
+            )
+        return value
+
     def validate_detalles(self, value):
         if not value.strip():
             raise serializers.ValidationError(

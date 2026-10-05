@@ -251,6 +251,20 @@ class CrearAltaAlmacenView(APIView):
         detalles = request.data.get('detalles')
         albaran = request.FILES.get('factura_albaran')
 
+        if albaran:
+            if albaran.size > 5 * 1024 * 1024:
+                return Response(
+                    {'error': 'El albarán no puede superar los 5 MB.'},
+                    status=400
+                )
+            if albaran.content_type not in [
+                'application/pdf', 'image/jpeg', 'image/png', 'image/webp'
+            ]:
+                return Response(
+                    {'error': 'El albarán debe ser un PDF o una imagen JPG, PNG o WEBP.'},
+                    status=400
+                )
+
         if not pedido_id:
             return Response(
                 {'pedido': 'Debes seleccionar un pedido.'},
