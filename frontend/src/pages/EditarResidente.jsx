@@ -37,6 +37,7 @@ function EditarResidente() {
     })
 
     const [moduloSeleccionado, setModuloSeleccionado] = useState('')
+    const [habitacionOriginal, setHabitacionOriginal] = useState(null)
 
     useEffect(() => {
 
@@ -85,6 +86,7 @@ function EditarResidente() {
                     foto: null,
                 })
 
+                setHabitacionOriginal(datosResidente.habitacion || null)
                 setModulos(modulosResponse.data)
 
                 if (datosResidente.habitacion) {
@@ -881,11 +883,11 @@ function EditarResidente() {
 
                                     {habitaciones.map((habitacion) => {
 
-                                        const completa =
-                                            habitacion.residentes_actuales >=
-                                            habitacion.capacidad &&
-                                            habitacion.id !==
-                                                residente.habitacion
+                                    const completa =
+                                        habitacion.residentes_actuales >=
+                                        habitacion.capacidad &&
+                                        String(habitacion.id) !==
+                                            String(habitacionOriginal)
 
                                         return (
 
