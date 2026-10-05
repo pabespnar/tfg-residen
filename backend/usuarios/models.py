@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
+from config.archivos import RutaAleatoria
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -37,7 +38,7 @@ class Usuario(AbstractUser):
     email = models.EmailField(unique=True)
     dni = models.CharField(max_length=9, unique=True)
     rol = models.CharField(max_length=30, choices = Rol.choices)
-    imagen_perfil = models.ImageField(upload_to='usuarios/', null=True, blank=True)
+    imagen_perfil = models.ImageField(upload_to=RutaAleatoria('usuarios'), null=True, blank=True)
 
     objects = UsuarioManager()
 

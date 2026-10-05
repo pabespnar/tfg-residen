@@ -202,6 +202,8 @@ function VerResidente() {
                 }
             )
 
+            window.location.reload()
+
             setResidente(response.data)
             setMostrarModalBaja(false)
         } catch (error) {
@@ -244,6 +246,8 @@ function VerResidente() {
                     },
                 }
             )
+
+            window.location.reload()
 
             setResidente(response.data)
             setMostrarModalAlta(false)

@@ -1,12 +1,12 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-
+from config.archivos import RutaAleatoria
 
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=100)
     cif = models.CharField(max_length=9, unique=True)
     correo = models.EmailField()
-    foto = models.ImageField(upload_to='proveedores/', null=True, blank=True)
+    foto = models.ImageField(upload_to=RutaAleatoria('proveedores'), null=True, blank=True)
 
     def __str__(self):
         return self.nombre
@@ -20,7 +20,7 @@ class Expediente(models.Model):
     detalles = models.CharField(max_length=200)
     fecha_inicio = models.DateField()
     fecha_final = models.DateField()
-    contrato = models.FileField(upload_to='contratos/', null=True, blank=True)
+    contrato = models.FileField(upload_to=RutaAleatoria('contratos'), null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT, related_name='expedientes')
     presupuesto = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     presupuesto_restante = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)])
