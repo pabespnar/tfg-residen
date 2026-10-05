@@ -556,31 +556,34 @@ function VerResidente() {
                             </span>
                         </div>
 
-                        <div className="ver-residente-campo">
-                            <span className="ver-residente-label">
-                                Fecha de baja
-                            </span>
+                        {!residente.activo && (
+                            <>
+                                <div className="ver-residente-campo">
+                                    <span className="ver-residente-label">
+                                        Fecha de baja
+                                    </span>
 
-                            <span className="ver-residente-valor">
-                                {residente.f_baja || 'No tiene fecha de baja'}
-                            </span>
-                        </div>
+                                    <span className="ver-residente-valor">
+                                        {residente.f_baja || 'No tiene fecha de baja'}
+                                    </span>
+                                </div>
 
-                        <div className="ver-residente-campo">
-                            <span className="ver-residente-label">
-                                Duración de la estancia
-                            </span>
+                                <div className="ver-residente-campo">
+                                    <span className="ver-residente-label">
+                                        Duración de la estancia
+                                    </span>
 
-                            <span className="ver-residente-valor">
-                                {formatearEstancia(
-                                    calcularEstanciaDias(
-                                        residente.f_alta,
-                                        residente.f_baja
-                                    )
-                                )}
-                            </span>
-                        </div>
-
+                                    <span className="ver-residente-valor">
+                                        {formatearEstancia(
+                                            calcularEstanciaDias(
+                                                residente.f_alta,
+                                                residente.f_baja
+                                            )
+                                        )}
+                                    </span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 

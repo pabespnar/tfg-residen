@@ -410,12 +410,6 @@ function EditarCentro() {
                                             logo: archivo,
                                         })
 
-                                        setLogoActual(
-                                            URL.createObjectURL(
-                                                archivo
-                                            )
-                                        )
-
                                         setErrores({
                                             ...errores,
                                             logo: '',

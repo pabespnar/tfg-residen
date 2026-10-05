@@ -81,6 +81,12 @@ class CambiarContrasenaView(APIView):
                 status=400
             )
 
+        if nueva_contrasena != nueva_contrasena.strip():
+            return Response(
+                {'nueva_contrasena': 'La contraseña no puede empezar ni terminar con espacios.'},
+                status=400
+            )
+
         if not request.user.check_password(contrasena_actual):
             return Response(
                 {'contrasena_actual': 'La contraseña actual no es correcta.'},
@@ -181,6 +187,11 @@ class RestablecerContrasenaView(APIView):
         if not nueva_contrasena:
             return Response(
                 {'nueva_contrasena': 'La nueva contraseña es obligatoria.'},
+                status=400
+            )
+        if nueva_contrasena != nueva_contrasena.strip():
+            return Response(
+                {'nueva_contrasena': 'La contraseña no puede empezar ni terminar con espacios.'},
                 status=400
             )
 

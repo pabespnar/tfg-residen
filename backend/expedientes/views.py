@@ -16,7 +16,7 @@ from suministros.models import Suministro
 from suministros.serializers import SuministroSerializer
 from evento.models import Historial, Notificacion
 from usuarios.models import Usuario, Rol
-from usuarios.correo import enviar_correo
+from usuarios.correo import enviar_correo, enviar_correo_seguro
 
 class ListaExpedientesView(APIView):
     permission_classes = [IsAuthenticated, EsGestorAdministracion]
@@ -580,7 +580,7 @@ class CrearPedidoExpedienteView(APIView):
 
         centro = Centro.get_solo()
 
-        enviar_correo(
+        enviar_correo_seguro(
             expediente.proveedor.correo,
             f'Nuevo pedido: {pedido.nombre}',
             f'Buenas, {expediente.proveedor.nombre}.\n\n'
@@ -1000,7 +1000,7 @@ class CrearPedidoGeneralView(APIView):
                                 usuario=usuario
                             )
 
-        enviar_correo(
+        enviar_correo_seguro(
             proveedor.correo,
             f'Nuevo pedido: {pedido.nombre}',
             f'Buenas, {proveedor.nombre}.\n\n'
