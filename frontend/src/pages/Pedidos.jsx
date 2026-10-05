@@ -439,6 +439,17 @@ function Pedidos() {
                 ) {
                     nuevosErrores[index] =
                         'El precio por unidad no puede ser negativo.';
+
+                    return;
+                }
+
+                if (
+                    !/^\d+(\.\d{1,2})?$/.test(
+                        suministroSeleccionado.precio_unidad
+                    )
+                ) {
+                    nuevosErrores[index] =
+                        'El precio por unidad no puede tener más de 2 decimales.';
                 }
             }
         );

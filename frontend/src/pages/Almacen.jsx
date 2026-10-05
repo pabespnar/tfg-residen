@@ -55,7 +55,7 @@ function Almacen() {
             const token = localStorage.getItem('access')
 
             const responseSuministros = await axios.get(
-                '/api/suministros/suministros',
+                '/api/suministros/suministros/',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -247,14 +247,6 @@ function Almacen() {
 
         suministrosSeleccionados.forEach(
             (suministroSeleccionado, index) => {
-
-                if (!suministroSeleccionado.categoria) {
-
-                    nuevosErrores[`suministro_${index}`] =
-                        'Debes seleccionar una categoría.'
-
-                    return
-                }
 
                 if (!suministroSeleccionado.suministro) {
 
