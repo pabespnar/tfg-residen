@@ -181,7 +181,7 @@ function CrearExpediente() {
 
         setErrores((erroresActuales) => ({
             ...erroresActuales,
-            [index]: ''
+            [`precio_${index}`]: ''
         }));
 
     };
@@ -220,6 +220,7 @@ function CrearExpediente() {
             };
 
             delete nuevosErrores[index];
+            delete nuevosErrores[`precio_${index}`];
 
             return nuevosErrores;
 
@@ -326,11 +327,11 @@ function CrearExpediente() {
             valido = false;
 
         } else if (
-            Number(expediente.presupuesto) < 0
+            Number(expediente.presupuesto) <= 0        
         ) {
 
             nuevosErrores.presupuesto =
-                'El presupuesto no puede ser negativo.';
+                'El presupuesto debe ser mayor que 0.';
 
             valido = false;
 
@@ -409,7 +410,7 @@ function CrearExpediente() {
                     suministro.precio_unidad === null
                 ) {
 
-                    nuevosErrores[index] =
+                    nuevosErrores[`precio_${index}`] =
                         'Debes indicar un precio por unidad.';
 
                     valido = false;
@@ -418,7 +419,7 @@ function CrearExpediente() {
                     Number(suministro.precio_unidad) < 0
                 ) {
 
-                    nuevosErrores[index] =
+                    nuevosErrores[`precio_${index}`] =
                         'El precio por unidad no puede ser negativo.';
 
                     valido = false;
@@ -429,7 +430,7 @@ function CrearExpediente() {
                     )
                 ) {
 
-                    nuevosErrores[index] =
+                    nuevosErrores[`precio_${index}`] =
                         'El precio por unidad no puede tener más de 2 decimales.';
 
                     valido = false;
@@ -822,16 +823,18 @@ function CrearExpediente() {
                                                     suministro.id
                                                 )
                                             ) &&
-                                            !suministroSeleccionado.categoria ||
                                             (
-                                                suministroSeleccionado.categoria === 'sin-asignar'
-                                                    ? suministro.categoria === null
-                                                    : String(
-                                                        suministro.categoria
-                                                    ) ===
-                                                        String(
-                                                            suministroSeleccionado.categoria
-                                                        )
+                                                !suministroSeleccionado.categoria ||
+                                                (
+                                                    suministroSeleccionado.categoria === 'sin-asignar'
+                                                        ? suministro.categoria === null
+                                                        : String(
+                                                            suministro.categoria
+                                                        ) ===
+                                                            String(
+                                                                suministroSeleccionado.categoria
+                                                            )
+                                                )
                                             )
                                     );
 
@@ -849,12 +852,6 @@ function CrearExpediente() {
                                                     )
                                             ) === indice
                                     );
-
-
-                                console.log(
-                                    'CREAR EXPEDIENTE - categorias:',
-                                    categoriasDisponibles
-                                );
 
 
                                 return (
@@ -994,10 +991,10 @@ function CrearExpediente() {
                                                 }
                                             />
 
-                                            {errores[index] && (
+                                            {errores[`precio_${index}`] && (
 
                                                 <p className="crear-expediente-error">
-                                                    {errores[index]}
+                                                    {errores[`precio_${index}`]}
                                                 </p>
 
                                             )}

@@ -66,6 +66,9 @@
     margin: 3px 0;
     color: #666;
     font-size: 14px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 .suministro-administracion-flecha {
     margin-left: 15px;
@@ -132,6 +135,9 @@
     margin: 3px 0;
     color: #777;
     font-size: 13px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 .suministro-administracion-estado {
     padding: 5px 10px;

@@ -121,10 +121,10 @@ class ExpedienteSerializer(serializers.ModelSerializer):
                     'La fecha final no puede ser anterior a la fecha de inicio.'
             })
 
-        if presupuesto is not None and presupuesto < 0:
+        if presupuesto is not None and presupuesto <= 0:
             raise serializers.ValidationError({
                 'presupuesto':
-                    'El presupuesto no puede ser negativo.'
+                    'El presupuesto debe ser mayor que 0.'
             })
 
         return data
