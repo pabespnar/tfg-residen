@@ -595,10 +595,20 @@ function Pedidos() {
             a.nombre.localeCompare(b.nombre)
         );
 
+
+    const suministroCoincideCategoria = (suministro) =>
+        categoriaFiltro === '' ||
+        (categoriaFiltro === 'sin-asignar'
+            ? suministro.categoria_id === null
+            : String(suministro.categoria_id) === String(categoriaFiltro));
+    
     const categoriasFiltro = pedidos
         .flatMap(
             (pedido) =>
                 pedido.suministros || []
+        ).filter(
+            (suministro) =>
+                suministro.categoria_id !== null
         )
         .filter(
             (suministro, index, array) =>
@@ -620,11 +630,7 @@ function Pedidos() {
                 pedido.suministros || []
         )
         .filter(
-            (suministro) =>
-                categoriaFiltro === '' ||
-                String(
-                    suministro.categoria_id
-                ) === String(categoriaFiltro)
+            suministroCoincideCategoria
         )
         .filter(
             (suministro, index, array) =>
@@ -669,12 +675,7 @@ function Pedidos() {
 
         const coincideCategoria =
             categoriaFiltro === '' ||
-            (pedido.suministros || []).some(
-                (suministro) =>
-                    String(
-                        suministro.categoria_id
-                    ) === String(categoriaFiltro)
-            );
+            (pedido.suministros || []).some(suministroCoincideCategoria);
 
         const coincideSuministro =
             suministroFiltro === '' ||
@@ -1116,6 +1117,9 @@ function Pedidos() {
                                                 {item.categoria_nombre}
                                             </option>
                                         ))}
+                                        <option value="sin-asignar">
+                                            Sin asignar
+                                        </option>
                                     </select>
                                 </div>
 

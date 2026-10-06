@@ -566,7 +566,7 @@ def crear_suministros(categorias):
         detalles='Cepillo dental individual.',
         stock=15,
         unidad='unidades',
-        stock_minimo=15,
+        stock_minimo=16,
         categoria=categorias['Higiene'],
     )
 
@@ -1469,7 +1469,7 @@ def crear_historial(usuarios, residentes, habitaciones, expedientes, pedidos):
 
     entradas = [
         (
-            date(2026, 6, 1),
+            date(2026, 5, 6),
             'Alta de residente',
             'Se ha dado de alta al residente Amina Khalil en la habitación 1 del Módulo B.',
             Rol.RESIDENTES,
@@ -1491,8 +1491,8 @@ def crear_historial(usuarios, residentes, habitaciones, expedientes, pedidos):
         ),
         (
             date(2026, 8, 25),
-            'Movimiento de habitación',
-            'La residente Nadia Said ha sido trasladada de la habitación 2 a la habitación 1 del Módulo B.',
+            'Edición de residente',
+            'Se han modificado los datos de la residente Nadia Said.\nHabitación: 2, Módulo B → 1, Módulo B',
             Rol.RESIDENTES,
             usuarios['residentes2'],
         ),
@@ -1506,14 +1506,21 @@ def crear_historial(usuarios, residentes, habitaciones, expedientes, pedidos):
         (
             date(2026, 6, 10),
             'Entrega de pack',
-            'Se ha asignado el pack "Pack de higiene" a Ahmed Benali.',
+            'Se ha asignado el pack "Pack de higiene".\n\nResidentes:\nAhmed Benali.\n\nSuministros retirados:\n1 unidades de Jabón corporal.\n1 unidades de Pasta de dientes.\n1 unidades de Cepillo de dientes.',
+            Rol.ALMACEN,
+            usuarios['almacen'],
+        ),
+        (
+            date(2026, 6, 11),
+            'Entrega de pack',
+            'Se ha asignado el pack "Pack de higiene".\n\nResidentes:\nYoussef El Amrani.\n\nSuministros retirados:\n1 unidades de Jabón corporal.\n1 unidades de Pasta de dientes.\n1 unidades de Cepillo de dientes.',
             Rol.ALMACEN,
             usuarios['almacen'],
         ),
         (
             date(2026, 6, 12),
             'Entrega de pack',
-            'Se ha asignado el pack "Pack de alimentación" a Amina Khalil.',
+            'Se ha asignado el pack "Pack de alimentación".\n\nResidentes:\nAmina Khalil.\n\nSuministros retirados:\n2 kg de Arroz.\n2 litros de Leche.',
             Rol.ALMACEN,
             usuarios['almacen2'],
         ),
@@ -1549,8 +1556,8 @@ def crear_historial(usuarios, residentes, habitaciones, expedientes, pedidos):
             date(2026, 8, 15),
             'Alta de suministro',
             'Se ha creado el suministro Termómetros digitales.\nUnidad: unidades.',
-            Rol.ALMACEN,
-            usuarios['almacen'],
+            Rol.ADMINISTRACION,
+            usuarios['administracion'],
         ),
         (
             date(2026, 1, 1),
@@ -1605,7 +1612,7 @@ def crear_historial(usuarios, residentes, habitaciones, expedientes, pedidos):
             date(2026, 4, 2),
             'Baja de suministro',
             'Se ha eliminado el suministro Alcohol en gel (usuario que realizó la acción ya no existe en el sistema).',
-            Rol.ALMACEN,
+            Rol.ADMINISTRACION,
             None,
         ),
     ]
@@ -1621,122 +1628,113 @@ def crear_historial(usuarios, residentes, habitaciones, expedientes, pedidos):
 
 
 def crear_notificaciones(usuarios):
+    residentes = [usuarios['residentes'], usuarios['residentes2']]
+    almacen = [usuarios['almacen'], usuarios['almacen2']]
+    administracion = [usuarios['administracion'], usuarios['administracion2'], usuarios['admin'], ]
+
     notificaciones = [
         (
             date(2026, 6, 1),
             'Ocupación de habitación al 50 %',
             'La habitación 1 del módulo B ha alcanzado el 50 % de ocupación.',
-            usuarios['residentes'],
+            residentes,
             True,
         ),
         (
-            date(2026, 6, 1),
-            'Ocupación de habitación al 50 %',
-            'La habitación 1 del módulo B ha alcanzado el 50 % de ocupación.',
-            usuarios['residentes2'],
-            False,
+            date(2026, 6, 10),
+            'Asignación de pack',
+            'Se ha asignado el pack "Pack de higiene" a 1 residente.',
+            residentes,
+            True,
+        ),
+        (
+            date(2026, 6, 11),
+            'Asignación de pack',
+            'Se ha asignado el pack "Pack de higiene" a 1 residente.',
+            residentes,
+            True,
         ),
         (
             date(2026, 6, 12),
             'Ocupación de habitación al 75 %',
             'La habitación 1 del módulo B ha alcanzado el 75 % de ocupación.',
-            usuarios['residentes'],
+            residentes,
             True,
         ),
         (
-            date(2026, 5, 20),
-            'Ocupación de habitación al 100 %',
-            'La habitación 1 del módulo A ha alcanzado el 100 % de ocupación.',
-            usuarios['residentes'],
-            True,
-        ),
-        (
-            date(2026, 5, 20),
-            'Ocupación de habitación al 100 %',
-            'La habitación 1 del módulo A ha alcanzado el 100 % de ocupación.',
-            usuarios['residentes2'],
+            date(2026, 6, 12),
+            'Asignación de pack',
+            'Se ha asignado el pack "Pack de alimentación" a 1 residente.',
+            residentes,
             True,
         ),
         (
             date(2026, 9, 5),
             'Ocupación de habitación al 90 %',
             'La habitación 2 del módulo B ha alcanzado el 90 % de ocupación.',
-            usuarios['residentes2'],
+            residentes,
             False,
         ),
         (
             date(2026, 8, 3),
             'Suministro por debajo del stock mínimo',
             'El suministro Mantas ha quedado por debajo de su stock mínimo (10 unidades).',
-            usuarios['almacen'],
-            False,
-        ),
-        (
-            date(2026, 8, 3),
-            'Suministro por debajo del stock mínimo',
-            'El suministro Mantas ha quedado por debajo de su stock mínimo (10 unidades).',
-            usuarios['almacen2'],
+            almacen,
             True,
         ),
         (
             date(2026, 8, 3),
             'Suministro sin stock',
             'El suministro Mantas ha quedado sin stock.',
-            usuarios['almacen'],
-            False,
-        ),
-        (
-            date(2026, 8, 18),
-            'Diferencia entre pedido y alta de almacén',
-            'La recepción del pedido "PED-EXP1-003" no coincide con las cantidades solicitadas.\n\nDiferencias:\nGuantes desechables: se solicitaron 50 pares y se han recibido 40 pares.',
-            usuarios['administracion'],
-            False,
-        ),
-        (
-            date(2026, 8, 18),
-            'Diferencia entre pedido y alta de almacén',
-            'La recepción del pedido "PED-EXP1-003" no coincide con las cantidades solicitadas.\n\nDiferencias:\nGuantes desechables: se solicitaron 50 pares y se han recibido 40 pares.',
-            usuarios['administracion2'],
+            almacen,
             False,
         ),
         (
             date(2026, 9, 2),
             'Nuevo pedido',
             'Se ha solicitado el pedido "PED-EXP2-003" y está pendiente de recepción.',
-            usuarios['administracion'],
-            True,
-        ),
-        (
-            date(2026, 7, 18),
-            'Presupuesto de expediente al 50 %',
-            'El presupuesto restante del expediente EXP-TEXTIL-2026 ha alcanzado el 50 %.',
-            usuarios['administracion'],
-            True,
-        ),
-        (
-            date(2026, 8, 30),
-            'Presupuesto de expediente al 25 %',
-            'El presupuesto restante del expediente EXP-TEXTIL-2026 ha alcanzado el 25 %.',
-            usuarios['administracion2'],
+            almacen,
             False,
         ),
         (
             date(2025, 12, 20),
             'Presupuesto de expediente agotado',
             'El presupuesto del expediente EXP-SANITARIO-2025 se ha agotado.',
-            usuarios['administracion'],
+            administracion,
             True,
+        ),
+        (
+            date(2026, 7, 18),
+            'Presupuesto de expediente al 50 %',
+            'El presupuesto restante del expediente EXP-TEXTIL-2026 ha alcanzado el 50 %.',
+            administracion,
+            True,
+        ),
+        (
+            date(2026, 8, 18),
+            'Diferencia entre pedido y alta de almacén',
+            'La recepción del pedido "PED-EXP1-003" no coincide con las cantidades solicitadas.\n\nDiferencias:\nGuantes desechables: se solicitaron 50 pares y se han recibido 40 pares.',
+            administracion,
+            False,
+        ),
+        (
+            date(2026, 8, 30),
+            'Presupuesto de expediente al 25 %',
+            'El presupuesto restante del expediente EXP-TEXTIL-2026 ha alcanzado el 25 %.',
+            administracion,
+            False,
         ),
     ]
 
-    for fecha, tipo, descripcion, usuario, leida in notificaciones:
-        notificacion = Notificacion.objects.create(
-            tipo=tipo,
-            descripcion=descripcion,
-            usuario=usuario,
-            leida=leida,
-        )
-        _fijar_fecha(notificacion, fecha)
+    for fecha, tipo, descripcion, destinatarios, leida in notificaciones:
+        for usuario in destinatarios:
+            notificacion = Notificacion.objects.create(
+                tipo=tipo,
+                descripcion=descripcion,
+                usuario=usuario,
+                leida=leida,
+            )
+            _fijar_fecha(notificacion, fecha)
 
 
 @transaction.atomic
